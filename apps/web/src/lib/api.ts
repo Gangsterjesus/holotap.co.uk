@@ -10,13 +10,14 @@
  *     - Flow 2: QR Validation
  *     - Flow 3: Session Start
  *     - Flow 4: Session Verify
- *     - Flow 6: Identity (Magic Link + Passkey)
+ *     - Flow 6: Identity (Magic Link + Passkey + QR Identity)
  *
  * Notes:
  *   - Injects identity token automatically
  *   - Normalises server errors
  *   - Detects offline server conditions
  *   - Strongly typed responses for all routes
+ *   - Includes simple HTTP helpers (GET / POST)
  * ------------------------------------------------------------
  */
 
@@ -81,6 +82,24 @@ export async function api<T>(
     throw err;
   }
 }
+
+/**
+ * ------------------------------------------------------------
+ * SECTION: HTTP Convenience Methods
+ * Purpose:
+ *   Simple GET / POST helpers for lightweight calls.
+ * ------------------------------------------------------------
+ */
+(api as any).post = function <T>(path: string, body: any) {
+  return api<T>(path, {
+    method: "POST",
+    body: JSON.stringify(body)
+  });
+};
+
+(api as any).get = function <T>(path: string) {
+  return api<T>(path, { method: "GET" });
+};
 
 /**
  * ------------------------------------------------------------
@@ -193,3 +212,32 @@ export const loginPasskey = async (assertion: any) => {
   setToken(res.token);
   return res.identity;
 };
+
+/**
+ * ------------------------------------------------------------
+ * SECTION: Flow 6 — Identity QR (Generation + Verification)
+ * ------------------------------------------------------------
+ */
+
+export interface QRGenerateResponse {
+  qr: string;        // base64 PNG
+  payload: string;   // signed identity payload (JSON string)
+}
+
+export const generateQR = () =>
+  api<QRGenerateResponse>("/qr", {
+    method: "POST",
+    body: JSON.stringify({})
+  });
+
+export interface QRVerifyResponse {
+  valid: boolean;
+  uid?: string;
+  reason?: string;
+}
+
+export const verifyQRIdentity = (payload: string) =>
+  api<QRVerifyResponse>("/qr/verify", {
+    method: "POST",
+    body: JSON.stringify({ payload })
+  });
