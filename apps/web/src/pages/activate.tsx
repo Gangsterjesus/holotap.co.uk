@@ -32,6 +32,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { activate } from "../lib/api";
+
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import Layout from "../components/Layout.jsx";
 import PageHeader from "../components/PageHeader.jsx";
@@ -47,7 +48,6 @@ export default function Activate() {
       const result = await activate(code);
 
       localStorage.setItem("holotap_token", result.token);
-
       navigate("/dashboard");
     } catch (err) {
       if (err instanceof Error) {
@@ -58,40 +58,37 @@ export default function Activate() {
     }
   }
 
-  return (
-    <ErrorBoundary>
-      {(setError: (msg: string) => void) => (
-        <Layout
+  return ErrorBoundary({
+    children: (setError) => (
+      <Layout
+        title="Activate HoloTap"
+        subtitle="Enter your activation code to begin"
+      >
+        <PageHeader
           title="Activate HoloTap"
           subtitle="Enter your activation code to begin"
-        >
-          <PageHeader
-            title="Activate HoloTap"
-            subtitle="Enter your activation code to begin"
-            actions={null}
+          actions={null}
+        />
+
+        <div className="max-w-md mx-auto flex flex-col gap-6 mt-6">
+          <Input
+            label="Activation Code"
+            placeholder="Enter activation code"
+            value={code}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value)}
+
+            error={null}
           />
 
-          <div className="max-w-md mx-auto flex flex-col gap-6 mt-6">
-            <Input
-              label="Activation Code"
-              placeholder="Enter activation code"
-              value={code}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setCode(e.target.value)
-              }
-              error={null}
-            />
-
-            <Button
-              variant="primary"
-              disabled={false}
-              onClick={() => handleActivate(setError)}
-            >
-              Activate
-            </Button>
-          </div>
-        </Layout>
-      )}
-    </ErrorBoundary>
-  );
+          <Button
+            variant="primary"
+            disabled={false}
+            onClick={() => handleActivate(setError)}
+          >
+            Activate
+          </Button>
+        </div>
+      </Layout>
+    ),
+  });
 }
