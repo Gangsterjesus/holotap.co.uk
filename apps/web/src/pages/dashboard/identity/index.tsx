@@ -10,9 +10,8 @@
  * =============================================================================
  */
 
-
-
 import React, { useState, useEffect } from "react";
+import { NavLink } from "react-router-dom";
 
 export default function IdentityPage() {
   const [loading, setLoading] = useState(true);
@@ -136,6 +135,26 @@ export default function IdentityPage() {
         <button onClick={save} disabled={saving}>
           {saving ? "Saving…" : "Save Changes"}
         </button>
+      </div>
+
+      {/* ============================================================
+          Flow‑6 Identity Tools (QR, Signed Payload, Verification)
+          ============================================================ */}
+      <div style={{ marginTop: 40 }}>
+        <h2>Flow‑6 Identity Tools</h2>
+        <p>Access QR identity utilities for debugging, verification, and payload inspection.</p>
+
+        <ul style={{ marginTop: 20, listStyle: "none", paddingLeft: 0 }}>
+          <li style={{ marginBottom: 10 }}>
+            <NavLink to="/qr/qr">Generate Identity QR</NavLink>
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <NavLink to="/qr/payload">Signed Payload Viewer</NavLink>
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <NavLink to="/qr/verify">Verify Identity Payload</NavLink>
+          </li>
+        </ul>
       </div>
     </div>
   );
