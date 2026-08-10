@@ -43,14 +43,14 @@ async function request(path, options = {}) {
 }
 
 /* ============================
-   PAYMENTS API
+   PAYMENTS API (Flow 5)
    ============================ */
 export async function getPayments() {
   return request("/payments");
 }
 
 /* ============================
-   QR ACTIVATION API
+   QR ACTIVATION API (Flow 4)
    ============================ */
 export async function activateQR(payload) {
   return request("/qr/activate", {
@@ -60,18 +60,44 @@ export async function activateQR(payload) {
 }
 
 /* ============================
-   SESSION API
+   SESSION API (Flow 6 → Flow 7)
    ============================ */
 export async function getSession(sessionId) {
   return request(`/session/${sessionId}`);
 }
 
-/* ============================
-   SESSION VERIFY API
-   (Required by Dashboard.jsx)
-   ============================ */
 export async function verifySession(sessionId) {
   return request(`/session/verify/${sessionId}`);
+}
+
+/* ============================
+   PAYMENT LIFECYCLE API (Flow 8)
+   ============================ */
+
+/**
+ * Flow 8.1 — Payment Initialiser
+ */
+export async function initiatePayment(payload) {
+  return request("/payment/initiate", {
+    method: "POST",
+    body: payload
+  });
+}
+
+/**
+ * Flow 8.2 — Payment Execution Surface
+ */
+export async function getPaymentSession(paymentId) {
+  return request(`/payment/session/${paymentId}`);
+}
+
+/**
+ * Flow 8.2 → Flow 8.3 — Payment Execution
+ */
+export async function executePayment(paymentId) {
+  return request(`/payment/execute/${paymentId}`, {
+    method: "POST"
+  });
 }
 
 /* ============================
@@ -82,4 +108,9 @@ export const api = {
   activateQR,
   getSession,
   verifySession,
+
+  // Flow 8
+  initiatePayment,
+  getPaymentSession,
+  executePayment,
 };

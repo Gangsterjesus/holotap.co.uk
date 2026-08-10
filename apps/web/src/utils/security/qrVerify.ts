@@ -24,6 +24,7 @@
 import crypto from "crypto";
 import type { QrPayload } from "./qrPayload";
 
+
 // TODO: move to secure config / env (must match qrPayload.ts)
 const QR_SIGNING_SECRET = process.env.QR_SIGNING_SECRET || "dev-secret-change-me";
 
@@ -129,3 +130,10 @@ export function verifyQrPayload(payload: QrPayload): QrVerificationResult {
     };
   }
 }
+/**
+ * VerifiedPayload
+ * -------------------------------------------------------------
+ * Merges the raw QR payload with the verification result.
+ * Used by Flow 6 identity injection.
+ */
+export type VerifiedPayload = QrPayload & QrVerificationResult;

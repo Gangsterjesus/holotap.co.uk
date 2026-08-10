@@ -1,131 +1,122 @@
 /**
  * ============================================================
- *  HoloTap Engineering — Session Status Page
+ *  HoloTap Engineering — Session Status Page (Flow 7)
  *  File: src/pages/status.jsx
  *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
- *  Date: 28 July 2026
+ *  Date: 10 August 2026
  * ============================================================
  *
  *  Purpose:
- *    Displays session status after QR scan.
- *    Fetches session → shows merchant + QR + hologram status.
- *    Redirects to payments when session is ready.
+ *    Displays identity + session status after Flow 6 injection.
+ *    Reads SessionActor from sessionStore.
+ *    Polls session state → shows identity + hologram + readiness.
+ *    Redirects to Flow 8 (payments) when ready.
  *
  *  Notes:
- *    - Uses ErrorBoundary
  *    - Deterministic architecture only
+ *    - Uses ErrorBoundary, Layout, PageHeader, DashboardCard
+ *    - Backend polling will replace local sessionStore later
  * ============================================================
  */
 
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import Layout from "../components/Layout.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import DashboardCard from "../components/DashboardCard.jsx";
-import { getSessionStatus } from "../lib/api";
+
+import { getSessionValue } from "../utils/session/sessionStore";
 
 export default function Status() {
-  const { sessionId } = useParams();
   const navigate = useNavigate();
 
+  const [actor, setActor] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState(null);
-  const [error, setError] = useState(null);
 
+  /**
+   * Poll local session store every 1s.
+   * Later: replace with backend session polling.
+   */
   useEffect(() => {
-    async function fetchStatus() {
-      try {
-        const res = await getSessionStatus(sessionId);
+    const interval = setInterval(() => {
+      const storedActor = getSessionValue("actor");
+      setActor(storedActor);
+      setLoading(false);
 
-        if (!res || !res.sessionId) {
-          setError("SESSION_NOT_FOUND");
-          setLoading(false);
-          return;
-        }
-
-        setSession(res);
-        setLoading(false);
-
-        if (res.status === "READY") {
-          navigate(`/payments/${sessionId}`);
-        }
-      } catch (err) {
-        console.error("Status error:", err);
-        setError("NETWORK_ERROR");
-        setLoading(false);
+      // Deterministic routing → Flow 8
+      if (storedActor && storedActor.issuedAt) {
+        navigate("/payments/start");
       }
-    }
+    }, 1000);
 
-    fetchStatus();
-  }, [sessionId, navigate]);
+    return () => clearInterval(interval);
+  }, [navigate]);
 
   return (
     <ErrorBoundary>
       {() => (
         <Layout
           title="Session Status"
-          subtitle="Flow 7 — Session Status → Payment Readiness"
+          subtitle="Flow 7 — Identity Session Heartbeat"
         >
           <PageHeader
             title="Session Status"
-            subtitle="Verification and payment readiness"
+            subtitle="Identity verification and payment readiness"
             actions={null}
           />
 
           {/* Loading */}
           {loading && (
             <DashboardCard title="Loading Session…" value="">
-              <p className="text-gray-600">Fetching session details…</p>
+              <p className="text-gray-600">Awaiting identity injection…</p>
             </DashboardCard>
           )}
 
-          {/* Error */}
-          {error && (
-            <DashboardCard title="Error" value="">
-              <p className="text-red-600">{error}</p>
+          {/* No Actor */}
+          {!loading && !actor && (
+            <DashboardCard title="No Active Session" value="">
+              <p className="text-red-600">
+                No identity session found. Please rescan your QR code.
+              </p>
             </DashboardCard>
           )}
 
-          {/* Session Details */}
-          {session && (
-            <DashboardCard title="Session Details" value="">
+          {/* Actor Details */}
+          {actor && (
+            <DashboardCard title="Identity Session" value="">
               <div className="flex flex-col gap-2 text-gray-800">
 
                 <p>
-                  <strong>Session ID:</strong> {session.sessionId}
+                  <strong>Creator:</strong> {actor.creator}
                 </p>
 
                 <p>
-                  <strong>Merchant:</strong> {session.merchantName}
+                  <strong>Organisation:</strong> {actor.org}
                 </p>
 
                 <p>
-                  <strong>QR Token:</strong> {session.qrToken}
+                  <strong>Merchant:</strong> {actor.merchant}
                 </p>
 
                 <p>
-                  <strong>Hologram:</strong> {session.hologramStatus}
+                  <strong>Device:</strong> {actor.device}
                 </p>
 
                 <p>
-                  <strong>Status:</strong> {session.status}
+                  <strong>Issued At:</strong> {actor.issuedAt}
                 </p>
 
-                {session.status !== "READY" && (
-                  <p className="text-yellow-600 font-medium mt-2">
-                    Waiting for verification…
-                  </p>
-                )}
+                <p className="text-yellow-600 font-medium mt-2">
+                  Identity verified — preparing payment lifecycle…
+                </p>
 
-                {session.status === "READY" && (
-                  <button
-                    onClick={() => navigate(`/payments/${sessionId}`)}
-                    className="mt-4 px-5 py-3 bg-black text-white rounded-lg font-medium"
-                  >
-                    Continue to Payment
-                  </button>
-                )}
+                <button
+                  onClick={() => navigate("/payments/start")}
+                  className="mt-4 px-5 py-3 bg-black text-white rounded-lg font-medium"
+                >
+                  Continue to Payment (Flow 8)
+                </button>
               </div>
             </DashboardCard>
           )}
