@@ -1,12 +1,21 @@
 /**
- * ============================================================
- *  HoloTap — Web Router (Creator Surface)
+ * =================================================================================================
+ *  HOLOTAP — WEB APPLICATION ROUTER
  *  File: apps/web/src/AppRouter.jsx
- *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
- *  Layer: web-ui
- *  Revision: v2.3 — Flow‑8 Payments Routing
- * ============================================================
+ *
+ *  Engineering:
+ *    • Raymond Newton HoloTap engineering — Lead Engineer
+ *    • Copilot — Engineering Assistant
+ *
+ *  Revision: v2.4 — Creator Surface Routing (Flows 4, 6, 8, 9)
+ *
+ *  Overview:
+ *    Central routing layer for the HoloTap web client. Registers all creator‑facing modules including
+ *    calendar tools, identity surfaces, payment lifecycle flows, and registry binding. This router
+ *    defines the deterministic navigation structure for the entire creator experience.
+ * =================================================================================================
  */
+
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -14,6 +23,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PaymentsStart from "./pages/payments/start";
 import PaymentsExecute from "./pages/payments/execute";
 import PaymentsResult from "./pages/payments/result";
+
+// Flow‑9 Pages
+import RegistryOverview from "./pages/registry/index";
+import RegistryBind from "./pages/registry/bind";
+import RegistryResult from "./pages/registry/result";
 
 // Existing Pages
 import Calendar from "./pages/merchant";
@@ -34,17 +48,18 @@ export default function AppRouter() {
             Flow‑8 Payments Lifecycle
            ============================ */}
 
-        {/* Flow‑8.1 — Payment Initialiser */}
         <Route path="/payments/start" element={<PaymentsStart />} />
-
-        {/* Flow‑8.2 — Payment Execution */}
         <Route path="/payments/execute/:paymentId" element={<PaymentsExecute />} />
-
-        {/* Flow‑8.3 — Payment Result */}
         <Route path="/payments/result/:paymentId" element={<PaymentsResult />} />
-
-        {/* Payments root → start */}
         <Route path="/payments" element={<PaymentsStart />} />
+
+        {/* ============================
+            Flow‑9 Registry Binding
+           ============================ */}
+
+        <Route path="/registry" element={<RegistryOverview />} />
+        <Route path="/registry/bind" element={<RegistryBind />} />
+        <Route path="/registry/result" element={<RegistryResult />} />
 
       </Routes>
     </BrowserRouter>

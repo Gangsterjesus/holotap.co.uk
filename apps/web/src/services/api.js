@@ -1,23 +1,35 @@
 /**
- * ============================================================
- *  HoloTap — Web API Client (Browser-Safe)
+ * =================================================================================================
+ *  HOLOTAP — WEB API CLIENT (BROWSER-SAFE)
  *  File: src/services/api.js
- *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
- *  Layer: web-ui
- *  Revision: v2 — Unified Web & Mobile Architecture
- *  Date: 03 August 2026
- * ============================================================
+ *  Date: 11/08/2026
  *
- *  Purpose:
- *    Deterministic, browser-safe API layer for the HoloTap web UI.
- *    All functions use fetch() and return JSON. No server-side
- *    modules or Node.js logic are used here.
+ *  Engineering:
+ *    • Raymond Newton — Lead Engineer, HoloTap Engineering
+ *    • Copilot — Engineering Assistant
  *
- *  Responsibilities:
- *    - Wrap HTTP requests
- *    - Provide predictable JSON responses
- *    - Maintain stateless v2 architecture
- * ============================================================
+ *  Module:
+ *    Deterministic Web API Client — Unified Web & Mobile Architecture
+ *
+ *  Revision:
+ *    v2.5 — Added Flow‑9 Registry Binding API Contracts
+ *
+ *  Flows:
+ *    • Flow‑4 — QR Activation
+ *    • Flow‑5 — Payments (Legacy)
+ *    • Flow‑6 — Identity Session
+ *    • Flow‑7 — Identity Verification
+ *    • Flow‑8 — Payment Lifecycle
+ *    • Flow‑9 — Registry Binding
+ *
+ *  Overview:
+ *    Browser‑safe API layer for the HoloTap web client. Provides deterministic JSON responses using
+ *    fetch(), ensuring stateless behaviour across all creator‑facing flows. This module defines the
+ *    complete client‑side API contract surface for identity, payments, and registry binding.
+ *
+ *  Compliance:
+ *    HoloTap Engineering Header Standard v1.0
+ * =================================================================================================
  */
 
 const BASE_URL = "/api";
@@ -101,11 +113,37 @@ export async function executePayment(paymentId) {
 }
 
 /* ============================
+   REGISTRY API (Flow 9)
+   ============================ */
+
+/**
+ * Flow 9.2 — Registry Binding Action
+ */
+export async function bindRegistry(payload) {
+  return request("/registry/bind", {
+    method: "POST",
+    body: payload
+  });
+}
+
+/**
+ * Flow 9.3 — Registry Status Surface
+ */
+export async function getRegistryStatus() {
+  return request("/registry/status");
+}
+
+/* ============================
    EXPORT (DETERMINISTIC)
    ============================ */
 export const api = {
+  // Flow 5
   getPayments,
+
+  // Flow 4
   activateQR,
+
+  // Flow 6 → 7
   getSession,
   verifySession,
 
@@ -113,4 +151,8 @@ export const api = {
   initiatePayment,
   getPaymentSession,
   executePayment,
+
+  // Flow 9
+  bindRegistry,
+  getRegistryStatus,
 };
