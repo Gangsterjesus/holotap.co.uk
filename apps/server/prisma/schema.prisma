@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -5,7 +6,6 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-
 
 model org_tenants {
   id         String       @id @default(uuid())
@@ -24,7 +24,7 @@ model org_users {
 
   tenant     org_tenants  @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
 
-  // ADD THIS
+  // Flow 6: actor sessions
   sessions   sessions[]
 }
 
@@ -63,6 +63,18 @@ model sessions {
   created_at DateTime  @default(now())
   expires_at DateTime?
 
-  // Relation to identity layer (Flow 6)
+  // Flow 6: identity layer
   actor      org_users @relation(fields: [actor_id], references: [id], onDelete: Cascade)
+}
+
+model identity_sessions {
+  id          String   @id @default(uuid())
+  role        String
+  merchantId  String?
+  state       String   @default("active")
+  metadata    Json?
+  created_at  DateTime @default(now())
+  expires_at  DateTime
+
+  @@map("identity_sessions")
 }
