@@ -4,11 +4,16 @@
  * =============================================================================
  * Engineer: Raymond Newton (E5357171)
  * Assistant: Copilot Engineering Assistant
- * Date: 02 July 2026
+ * Date: 12 August 2026
  * © 2026 HoloTap Technologies Ltd. All rights reserved.
  * =============================================================================
+ * Deterministic mobile rendering of settlement batch payloads:
+ * - Fetches batch metadata + transaction list
+ * - Applies currency formatting rules (GBP, BTC, ETH, BRICS, CBDC)
+ * - Handles loading, error, and null‑payload states
+ * - Renders transaction list with stable keys (txId)
+ * =============================================================================
  */
-
 
 import { useEffect, useState } from "react";
 import {
@@ -22,9 +27,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 /**
- * Local inline styles (no external stylesheet)
+ * Inline deterministic styles (no external stylesheet)
  */
-const batchStyles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
   loadingText: { marginTop: 12, textAlign: "center", color: "#333" },
   errorHeader: { fontSize: 18, fontWeight: "600", color: "#c00" },
@@ -74,7 +79,7 @@ interface BatchPayload {
 }
 
 /**
- * Currency formatting
+ * Currency formatting rules
  */
 const currencyMeta: Record<string, { symbol: string; decimals: number }> = {
   GBP: { symbol: "£", decimals: 2 },
@@ -121,25 +126,22 @@ export default function BatchDetail() {
 
   if (loading) {
     return (
-      <SafeAreaView style={batchStyles.container}>
+      <SafeAreaView style={styles.container}>
         <ActivityIndicator size="large" color="#0078FF" />
-        <Text style={batchStyles.loadingText}>Loading batch details…</Text>
+        <Text style={styles.loadingText}>Loading batch details…</Text>
       </SafeAreaView>
     );
   }
 
   if (error || !batch) {
     return (
-      <SafeAreaView style={batchStyles.container}>
-        <Text style={batchStyles.errorHeader}>Unable to load batch</Text>
-        <Text style={batchStyles.errorNote}>
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.errorHeader}>Unable to load batch</Text>
+        <Text style={styles.errorNote}>
           Something went wrong while fetching batch data.
         </Text>
 
-        <Text
-          style={batchStyles.link}
-          onPress={() => router.replace("/settlement")}
-        >
+        <Text style={styles.link} onPress={() => router.replace("/settlement")}>
           Return to Settlement Overview
         </Text>
       </SafeAreaView>
@@ -147,22 +149,22 @@ export default function BatchDetail() {
   }
 
   const renderItem = ({ item }: { item: BatchItem }) => (
-    <View style={batchStyles.txCard}>
-      <Text style={batchStyles.txLabel}>Transaction ID:</Text>
-      <Text style={batchStyles.txValue}>{item.txId}</Text>
+    <View style={styles.txCard}>
+      <Text style={styles.txLabel}>Transaction ID:</Text>
+      <Text style={styles.txValue}>{item.txId}</Text>
 
-      <Text style={batchStyles.txLabel}>Amount:</Text>
-      <Text style={batchStyles.txValue}>
+      <Text style={styles.txLabel}>Amount:</Text>
+      <Text style={styles.txValue}>
         {formatCurrency(item.amount, item.currency)}
       </Text>
 
-      <Text style={batchStyles.txLabel}>Status:</Text>
+      <Text style={styles.txLabel}>Status:</Text>
       <Text
         style={[
-          batchStyles.txValue,
+          styles.txValue,
           item.status === "success"
-            ? batchStyles.statusSuccess
-            : batchStyles.statusFailed,
+            ? styles.statusSuccess
+            : styles.statusFailed,
         ]}
       >
         {item.status}
@@ -171,41 +173,38 @@ export default function BatchDetail() {
   );
 
   return (
-    <SafeAreaView style={batchStyles.container}>
-      <Text style={batchStyles.header}>Batch Details</Text>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.header}>Batch Details</Text>
 
-      <View style={batchStyles.card}>
-        <Text style={batchStyles.label}>Batch ID:</Text>
-        <Text style={batchStyles.value}>{batch.batchId}</Text>
+      <View style={styles.card}>
+        <Text style={styles.label}>Batch ID:</Text>
+        <Text style={styles.value}>{batch.batchId}</Text>
 
-        <Text style={batchStyles.label}>Total Amount:</Text>
-        <Text style={batchStyles.value}>
+        <Text style={styles.label}>Total Amount:</Text>
+        <Text style={styles.value}>
           {formatCurrency(batch.totalAmount, batch.currency)}
         </Text>
 
-        <Text style={batchStyles.label}>Currency:</Text>
-        <Text style={batchStyles.value}>{batch.currency}</Text>
+        <Text style={styles.label}>Currency:</Text>
+        <Text style={styles.value}>{batch.currency}</Text>
 
-        <Text style={batchStyles.label}>Items:</Text>
-        <Text style={batchStyles.value}>{batch.itemCount}</Text>
+        <Text style={styles.label}>Items:</Text>
+        <Text style={styles.value}>{batch.itemCount}</Text>
 
-        <Text style={batchStyles.label}>Timestamp:</Text>
-        <Text style={batchStyles.value}>{batch.timestamp}</Text>
+        <Text style={styles.label}>Timestamp:</Text>
+        <Text style={styles.value}>{batch.timestamp}</Text>
       </View>
 
-      <Text style={batchStyles.subHeader}>Transactions</Text>
+      <Text style={styles.subHeader}>Transactions</Text>
 
       <FlatList
         data={batch.items}
         keyExtractor={(item) => item.txId}
         renderItem={renderItem}
-        contentContainerStyle={batchStyles.listContent}
+        contentContainerStyle={styles.listContent}
       />
 
-      <Text
-        style={batchStyles.link}
-        onPress={() => router.replace("/settlement")}
-      >
+      <Text style={styles.link} onPress={() => router.replace("/settlement")}>
         Return to Settlement Overview
       </Text>
     </SafeAreaView>

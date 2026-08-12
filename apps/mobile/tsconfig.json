@@ -8,7 +8,7 @@
     "types": ["react", "react-native"],
     "paths": {
       "@/*": ["./*"],
-      "react-native": ["../../node_modules/react-native"]
+      
     },
     "plugins": [
       {

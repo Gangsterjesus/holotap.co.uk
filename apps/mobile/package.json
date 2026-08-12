@@ -11,31 +11,33 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@expo/vector-icons": "15.0.2",
+    "build": "^0.1.4",
     "expo": "57.0.8",
+    "expo-camera": "15.0.16",
+    "expo-haptics": "15.0.8",
+    "expo-image": "3.0.11",
     "expo-router": "57.0.8",
+    "expo-secure-store": "^57.0.1",
     "expo-splash-screen": "57.0.5",
     "expo-web-browser": "57.0.2",
-    "expo-camera": "15.0.16",
-    "expo-image": "3.0.11",
-    "expo-haptics": "15.0.8",
-    "expo-secure-store": "12.0.0",
-    "@expo/vector-icons": "15.0.2",
-
     "react": "19.2.3",
     "react-native": "0.86.0",
     "react-native-gesture-handler": "2.32.0",
+    "react-native-qrcode-svg": "6.3.21",
     "react-native-reanimated": "4.5.0",
     "react-native-safe-area-context": "5.7.0",
     "react-native-screens": "4.26.0",
     "react-native-svg": "15.15.4",
     "react-native-webview": "13.16.1",
-    "react-native-qrcode-svg": "6.3.21"
+    "tar": "^7.5.22"
   },
   "devDependencies": {
-    "@types/react": "18.2.0",
+    "@types/react-native": "^0.73.0",
     "babel-preset-expo": "9.5.0",
     "eslint": "8.56.0",
     "eslint-config-expo": "57.0.0",
+    "expo-cli": "^6.3.12",
     "typescript": "6.0.3"
   }
 }

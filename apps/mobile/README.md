@@ -1,7 +1,9 @@
-HoloTap Mobile — README (Preview)
+# HoloTap Mobile — README (Preview)
+
 (Not committing this yet — just giving you the shape)
 
-Overview
+## Overview
+
 HoloTap Mobile is the consumer‑facing and merchant‑facing mobile application for the HoloTap payment system. Built using Expo SDK 56, React Native 0.86, and Expo Router v6, it provides secure QR‑based payment initiation, session verification, and transaction processing.
 
 Core Features
@@ -47,7 +49,7 @@ Backend Requirements
 Requires HoloTapServer running at:
 
 Code
-http://192.168.1.205:3000
+<http://192.168.1.205:3000>
 Flows Implemented
 Flow 5: QR Scan → Session Verification
 
