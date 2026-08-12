@@ -79,3 +79,4 @@ model identity_sessions {
 
   @@map("identity_sessions")
 }
+
