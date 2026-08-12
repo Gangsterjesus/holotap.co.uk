@@ -8,11 +8,12 @@
     "start": "node src/server.js"
   },
   "dependencies": {
-    "@prisma/client": "^7.9.1",
+    "@prisma/client": "^6.19.3",
     "@prisma/config": "^7.9.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.0",
-    "express": "^4.19.0"
+    "express": "^4.19.0",
+    "prisma": "^6.19.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
