@@ -1,21 +1,21 @@
-import { generateId } from "../utils/id.js";
+import { prisma } from '../prisma';
 
-const sessions = new Map();
 
-export const sessionService = {
-  createSession({ role, merchantId }) {
-    const id = generateId();
-    const session = {
-      id,
-      role,
-      merchantId: role === "merchant" ? merchantId : null,
-      createdAt: new Date().toISOString()
-    };
-    sessions.set(id, session);
-    return session;
-  },
+export async function resolveSession({ actor_id }) {
+  // Check if a session already exists for this actor
+  let session = await prisma.sessions.findFirst({
+    where: { actor_id },
+  });
 
-  getSession(id) {
-    return sessions.get(id) || null;
+  // If not, create a new deterministic session
+  if (!session) {
+    session = await prisma.sessions.create({
+      data: {
+        actor_id,
+        state: 'idle', // default Flow 7 state
+      },
+    });
   }
-};
+
+  return session;
+}
