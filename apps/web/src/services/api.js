@@ -126,12 +126,22 @@ export async function bindRegistry(payload) {
   });
 }
 
+
 /**
  * Flow 9.3 — Registry Status Surface
  */
 export async function getRegistryStatus() {
   return request("/registry/status");
 }
+
+
+/**
+ * Flow 9.3 — Registry Result Surface
+ */
+export async function getRegistryResult() {
+  return request("/registry/result");
+}
+
 
 /* ============================
    EXPORT (DETERMINISTIC)
@@ -152,7 +162,9 @@ export const api = {
   getPaymentSession,
   executePayment,
 
-  // Flow 9
-  bindRegistry,
-  getRegistryStatus,
-};
+// Flow 9
+bindRegistry,
+getRegistryStatus,
+getRegistryResult,
+
+}

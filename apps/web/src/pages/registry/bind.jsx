@@ -2,7 +2,7 @@
  * =================================================================================================
  *  HOLOTAP — REGISTRY BIND ACTION PAGE
  *  File: apps/web/src/pages/registry/bind.jsx
- *  Date: 11/08/2026
+ *  Date: 13/08/2026 version 2.0 
  *
  *  Engineering:
  *    • Raymond Newton — Lead Engineer, HoloTap Engineering
@@ -12,12 +12,7 @@
  *    Flow‑9 Registry Binding — Creator Identity Finalisation Surface
  *
  *  Revision:
- *    v1.0 — Initial scaffolding for registry binding (Flow‑9.2)
- *
- *  Flows:
- *    • Flow‑6 — Identity Surfaces
- *    • Flow‑8 — Payment Lifecycle
- *    • Flow‑9 — Registry Binding
+ *    v2.0 — Deterministic Payload Finalisation (Flow‑9.2 → Flow‑9.3)
  *
  *  Overview:
  *    This module provides the creator‑facing registry binding surface. It triggers the binding
@@ -30,9 +25,12 @@
  */
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 
 export default function RegistryBind() {
+  const navigate = useNavigate();
+
   /**
    * -----------------------------------------------------------------------------------------------
    *  State: result
@@ -51,26 +49,47 @@ export default function RegistryBind() {
 
   /**
    * -----------------------------------------------------------------------------------------------
+   *  Deterministic Identity + Device + Merchant Payload
+   *  (Flow‑6 → Flow‑7 → Flow‑9)
+   *
+   *  In production:
+   *    • sessionId → identity session store
+   *    • badgeId → creator identity surface
+   *    • device → browser-safe fingerprint
+   *    • merchant → merchant context store
+   *
+   *  For now:
+   *    Deterministic placeholders until Flow‑6 wiring is complete.
+   * -----------------------------------------------------------------------------------------------
+   */
+  function buildPayload() {
+    return {
+      sessionId: "session-001",       // Flow‑6 placeholder
+      badgeId: "badge-creator-001",   // Flow‑7 placeholder
+      device: navigator.userAgent,    // deterministic browser fingerprint
+      merchant: "merchant-001"        // deterministic merchant context
+    };
+  }
+
+  /**
+   * -----------------------------------------------------------------------------------------------
    *  Function: bindRegistry
    *  Description:
-   *    Executes the registry binding operation using placeholder payload values. In production,
-   *    these values will be sourced from identity session, device fingerprinting, and merchant
-   *    context. The API response is stored deterministically in component state.
+   *    Executes the registry binding operation using deterministic payload values. The API response
+   *    is stored deterministically in component state and routed to the registry result surface.
    * -----------------------------------------------------------------------------------------------
    */
   async function bindRegistry() {
     setLoading(true);
 
     try {
-      const payload = {
-        sessionId: "session-placeholder",
-        badgeId: "badge-placeholder",
-        device: "device-placeholder",
-        merchant: "merchant-placeholder",
-      };
-
+      const payload = buildPayload();
       const res = await api.bindRegistry(payload);
+
       setResult(res);
+
+      // deterministic routing → Flow‑9.3
+      navigate("/registry/result");
     } catch (err) {
       setResult({ error: err.message });
     } finally {
@@ -100,15 +119,6 @@ export default function RegistryBind() {
         <pre className="bg-gray-900 text-white p-4 rounded mt-6">
           {JSON.stringify(result, null, 2)}
         </pre>
-      )}
-
-      {result && (
-        <a
-          href="/registry/result"
-          className="mt-4 inline-block text-holotap-accent underline"
-        >
-          View Result
-        </a>
       )}
     </div>
   );
