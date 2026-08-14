@@ -1,0 +1,5 @@
+packages:
+  - "apps/*"
+  - "identity"
+  - "caddy"
+  - "Holotap.co.uk"
