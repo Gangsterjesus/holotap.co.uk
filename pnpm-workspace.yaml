@@ -1,5 +1,5 @@
 packages:
-  - "apps/*"
-  - "identity"
-  - "caddy"
-  - "Holotap.co.uk"
+  - 'apps/*'
+  - 'identity'
+  - 'caddy'
+  - 'Holotap.co.uk'
