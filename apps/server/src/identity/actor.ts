@@ -1,17 +1,31 @@
 /**
- * HoloTapServer
- * Actor Model
- * Flow 6 — Identity Resolution Layer
- * Author: R. Newton (Founder‑Architect)
- * Date: 2026‑08‑05
+ * ============================================================
+ *  HoloTapServer — Identity Layer
+ *  Flow 6 — Actor Model (identity/actor.ts)
  *
- * Purpose:
- *  - Define the unified Actor identity shape for all backend flows.
- *  - Support founder, QR-token, and anonymous actors.
- *  - Provide a strongly-typed identity object consumed by middleware and audit logs.
+ *  Engineer: Raymond Newton (Founder‑Architect, E5357171)
+ *  Version: 2.4.2
+ *  Date: 15 August 2026
+ * ============================================================
+ *
+ *  Purpose:
+ *  ------------------------------------------------------------
+ *  Defines the unified Actor identity shape for all backend flows.
+ *  Every resolver (Flow 6–11) MUST return an object conforming to
+ *  this model to ensure deterministic identity propagation.
  */
 
-export type Actor =
-  | { type: "founder"; id: string }
-  | { type: "qr"; id: string }
-  | { type: "anonymous" };
+export type ActorMethod =
+  | "founder"
+  | "session"
+  | "qr"
+  | "anonymous";
+
+export interface Actor {
+  id: string | null;          // Stable identity ID
+  type: ActorMethod;          // Identity type (Flow 6)
+  method: ActorMethod;        // Alias for downstream flows
+  role?: string | null;       // Optional role (session/org)
+  issuedAt?: number | null;   // Optional timestamp for QR/session
+}
+

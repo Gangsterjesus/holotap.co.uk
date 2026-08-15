@@ -1,43 +1,87 @@
 /**
- * Flow 8 — Org Access Resolver
- * Author: R. Newton (Founder-Architect)
+ * ============================================================
+ *  HoloTapServer — Identity Layer
+ *  Flow 8 — Organisation Access Resolver
  *
- * Description:
- * Resolves organisation context for the authenticated actor.
- * This resolver attaches:
+ *  Engineer: Raymond Newton (Founder‑Architect, E5357171)
+ *  Version: 2.4.2
+ *  Date: 15 August 2026
+ *  © 2026 HoloTap Technologies Ltd. All rights reserved.
+ * ============================================================
  *
- *   orgUser   → org_users record
- *   tenant    → org_tenants record
+ *  Description:
+ *  ------------------------------------------------------------
+ *  Flow 8 resolves organisation context for an authenticated
+ *  actor. It binds:
  *
- * Responsibilities:
- * - Bind actor → org_user → tenant
- * - Provide deterministic organisation context to Flow 9+
+ *      actor.id → org_users → org_tenants
  *
- * Guarantees:
- * - No destructive operations
- * - No schema mutations
- * - Pure resolution logic only
+ *  This provides deterministic organisation context for:
+ *      • Flow 9 — Permission Enforcement
+ *      • Flow 10 — Founder Override Layer
+ *      • Flow 11+ — Billing, Merchant Ops, Audit Trails
+ *
+ *  Responsibilities:
+ *  ------------------------------------------------------------
+ *  - Resolve org_users record for the actor
+ *  - Resolve org_tenants record via tenant_id relation
+ *  - Produce stable orgUser + tenant context object
+ *
+ *  Guarantees:
+ *  ------------------------------------------------------------
+ *  - No destructive operations
+ *  - No schema mutations
+ *  - Pure resolution logic only
+ *
+ * ============================================================
  */
 
-import { db } from '../db';
+import { prisma } from "../db";
 
+/**
+ * resolveOrg
+ * ------------------------------------------------------------
+ * Resolves organisation context for the authenticated actor.
+ *
+ * Input:
+ *   actor: Flow 6 identity object containing actor.id
+ *
+ * Output:
+ *   {
+ *     orgUser: org_users | null,
+ *     tenant: org_tenants | null
+ *   }
+ */
 export async function resolveOrg(actor: any) {
-  if (!actor) return { orgUser: null, tenant: null };
+  // ------------------------------------------------------------
+  // 1. Actor must exist
+  // ------------------------------------------------------------
+  if (!actor || !actor.id) {
+    return { orgUser: null, tenant: null };
+  }
 
-  // Resolve org_users entry for this actor
-  const orgUser = await db.orgUsers.findOne({
-    id: actor.id,
+  // ------------------------------------------------------------
+  // 2. Resolve org_users entry for this actor
+  // ------------------------------------------------------------
+  const orgUser = await prisma.org_users.findUnique({
+    where: { id: actor.id },
+    include: {
+      tenant: true, // Prisma relation → org_tenants
+    },
   });
 
   if (!orgUser) {
     return { orgUser: null, tenant: null };
   }
 
-  // Resolve tenant for this org user
-  const tenant = await db.orgTenants.findOne({
-    id: orgUser.tenant_id,
-  });
+  // ------------------------------------------------------------
+  // 3. Tenant is already resolved via relation
+  // ------------------------------------------------------------
+  const tenant = orgUser.tenant ?? null;
 
+  // ------------------------------------------------------------
+  // 4. Output Contract
+  // ------------------------------------------------------------
   return {
     orgUser,
     tenant,

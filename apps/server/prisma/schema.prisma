@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,6 +6,12 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+//
+// ─────────────────────────────────────────────
+//  ORGANISATION & USER MODELS
+// ─────────────────────────────────────────────
+//
 
 model org_tenants {
   id         String       @id @default(uuid())
@@ -27,7 +32,16 @@ model org_users {
 
   // Flow 6: actor sessions
   sessions   sessions[]
+
+  // Billing module: merchant fee configuration
+  merchant_fees merchant_fees[]
 }
+
+//
+// ─────────────────────────────────────────────
+//  MOBILE USERS
+// ─────────────────────────────────────────────
+//
 
 model mobile_users {
   id            String    @id @default(uuid())
@@ -35,6 +49,12 @@ model mobile_users {
   country_code  String
   created_at    DateTime  @default(now())
 }
+
+//
+// ─────────────────────────────────────────────
+//  QR CODE MODEL
+// ─────────────────────────────────────────────
+//
 
 model qr_codes {
   id          String    @id @default(uuid())
@@ -46,6 +66,12 @@ model qr_codes {
   expires_at  DateTime?
 }
 
+//
+// ─────────────────────────────────────────────
+//  AUDIT LOGS
+// ─────────────────────────────────────────────
+//
+
 model audit_logs {
   id         String    @id @default(uuid())
   actor_id   String?
@@ -54,6 +80,12 @@ model audit_logs {
   metadata   Json?
   created_at DateTime  @default(now())
 }
+
+//
+// ─────────────────────────────────────────────
+//  SESSION MODELS
+// ─────────────────────────────────────────────
+//
 
 model sessions {
   id         String    @id @default(uuid())
@@ -80,3 +112,19 @@ model identity_sessions {
   @@map("identity_sessions")
 }
 
+//
+// ─────────────────────────────────────────────
+//  BILLING MODULE — MERCHANT FEES
+// ─────────────────────────────────────────────
+//
+
+model merchant_fees {
+  id             String   @id @default(uuid())
+  merchant_id    String
+  percentage_fee Float    @default(0)
+  fixed_fee      Float    @default(0)
+  resource_fee   Float    @default(0)
+  created_at     DateTime @default(now())
+
+  merchant org_users @relation(fields: [merchant_id], references: [id], onDelete: Cascade)
+}

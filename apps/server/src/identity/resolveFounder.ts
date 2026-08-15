@@ -1,43 +1,78 @@
 /**
- * HoloTapServer
- * Identity Resolver — Founder Mode
- * Flow 10 — Founder Override Layer
- * Author: R. Newton (Founder-Architect)
- * Date: 2026-08-06
+ * ============================================================
+ *  HoloTapServer — Identity Layer
+ *  Flow 10 — Founder Override Resolver
  *
- * Overview:
- * Determines whether the current actor is the founder. This resolver
- * provides deterministic, secure verification using actor identity and
- * a founder-only secret supplied via request headers.
+ *  Engineer: Raymond Newton (Founder‑Architect, E5357171)
+ *  Version: 2.4.2
+ *  Date: 15 August 2026
+ *  © 2026 HoloTap Technologies Ltd. All rights reserved.
+ * ============================================================
  *
- * Descriptors:
- * Module Type: Identity Resolver
- * Layer: Flow 10 — Founder Override Layer
- * Stability Level: Critical — Must remain deterministic and secure
+ *  Overview:
+ *  ------------------------------------------------------------
+ *  Flow 10 provides a deterministic founder‑override mechanism
+ *  used for critical administrative operations. This resolver
+ *  verifies founder identity using:
  *
- * External Dependencies:
- *   - Environment variable: FOUNDER_SECRET
+ *    • Actor identity from Flow 6
+ *    • Founder secret header (x-founder-secret)
+ *    • Founder key header (x-founder-key)
+ *    • Recovery key (x-founder-recovery)
  *
- * Internal Contracts:
- *   - Consumes actor identity from Flow 6
- *   - Consumes founder secret from request headers
- *   - Produces isFounder flag for Flow 10 middleware
+ *  Stability Level:
+ *  ------------------------------------------------------------
+ *  Critical — must remain deterministic, pure, and side‑effect free.
  *
- * Guarantees:
- *   - No destructive operations
- *   - No schema mutations
- *   - Pure verification logic only
+ *  External Dependencies:
+ *    - Environment variable: FOUNDER_SECRET
+ *
+ *  Internal Contracts:
+ *    - Consumes actor identity from Flow 6
+ *    - Produces `isFounder` boolean for Flow 10 middleware
+ *
+ *  Guarantees:
+ *    - No destructive operations
+ *    - No schema mutations
+ *    - Pure verification logic only
+ *
+ * ============================================================
  */
 
-import { Request } from 'express';
+import { Request } from "express";
 
+/**
+ * resolveFounder
+ * ------------------------------------------------------------
+ * Determines whether the current actor is the founder.
+ *
+ * Inputs:
+ *   actor: Flow 6 identity object
+ *   req: Express request containing founder headers
+ *
+ * Output:
+ *   { isFounder: boolean }
+ */
 export function resolveFounder(actor: any, req: Request) {
+  // ------------------------------------------------------------
+  // 1. Static Founder Identity (Email)
+  // ------------------------------------------------------------
   const founderEmail = "ray-newton@live.co.uk";
+
+  // ------------------------------------------------------------
+  // 2. Primary Founder Secret (Environment)
+  // ------------------------------------------------------------
   const founderSecret = process.env.FOUNDER_SECRET;
 
-  // Hard-coded recovery key — used ONLY when Windows or env breaks
+  // ------------------------------------------------------------
+  // 3. Recovery Key (Hard‑coded fallback)
+  // ------------------------------------------------------------
+  // Used ONLY when environment variables fail or Windows resets.
   const recoveryKey = "HOLOTAP-FOUNDER-RECOVERY-KEY-001";
 
+  // ------------------------------------------------------------
+  // 4. Supplied Secrets (Headers)
+  // ------------------------------------------------------------
   const suppliedSecret =
     req.headers["x-founder-secret"] ||
     req.headers["x-founder-key"] ||
@@ -47,10 +82,16 @@ export function resolveFounder(actor: any, req: Request) {
     req.headers["x-founder-recovery"] ||
     null;
 
+  // ------------------------------------------------------------
+  // 5. Deterministic Founder Verification
+  // ------------------------------------------------------------
   const isFounder =
-    actor?.email === founderEmail ||
-    (founderSecret && suppliedSecret === founderSecret) ||
-    suppliedRecovery === recoveryKey;
+    actor?.email === founderEmail ||                     // Flow 6 actor identity
+    (founderSecret && suppliedSecret === founderSecret) || // Primary founder secret
+    suppliedRecovery === recoveryKey;                      // Recovery override
 
+  // ------------------------------------------------------------
+  // 6. Output Contract
+  // ------------------------------------------------------------
   return { isFounder };
 }

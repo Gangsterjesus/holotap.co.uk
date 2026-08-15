@@ -1,98 +1,91 @@
-// apps/server/src/middleware/actorPipeline.ts
 /**
- * HoloTapServer
- * Middleware Module — Unified Actor Pipeline
- * Flow 11 — Actor Resolution & Identity Consolidation
- * Author: R. Newton (Founder-Architect)
- * Date: 2026-08-06
+ * ============================================================
+ *  HoloTapServer — Identity Layer
+ *  Flow 11 — Unified Actor Pipeline
  *
- * Overview:
- * Provides a unified identity pipeline that consolidates actor information
- * from QR identity (Flow 6), session identity (Flow 7), org resolution
- * (Flow 8), permission roles (Flow 9), and founder override (Flow 10).
+ *  Engineer: Raymond Newton (Founder‑Architect, E5357171)
+ *  Version: 2.4.2
+ *  Date: 15 August 2026
+ *  © 2026 HoloTap Technologies Ltd. All rights reserved.
+ * ============================================================
  *
- * This middleware ensures that every incoming request carries a fully
- * resolved actor object, including org, roles, and founder status, enabling
- * deterministic access control across the entire platform.
+ *  Overview:
+ *  ------------------------------------------------------------
+ *  Flow 11 consolidates identity context from all upstream flows:
  *
- * Descriptors:
- * Module Type: Identity Consolidation Middleware
- * Layer: Flow 11 — Unified Actor Pipeline
- * Stability Level: Critical — Required for all privileged operations
+ *      • Flow 6 — Actor Identity
+ *      • Flow 7 — Session Lifecycle
+ *      • Flow 8 — Organisation Resolution
+ *      • Flow 9 — Permission Roles
+ *      • Flow 10 — Founder Override
  *
- * Internal Contracts:
- *   - Consumes qrActor from Flow 6 (QR Identity)
- *   - Consumes sessionActor from Flow 7 (Session Identity)
- *   - Produces req.actor (Unified Actor)
- *   - Produces req.orgId (Org Resolution)
- *   - Produces req.roles (Permission Roles)
- *   - Produces req.isFounder (Flow 10 Override)
+ *  This middleware guarantees that every request carries a fully
+ *  resolved identity context for deterministic access control.
  *
- * Guarantees:
- *   - Deterministic actor resolution
- *   - No destructive operations
- *   - No dependency on org/role/tenant correctness
- *   - Founder override always evaluated last
+ *  Responsibilities:
+ *  ------------------------------------------------------------
+ *  - Bind unified actor object to req.actor
+ *  - Bind organisation context (orgUser + tenant)
+ *  - Bind permissions (Flow 9)
+ *  - Bind founder override flag
+ *
+ *  Guarantees:
+ *  ------------------------------------------------------------
+ *  - No destructive operations
+ *  - No schema mutations
+ *  - Founder override always evaluated last
+ *
+ * ============================================================
  */
-import { Request, Response, NextFunction } from 'express';
-import { resolveFounder } from '../identity/resolveFounder';
 
-/**
- * Unified Actor Pipeline — Flow 11
- *
- * Consolidates identity from QR (Flow 6), session (Flow 7),
- * org resolution (Flow 8), permission roles (Flow 9),
- * and founder override (Flow 10).
- *
- * Produces:
- *   req.actor
- *   req.orgId
- *   req.roles
- *   req.isFounder
- */
+import { Request, Response, NextFunction } from "express";
+import { resolveFounder } from "../identity/resolveFounder";
 
 export function actorPipeline(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  // -----------------------------
-  // Flow 6 — QR Identity (optional)
-  // -----------------------------
-  const qrActor = (req as any).qrActor || null;
+  // ------------------------------------------------------------
+  // 1. Flow 6 — Actor Identity
+  // ------------------------------------------------------------
+  const actor = (req as any).actor ?? null;
 
-  // -----------------------------
-  // Flow 7 — Session Identity (optional)
-  // -----------------------------
-  const sessionActor = (req as any).sessionActor || null;
+  // ------------------------------------------------------------
+  // 2. Flow 7 — Session Context
+  // ------------------------------------------------------------
+  const session = (req as any).session ?? null;
 
-  // -----------------------------
-  // Unified Actor Resolution
-  // Priority: QR → Session → null
-  // -----------------------------
-  const actor = qrActor || sessionActor || null;
-  (req as any).actor = actor;
+  // ------------------------------------------------------------
+  // 3. Flow 8 — Organisation Context
+  // ------------------------------------------------------------
+  const orgUser = (req as any).orgUser ?? null;
+  const tenant = (req as any).tenant ?? null;
 
-  // -----------------------------
-  // Flow 8 — Org Resolution
-  // -----------------------------
-  const orgId = actor?.orgId || null;
-  (req as any).orgId = orgId;
+  // ------------------------------------------------------------
+  // 4. Flow 9 — Permission Roles (placeholder)
+  // ------------------------------------------------------------
+  const permissions = (req as any).permissions ?? [];
 
-  // -----------------------------
-  // Flow 9 — Permission Roles
-  // -----------------------------
-  const roles = actor?.roles || [];
-  (req as any).roles = roles;
-
-  // -----------------------------
-  // Flow 10 — Founder Override
-  // -----------------------------
+  // ------------------------------------------------------------
+  // 5. Flow 10 — Founder Override
+  // ------------------------------------------------------------
   const { isFounder } = resolveFounder(actor, req);
-  (req as any).isFounder = isFounder;
 
-  // -----------------------------
-  // Flow 11 — Pipeline Complete
-  // -----------------------------
+  // ------------------------------------------------------------
+  // 6. Unified Actor Object (Flow 11 Output Contract)
+  // ------------------------------------------------------------
+  (req as any).actor = {
+    ...actor,
+    session,
+    orgUser,
+    tenant,
+    permissions,
+    isFounder,
+  };
+
+  // ------------------------------------------------------------
+  // 7. Pipeline Complete
+  // ------------------------------------------------------------
   next();
 }

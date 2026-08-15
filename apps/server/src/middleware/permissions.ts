@@ -1,108 +1,100 @@
 /**
- * Flow 9 — Permission Enforcement Layer
- * Author: R. Newton (Founder-Architect)
+ * ============================================================
+ *  HoloTapServer — Identity Layer
+ *  Flow 9 — Deterministic Permission Resolver (permission.ts)
  *
- * Description:
- * Provides deterministic access-control guards for all protected routes.
- * This layer sits immediately after Flow 8 (Org Access Middleware) and
- * enforces role, permission, tenant, session, and org-user requirements.
+ *  Engineer: Raymond Newton (Founder‑Architect, E5357171)
+ *  Version: 2.4.2
+ *  Date: 15 August 2026
+ *  © 2026 HoloTap Technologies Ltd. All rights reserved.
+ * ============================================================
  *
- * Guarantees:
- * - No destructive operations
- * - No schema mutations
- * - Pure enforcement logic only
+ *  Overview:
+ *  ------------------------------------------------------------
+ *  Flow 9 produces a deterministic permission array for the
+ *  authenticated actor. It consumes identity context from:
+ *
+ *      • Flow 6 — actor identity
+ *      • Flow 7 — session lifecycle
+ *      • Flow 8 — organisation resolution
+ *
+ *  This resolver is intentionally pure and contains no domain
+ *  logic, no destructive operations, and no schema mutations.
+ *
+ *  Responsibilities:
+ *  ------------------------------------------------------------
+ *  - Collect roles from actor, session, and orgUser
+ *  - Map roles → permissions deterministically
+ *  - Deduplicate permission output
+ *  - Provide stable permission array for Flow 11
+ *
+ *  Guarantees:
+ *  ------------------------------------------------------------
+ *  - Pure resolution logic only
+ *  - Deterministic output across releases
+ *  - No dependency on tenant correctness
+ * ============================================================
  */
 
-import { Request, Response, NextFunction } from 'express';
+import { Request } from "express";
 
-// ---------------------------------------------------------------------------
-// Require Active Session
-// ---------------------------------------------------------------------------
+/**
+ * resolvePermissions
+ * ------------------------------------------------------------
+ * Produces a deterministic permission array based on identity
+ * context from upstream flows.
+ *
+ * Input:
+ *   req.actor   → Flow 6 identity
+ *   req.session → Flow 7 session
+ *   req.orgUser → Flow 8 organisation user
+ *
+ * Output:
+ *   string[] — stable permission identifiers
+ */
+export function resolvePermissions(req: Request): string[] {
+  // ------------------------------------------------------------
+  // 1. Extract identity context from request
+  // ------------------------------------------------------------
+  const actor = (req as any).actor ?? null;
+  const session = (req as any).session ?? null;
+  const orgUser = (req as any).orgUser ?? null;
 
-export function requireSession(req: Request, res: Response, next: NextFunction) {
-  const session = (req as any).session;
+  // ------------------------------------------------------------
+  // 2. Collect raw roles from all upstream flows
+  // ------------------------------------------------------------
+  const rawRoles = [
+    actor?.role ?? null,
+    session?.role ?? null,
+    orgUser?.role ?? null,
+  ].filter(Boolean);
 
-  if (!session) {
-    return res.status(401).json({
-      ok: false,
-      error: 'SESSION_REQUIRED',
-    });
-  }
-
-  return next();
-}
-
-// ---------------------------------------------------------------------------
-// Require Org User
-// ---------------------------------------------------------------------------
-
-export function requireOrgUser(req: Request, res: Response, next: NextFunction) {
-  const orgUser = (req as any).orgUser;
-
-  if (!orgUser) {
-    return res.status(403).json({
-      ok: false,
-      error: 'ORG_USER_REQUIRED',
-    });
-  }
-
-  return next();
-}
-
-// ---------------------------------------------------------------------------
-// Require Tenant
-// ---------------------------------------------------------------------------
-
-export function requireTenant(req: Request, res: Response, next: NextFunction) {
-  const tenant = (req as any).tenant;
-
-  if (!tenant) {
-    return res.status(403).json({
-      ok: false,
-      error: 'TENANT_REQUIRED',
-    });
-  }
-
-  return next();
-}
-
-// ---------------------------------------------------------------------------
-// Require Role
-// ---------------------------------------------------------------------------
-
-export function requireRole(role: string) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const currentRole = (req as any).orgUser?.role;
-
-    if (currentRole !== role) {
-      return res.status(403).json({
-        ok: false,
-        error: 'ROLE_REQUIRED',
-        required: role,
-        actual: currentRole ?? null,
-      });
-    }
-
-    return next();
+  // ------------------------------------------------------------
+  // 3. Deterministic role → permission mapping
+  // ------------------------------------------------------------
+  const permissionMap: Record<string, string[]> = {
+    founder: ["platform.admin", "tenant.admin", "merchant.admin"],
+    admin: ["tenant.admin", "merchant.admin"],
+    manager: ["merchant.write", "merchant.read"],
+    staff: ["merchant.read"],
+    mobile_user: ["tenant.read"],
+    user: ["tenant.read"],
   };
-}
 
-// ---------------------------------------------------------------------------
-// Require Permission
-// ---------------------------------------------------------------------------
+  const permissions = new Set<string>();
 
-export function requirePermission(permission: string) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const permissions = (req as any).permissions ?? [];
-
-    if (!permissions.includes(permission)) {
-      return res.status(403).json({
-        ok: false,
-        error: 'PERMISSION_REQUIRED',
-        required: permission,
-      });
+  // ------------------------------------------------------------
+  // 4. Map each role to its permission set
+  // ------------------------------------------------------------
+  for (const role of rawRoles) {
+    const mapped = permissionMap[role];
+    if (mapped) {
+      mapped.forEach((p) => permissions.add(p));
     }
+  }
 
-    return next();
-  };
+  // ------------------------------------------------------------
+  // 5. Deterministic output (deduplicated)
+  // ------------------------------------------------------------
+  return Array.from(permissions);
 }
