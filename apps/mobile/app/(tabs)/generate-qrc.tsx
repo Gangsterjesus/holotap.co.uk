@@ -1,11 +1,11 @@
-/**
+ /**
  * =============================================================================
- * HOLOTAP MOBILE — GENERATE QR SCREEN v2 (Engineering Edition)
+ * HOLOTAP MOBILE — GENERATE QR SCREEN v2.4 (Engineering Edition)
  * =============================================================================
  * Engineer:      Raymond Newton (E5357171)
  * Assistant:     Copilot Engineering Assistant
  * File:          generate-qrc.tsx
- * Date:          28 July 2026
+ * Date:          17 August 2026
  * =============================================================================
  * PURPOSE:
  * Implements Flow 3 — Merchant QR Code Generation.
@@ -37,11 +37,11 @@ import { SafeAreaView, Text, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
 import { useMerchantIdentity } from "../../hooks/useMerchantIdentity";
-import { useQrSession } from "../../hooks/useQrSession";
+import { useQrSession } from "../../hooks/QRSessionLayer";
 
 /**
  * =============================================================================
- * Main Component — GenerateQRC (v2)
+ * Main Component — GenerateQRC (v3)
  * =============================================================================
  */
 export default function GenerateQRC() {

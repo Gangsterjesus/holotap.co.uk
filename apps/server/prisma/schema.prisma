@@ -9,61 +9,97 @@ datasource db {
 
 //
 // ─────────────────────────────────────────────
-//  ORGANISATION & USER MODELS
+//  ORGANISATION & MERCHANT DOMAIN
 // ─────────────────────────────────────────────
 //
 
 model org_tenants {
-  id         String       @id @default(uuid())
+  id         String   @id @default(uuid())
   name       String
-  created_at DateTime     @default(now())
+  created_at DateTime @default(now())
 
-  users      org_users[]
+  users org_users[]
 }
 
 model org_users {
-  id         String       @id @default(uuid())
+  id         String   @id @default(uuid())
   tenant_id  String
   email      String
   role       String
-  created_at DateTime     @default(now())
+  created_at DateTime @default(now())
 
-  tenant     org_tenants  @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  tenant org_tenants @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
 
-  // Flow 6: actor sessions
-  sessions   sessions[]
+  // Flow 6 identity layer
+  sessions sessions[]
 
-  // Billing module: merchant fee configuration
+  // Billing module
   merchant_fees merchant_fees[]
 }
 
 //
 // ─────────────────────────────────────────────
-//  MOBILE USERS
+//  MOBILE CONSUMER DOMAIN
 // ─────────────────────────────────────────────
 //
 
 model mobile_users {
-  id            String    @id @default(uuid())
-  mobile_number String
+  id            String   @id @default(uuid())
+  mobile_number String   @unique
   country_code  String
+  created_at    DateTime @default(now())
+
+  devices  mobile_devices[]
+  sessions mobile_sessions[]
+}
+
+model mobile_devices {
+  id         String   @id @default(uuid())
+  user_id    String
+  device_id  String
+  platform   String
+  push_token String?
+  last_seen  DateTime @default(now())
+  created_at DateTime @default(now())
+
+  user mobile_users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  // ⭐ REQUIRED BACK‑RELATION
+  sessions mobile_sessions[]
+
+  @@index([device_id])
+}
+
+model mobile_sessions {
+  id            String    @id @default(uuid())
+  user_id       String
+  device_id     String
+  session_token String    @unique
+  state         String    @default("active")
+  metadata      Json?
   created_at    DateTime  @default(now())
+  expires_at    DateTime?
+
+  user   mobile_users   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  device mobile_devices @relation(fields: [device_id], references: [id], onDelete: Cascade)
+
+  @@index([session_token])
 }
 
 //
 // ─────────────────────────────────────────────
-//  QR CODE MODEL
+//  QR CODE DOMAIN
 // ─────────────────────────────────────────────
 //
 
 model qr_codes {
-  id          String    @id @default(uuid())
-  owner_type  String
-  owner_id    String
-  payload     Json
-  signature   String
-  created_at  DateTime  @default(now())
-  expires_at  DateTime?
+  id         String    @id @default(uuid())
+  owner_type String
+  owner_id   String
+  payload    Json
+  signature  String
+  created_at DateTime  @default(now())
+  expires_at DateTime?
 }
 
 //
@@ -73,17 +109,17 @@ model qr_codes {
 //
 
 model audit_logs {
-  id         String    @id @default(uuid())
+  id         String   @id @default(uuid())
   actor_id   String?
   actor_type String?
   action     String
   metadata   Json?
-  created_at DateTime  @default(now())
+  created_at DateTime @default(now())
 }
 
 //
 // ─────────────────────────────────────────────
-//  SESSION MODELS
+//  IDENTITY & SESSION MODELS
 // ─────────────────────────────────────────────
 //
 
@@ -96,18 +132,17 @@ model sessions {
   created_at DateTime  @default(now())
   expires_at DateTime?
 
-  // Flow 6: identity layer
-  actor      org_users @relation(fields: [actor_id], references: [id], onDelete: Cascade)
+  actor org_users @relation(fields: [actor_id], references: [id], onDelete: Cascade)
 }
 
 model identity_sessions {
-  id          String   @id @default(uuid())
-  role        String
-  merchantId  String?
-  state       String   @default("active")
-  metadata    Json?
-  created_at  DateTime @default(now())
-  expires_at  DateTime
+  id         String   @id @default(uuid())
+  role       String
+  merchantId String?
+  state      String   @default("active")
+  metadata   Json?
+  created_at DateTime @default(now())
+  expires_at DateTime
 
   @@map("identity_sessions")
 }

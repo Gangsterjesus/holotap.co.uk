@@ -37,7 +37,7 @@ import { SafeAreaView, Text, View } from "react-native";
 
 import { API_URL } from "../../src/config";
 import { useMerchantIdentity } from "../../hooks/useMerchantIdentity";
-import { useQrSession } from "../../hooks/useQrSession";
+import { useQrSession } from "../../hooks/QRSessionLayer";
 
 export default function DiagnosticsScreen() {
   /**

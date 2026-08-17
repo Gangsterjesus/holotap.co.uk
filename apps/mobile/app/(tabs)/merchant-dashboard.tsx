@@ -47,7 +47,7 @@ import {
   View,
 } from "react-native";
 
-import { useQrSession } from "../../hooks/useQrSession";
+import { useQrSession } from "../../hooks/QRSessionLayer";
 import { Href, Link } from "expo-router";
 
 /* =============================================================================
