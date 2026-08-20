@@ -1,42 +1,49 @@
-
 # HoloTap Security Policy
 
-HoloTap is a fintech platform designed with security, auditability, and compliance at its core. This document outlines how we manage security updates, how to report vulnerabilities, and what you can expect from our disclosure process.
+<!--  
+ * =====================================================================================
+ *  HoloTap Engineering — Security Policy
+ * -------------------------------------------------------------------------------------
+ *  File: SECURITY.md
+ *  Version: 2.4
+ *  Engineer: E5357171 (R. Newton)
+ *  Date: 20 Aug 2026
+ *
+ *  Purpose:
+ *      - Define HoloTap’s security posture across mobile, web, and backend systems
+ *      - Align with ISO 27001 Annex A, SOC 2 Security, NIST CSF 2.0, and OWASP ASVS
+ *      - Provide clear guidance for vulnerability reporting and secure development
+ *
+ *  Notes:
+ *      - HIPAA is not applicable (HoloTap does not process PHI)
+ *      - All identity flows (6–8) follow strict validation and auditability rules
+ * =====================================================================================
+ -->
 
-Supported Versions
-The following versions of HoloTap currently receive security patches, vulnerability monitoring, and compliance updates.
+HoloTap is a fintech platform built with a security‑first architecture.  
+Identity, session integrity, and auditability are core to every subsystem.
 
-Version Support Status
-5.1.x ✔️ Actively supported (full security updates)
-5.0.x ❌ Unsupported
-4.0.x ✔️ Security‑only updates
-< 4.0 ❌ Unsupported
+---
 
-Older versions should be upgraded immediately to ensure continued protection.
+## Supported Versions
 
-Security Principles
-HoloTap follows modern security standards aligned with NIST, OWASP, and fintech best practices:
+The following versions currently receive security patches, monitoring, and compliance updates:
 
-Zero password storage on client devices
+| Version | Status |
+| -------- | -------- |
+| **2.4.x** | Fully supported (full security updates) |
+| **2.3.x** | Security‑only updates |
+| **< 2.3** | Unsupported |
 
-Signed activation tokens for QR flows
+Older versions should be upgraded immediately to maintain protection.
 
-Replay‑safe activation controllers
+---
 
-Strict session expiry and rotation
+## Security Principles
 
-Audit logging for all sensitive operations
+HoloTap follows modern security standards aligned with ISO 27001 Annex A, SOC 2, NIST, and OWASP:
 
-Encrypted transport (TLS 1.2+)
-
-Least‑privilege access controls
-
-Secure coding practices and code reviews
-
-Security is not a feature — it is a discipline embedded into every part of the platform.
-
-Reporting a Vulnerability
-We strongly encourage responsible disclosure. If you believe you have found a security issue, please report it privately so we can investigate and resolve it quickly.
-
-Contact
-Email: <ray-newton@live.co.uk>
+- No password storage on client devices  
+- Signed identity envelopes for QR flows  
+- Replay‑safe activation and session controllers  
+- Short‑lived sessions with enforced
