@@ -1,3 +1,4 @@
+"use strict";
 /**
  * =============================================================================
  * HOLOTAP API — SERVER ENTRYPOINT v2.3 (Engineering Edition)
@@ -29,54 +30,48 @@
  *   • Bound to 0.0.0.0 for LAN + Caddy reverse proxy compatibility
  * =============================================================================
  */
-
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import crypto from "crypto";
-
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const crypto_1 = __importDefault(require("crypto"));
 // -----------------------------------------------------------------------------
 // Identity Subsystem (Flow 11)
 // -----------------------------------------------------------------------------
-import { actorPipeline } from "./identity/actorPipeline";
-
+const actorPipeline_1 = require("./identity/actorPipeline");
 // -----------------------------------------------------------------------------
 // Middleware Subsystem (Flow 12)
 // -----------------------------------------------------------------------------
-import identityLoggerMiddleware from "./middleware/identityLogger.middleware";
-
+const identityLogger_middleware_1 = __importDefault(require("./middleware/identityLogger.middleware"));
 // -----------------------------------------------------------------------------
 // Flow 7 — Status Page Backend
 // -----------------------------------------------------------------------------
-import statusRouter from "./routes/status/status.router";
-
+const status_router_1 = __importDefault(require("./routes/status/status.router"));
 // -----------------------------------------------------------------------------
 // Root Consumer API Router
 // -----------------------------------------------------------------------------
-import apiRouter from "./routes/consumer/index";
-
+const index_1 = __importDefault(require("./routes/consumer/index"));
 // -----------------------------------------------------------------------------
 // Error Middleware
 // -----------------------------------------------------------------------------
-import { errorMiddleware } from "./middleware/error.middleware";
-
+const error_middleware_1 = require("./middleware/error.middleware");
 // -----------------------------------------------------------------------------
 // Load environment variables
 // -----------------------------------------------------------------------------
-dotenv.config();
-
+dotenv_1.default.config();
 // -----------------------------------------------------------------------------
 // Initialise Express
 // -----------------------------------------------------------------------------
-const app = express();
+const app = (0, express_1.default)();
 const port = Number(process.env.PORT) || 4000;
-
 // -----------------------------------------------------------------------------
 // Global Middleware
 // -----------------------------------------------------------------------------
-app.use(cors());
-app.use(express.json());
-
+app.use((0, cors_1.default)());
+app.use(express_1.default.json());
 /**
  * =============================================================================
  * Flow 12.2 — Correlation ID Generator
@@ -87,10 +82,9 @@ app.use(express.json());
  * =============================================================================
  */
 app.use((req, _res, next) => {
-  req.correlationId = crypto.randomUUID();
-  next();
+    req.correlationId = crypto_1.default.randomUUID();
+    next();
 });
-
 /**
  * =============================================================================
  * Flow 11 — Unified Actor Pipeline Integration
@@ -101,21 +95,14 @@ app.use((req, _res, next) => {
  * =============================================================================
  */
 app.use((req, _res, next) => {
-  const request = req as typeof req & {
-    founderOverride?: unknown;
-    sessionIdentity?: unknown;
-    qrIdentity?: unknown;
-  };
-
-  req.actor = actorPipeline({
-    founder: request.founderOverride as any,
-    session: request.sessionIdentity as any,
-    qr: request.qrIdentity as any,
-  });
-
-  next();
+    const request = req;
+    req.actor = (0, actorPipeline_1.actorPipeline)({
+        founder: request.founderOverride,
+        session: request.sessionIdentity,
+        qr: request.qrIdentity,
+    });
+    next();
 });
-
 /**
  * =============================================================================
  * Flow 12 — Identity Logger Middleware Integration
@@ -125,36 +112,32 @@ app.use((req, _res, next) => {
  *   inbound requests. Provides observability for Flow 7, Flow 8, and hardening.
  * =============================================================================
  */
-app.use(identityLoggerMiddleware);
-
+app.use(identityLogger_middleware_1.default);
 // -----------------------------------------------------------------------------
 // Root Diagnostic Route
 // -----------------------------------------------------------------------------
 app.get("/", (req, res) => {
-  res.json({
-    root: "HoloTap API root",
-    use: "/api",
-    docs: "/api/docs",
-    status: "online",
-    actor: req.actor?.type ?? "unknown",
-    correlationId: req.correlationId ?? null,
-  });
+    res.json({
+        root: "HoloTap API root",
+        use: "/api",
+        docs: "/api/docs",
+        status: "online",
+        actor: req.actor?.type ?? "unknown",
+        correlationId: req.correlationId ?? null,
+    });
 });
-
 // -----------------------------------------------------------------------------
 // Mount API Namespaces
 // -----------------------------------------------------------------------------
-app.use("/api/session", statusRouter); // Flow 7 — Status Page Backend
-app.use("/api", apiRouter);            // Consumer API
-
+app.use("/api/session", status_router_1.default); // Flow 7 — Status Page Backend
+app.use("/api", index_1.default); // Consumer API
 // -----------------------------------------------------------------------------
 // Error Middleware (must be last)
 // -----------------------------------------------------------------------------
-app.use(errorMiddleware);
-
+app.use(error_middleware_1.errorMiddleware);
 // -----------------------------------------------------------------------------
 // Start Server
 // -----------------------------------------------------------------------------
 app.listen(port, "0.0.0.0", () => {
-  console.log(`HoloTap API running on port ${port}`);
+    console.log(`HoloTap API running on port ${port}`);
 });

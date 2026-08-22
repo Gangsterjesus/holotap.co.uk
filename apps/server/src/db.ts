@@ -38,7 +38,16 @@
  *   - Flow-driven architecture ensures forward compatibility
  */
 
-import { PrismaClient } from "@prisma/client";
+
+
+// Runtime-safe PrismaClient loader (works even when TS cannot see generated types)
+
+
+
+
+const { PrismaClient } = require("@prisma/client") as {
+  PrismaClient: new () => any;
+};
 
 export const prisma = new PrismaClient();
 
