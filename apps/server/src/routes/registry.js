@@ -40,7 +40,16 @@ import express from "express";
 
 const router = express.Router();
 
-// In‑memory deterministic registry store (Flow‑9 scaffolding)
+/**
+ * =================================================================================================
+ *  In‑Memory Deterministic Registry Store (Flow‑9 Scaffolding)
+ * -------------------------------------------------------------------------------------------------
+ *  Notes:
+ *    • Stateless behaviour — only the latest binding is stored.
+ *    • Web‑UI and Mobile‑UI consume the same deterministic record.
+ *    • Production will replace this with a ledger-backed registry table.
+ * =================================================================================================
+ */
 let latestRecord = null;
 
 /**
@@ -126,6 +135,11 @@ router.get("/status", async (req, res) => {
  *  Description:
  *    Deterministic Flow‑9.3 result endpoint. Returns the latest binding record. In production,
  *    this will query the registry ledger or identity store.
+ *
+ *    Notes:
+ *      • Web‑UI result.jsx consumes this endpoint directly.
+ *      • Mobile‑UI parity layer will consume the same deterministic surface.
+ *      • Stateless behaviour — only the latest binding is returned.
  * -----------------------------------------------------------------------------------------------
  */
 router.get("/result", async (req, res) => {

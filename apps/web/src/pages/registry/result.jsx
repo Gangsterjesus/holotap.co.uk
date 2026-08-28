@@ -8,16 +8,18 @@
  * ============================================================
  *  Description:
  *    Deterministic rendering of registry binding results.
- *    Consumes backend: GET /api/registry/result
+ *    Consumes backend: GET /api/registry/result/:sessionId
  *    Renders: sessionId, badgeId, device, merchant, status, timestamp.
  *    Includes deterministic error surfaces and payload validation.
  * ============================================================
  */
 
 import { useEffect, useState } from "react";
-import api from "../../services/api"; // relative path
+import { useParams } from "react-router-dom";
+import api from "../../services/api";
 
 export default function RegistryResult() {
+  const { sessionId } = useParams();   // ⭐ deterministic sessionId extraction
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
@@ -28,7 +30,7 @@ export default function RegistryResult() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await api.getRegistryResult(); // NEW endpoint
+        const res = await api.getRegistryResult(sessionId);  // ⭐ correct API call
 
         // deterministic payload validation
         if (!res || typeof res !== "object") {
@@ -57,7 +59,7 @@ export default function RegistryResult() {
     }
 
     load();
-  }, []);
+  }, [sessionId]);
 
   /**
    * Deterministic error surface

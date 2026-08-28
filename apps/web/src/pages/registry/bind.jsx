@@ -31,37 +31,9 @@ import api from "../../services/api";
 export default function RegistryBind() {
   const navigate = useNavigate();
 
-  /**
-   * -----------------------------------------------------------------------------------------------
-   *  State: result
-   *  Holds the API response from the registry binding operation. Null until binding completes.
-   * -----------------------------------------------------------------------------------------------
-   */
   const [result, setResult] = useState(null);
-
-  /**
-   * -----------------------------------------------------------------------------------------------
-   *  State: loading
-   *  Indicates whether the binding operation is currently in progress. Used for UI feedback.
-   * -----------------------------------------------------------------------------------------------
-   */
   const [loading, setLoading] = useState(false);
 
-  /**
-   * -----------------------------------------------------------------------------------------------
-   *  Deterministic Identity + Device + Merchant Payload
-   *  (Flow‑6 → Flow‑7 → Flow‑9)
-   *
-   *  In production:
-   *    • sessionId → identity session store
-   *    • badgeId → creator identity surface
-   *    • device → browser-safe fingerprint
-   *    • merchant → merchant context store
-   *
-   *  For now:
-   *    Deterministic placeholders until Flow‑6 wiring is complete.
-   * -----------------------------------------------------------------------------------------------
-   */
   function buildPayload() {
     return {
       sessionId: "session-001",       // Flow‑6 placeholder
@@ -71,14 +43,6 @@ export default function RegistryBind() {
     };
   }
 
-  /**
-   * -----------------------------------------------------------------------------------------------
-   *  Function: bindRegistry
-   *  Description:
-   *    Executes the registry binding operation using deterministic payload values. The API response
-   *    is stored deterministically in component state and routed to the registry result surface.
-   * -----------------------------------------------------------------------------------------------
-   */
   async function bindRegistry() {
     setLoading(true);
 
@@ -88,8 +52,9 @@ export default function RegistryBind() {
 
       setResult(res);
 
-      // deterministic routing → Flow‑9.3
-      navigate("/registry/result");
+      // ⭐ Correct deterministic routing → Flow‑9.3
+      // Pass the sessionId to the result page
+      navigate(`/registry/result/${res.sessionId}`);
     } catch (err) {
       setResult({ error: err.message });
     } finally {
@@ -97,13 +62,6 @@ export default function RegistryBind() {
     }
   }
 
-  /**
-   * -----------------------------------------------------------------------------------------------
-   *  Render:
-   *    Provides the creator with a deterministic action surface for registry binding. Displays
-   *    binding results and routes to the registry result page upon completion.
-   * -----------------------------------------------------------------------------------------------
-   */
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Bind Registry</h1>
