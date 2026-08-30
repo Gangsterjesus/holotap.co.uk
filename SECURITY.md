@@ -1,36 +1,15 @@
+
 # HoloTap Security Policy
-
-<!--
- * =====================================================================================
- *  HoloTap Engineering — Security Policy
- * -------------------------------------------------------------------------------------
- *  File: SECURITY.md
- *  Version: 2.4
- *  Engineer: E5357171 (R. Newton)
- *  Date: 20 Aug 2026
- *
- *  Purpose:
- *      - Define HoloTap’s security posture across mobile, web, and backend systems
- *      - Align with ISO 27001 Annex A, SOC 2 Security, NIST CSF 2.0, and OWASP ASVS
- *      - Provide clear guidance for vulnerability reporting and secure development
- *
- *  Notes:
- *      - HIPAA is not applicable (HoloTap does not process PHI)
- *      - All identity flows (6–8) follow strict validation and auditability rules
- * =====================================================================================
--->
-
 HoloTap is a fintech platform built with a security‑first architecture.  
-Identity, session integrity, and auditability are core to every subsystem.
+Identity integrity, session safety, and full auditability are core to every subsystem.
 
 ---
 
 ## Supported Versions
-
 The following versions currently receive security patches, monitoring, and compliance updates:
 
 | Version | Status |
-| -------- | -------- |
+|--------|--------|
 | **2.4.x** | Fully supported (full security updates) |
 | **2.3.x** | Security‑only updates |
 | **< 2.3** | Unsupported |
@@ -40,8 +19,9 @@ Older versions should be upgraded immediately to maintain protection.
 ---
 
 ## Security Principles
+HoloTap follows modern security standards aligned with ISO 27001 Annex A, SOC 2, NIST CSF, and OWASP ASVS/MASVS.
 
-HoloTap follows modern security standards aligned with ISO 27001 Annex A, SOC 2, NIST, and OWASP:
+Key principles include:
 
 - No password storage on client devices  
 - Signed identity envelopes for QR flows  
@@ -58,13 +38,12 @@ Security is not a feature — it is a discipline embedded into every part of Hol
 ---
 
 ## Reporting a Vulnerability
+We strongly encourage responsible disclosure.
 
-We strongly encourage responsible disclosure.  
 If you believe you’ve found a security issue, please report it privately so we can investigate and resolve it quickly.
 
-### Contact  
-
-Email: **<ray-newton@live.co.uk>**
+### Contact
+**Email:** ray-newton@live.co.uk
 
 Please include:
 
@@ -78,7 +57,6 @@ We aim to respond within **48 hours**.
 ---
 
 ## Secure Development Requirements
-
 All engineering work must follow:
 
 - Typed identity schemas  
@@ -93,7 +71,6 @@ All engineering work must follow:
 ---
 
 ## Cryptography
-
 - TLS 1.2+ enforced  
 - QR identity envelopes must be signed  
 - Session tokens must be short‑lived  
@@ -102,7 +79,6 @@ All engineering work must follow:
 ---
 
 ## Logging & Monitoring
-
 - All identity events logged  
 - All payment lifecycle events logged  
 - Logs are immutable and retained per ISO 27001 A.12.4  
@@ -111,22 +87,23 @@ All engineering work must follow:
 ---
 
 ## Incident Response
+HoloTap follows a structured incident response process:
 
-- Immediate triage  
-- Containment  
-- Root cause analysis  
-- Patch deployment  
-- Post‑incident review  
+1. Immediate triage  
+2. Containment  
+3. Root cause analysis  
+4. Patch deployment  
+5. Post‑incident review  
 
 ---
 
 ## Compliance Alignment
-
 HoloTap aligns with:
 
-- **ISO 27001 Annex A (2022)**  
-- **SOC 2 Security**  
-- **NIST CSF 2.0**  
-- **OWASP ASVS / MASVS**  
+- ISO 27001 Annex A (2022)  
+- SOC 2 Security  
+- NIST CSF 2.0  
+- OWASP ASVS / MASVS  
 
-HIPAA is **not applicable** (no PHI processed).
+HIPAA is not applicable (no PHI processed).
+
