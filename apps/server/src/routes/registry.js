@@ -1,35 +1,31 @@
+
+
 /**
  * =================================================================================================
  *  HOLOTAP — REGISTRY BINDING ROUTES (EXPRESS)
  *  File: server/routes/registry.js
- *  Date: 13/08/2026
+ *  Date: 30/08/2026 — version 2.6
  *
  *  Engineering:
  *    • Raymond Newton — Lead Engineer, HoloTap Engineering (E5357171)
- *    • Copilot — Engineering Assistant 'Watson'
+ *    • Copilot — Engineering Assistant
  *
  *  Module:
  *    Flow‑9 Registry Binding — Backend API Contract Surface
  *
  *  Revision:
- *    v2.4 — Deterministic Error Surfaces + Result Endpoint
+ *    v2.6 — Deterministic Binding + Ledger Write + Status + Result + History (Flow‑9.2 → Flow‑9.6)
  *
  *  Flows:
  *    • Flow‑6 — Identity Surfaces
  *    • Flow‑7 — Identity Verification
  *    • Flow‑8 — Payment Lifecycle
- *    • Flow‑9 — Registry Binding
+ *    • Flow‑9 — Registry Binding (Flow‑9.2 → 9.6)
  *
  *  Overview:
  *    Backend API routes for registry binding operations. Provides deterministic POST, GET(status),
- *    and GET(result) endpoints for binding identity session, badge, device, and merchant context.
- *    Includes deterministic error JSON surfaces and stateless behaviour for unified web/mobile
- *    architecture.
- *
- *  References:
- *    • apps/web/src/pages/registry/bind.jsx
- *    • apps/web/src/pages/registry/result.jsx
- *    • src/services/api.js (Flow‑9 API client)
+ *    GET(result), and GET(history) endpoints for identity session, badge, device, and merchant
+ *    context. Implements Flow‑9.6 ledger-backed registry storage for multi-record support.
  *
  *  Compliance:
  *    HoloTap Engineering Header Standard v1.0
@@ -37,28 +33,28 @@
  */
 
 import express from "express";
-
 const router = express.Router();
 
 /**
  * =================================================================================================
- *  In‑Memory Deterministic Registry Store (Flow‑9 Scaffolding)
+ *  Flow‑9.6 — Deterministic In‑Memory Registry Ledger
  * -------------------------------------------------------------------------------------------------
  *  Notes:
- *    • Stateless behaviour — only the latest binding is stored.
- *    • Web‑UI and Mobile‑UI consume the same deterministic record.
- *    • Production will replace this with a ledger-backed registry table.
+ *    • Multi-record support (ledger array)
+ *    • Deterministic ordering (latest = last element)
+ *    • Stateless result surface reads from ledger
+ *    • Status surface reads from ledger
+ *    • History surface exposes full ledger
  * =================================================================================================
  */
-let latestRecord = null;
+const ledger = [];
 
 /**
  * -----------------------------------------------------------------------------------------------
  *  POST /api/registry/bind
  *  Description:
- *    Executes the registry binding operation. Validates deterministic payload fields and stores
- *    the binding record in memory. In production, this will integrate with identity session stores,
- *    device fingerprinting, merchant profiles, and badge verification.
+ *    Executes deterministic registry binding. Validates payload, constructs binding record,
+ *    writes into Flow‑9.6 ledger, and returns deterministic JSON response.
  * -----------------------------------------------------------------------------------------------
  */
 router.post("/bind", async (req, res) => {
@@ -75,8 +71,8 @@ router.post("/bind", async (req, res) => {
       });
     }
 
-    // deterministic binding record
-    latestRecord = {
+    // deterministic record
+    const record = {
       status: "bound",
       sessionId,
       badgeId,
@@ -85,10 +81,13 @@ router.post("/bind", async (req, res) => {
       timestamp: new Date().toISOString()
     };
 
+    // Flow‑9.6 ledger write
+    ledger.push(record);
+
     return res.json({
       ok: true,
       code: "REGISTRY_BIND_SUCCESS",
-      record: latestRecord
+      record
     });
   } catch (err) {
     return res.status(500).json({
@@ -103,15 +102,16 @@ router.post("/bind", async (req, res) => {
  * -----------------------------------------------------------------------------------------------
  *  GET /api/registry/status
  *  Description:
- *    Returns the current registry status. In production, this will query the registry store or
- *    identity ledger. For Flow‑9 scaffolding, this returns a deterministic placeholder object.
+ *    Returns deterministic registry status. Flow‑9.6 uses ledger-backed state.
  * -----------------------------------------------------------------------------------------------
  */
 router.get("/status", async (req, res) => {
   try {
+    const latest = ledger.length > 0 ? ledger[ledger.length - 1] : null;
+
     const status = {
-      registry: latestRecord ? "active" : "idle",
-      lastBinding: latestRecord || null,
+      registry: latest ? "active" : "idle",
+      lastBinding: latest,
       timestamp: new Date().toISOString()
     };
 
@@ -133,18 +133,12 @@ router.get("/status", async (req, res) => {
  * -----------------------------------------------------------------------------------------------
  *  GET /api/registry/result
  *  Description:
- *    Deterministic Flow‑9.3 result endpoint. Returns the latest binding record. In production,
- *    this will query the registry ledger or identity store.
- *
- *    Notes:
- *      • Web‑UI result.jsx consumes this endpoint directly.
- *      • Mobile‑UI parity layer will consume the same deterministic surface.
- *      • Stateless behaviour — only the latest binding is returned.
+ *    Returns the latest binding record from the Flow‑9.6 ledger.
  * -----------------------------------------------------------------------------------------------
  */
 router.get("/result", async (req, res) => {
   try {
-    if (!latestRecord) {
+    if (ledger.length === 0) {
       return res.status(404).json({
         ok: false,
         code: "REGISTRY_RESULT_NOT_FOUND",
@@ -152,10 +146,12 @@ router.get("/result", async (req, res) => {
       });
     }
 
+    const latest = ledger[ledger.length - 1];
+
     return res.json({
       ok: true,
       code: "REGISTRY_RESULT_SUCCESS",
-      record: latestRecord
+      record: latest
     });
   } catch (err) {
     return res.status(500).json({
@@ -166,5 +162,27 @@ router.get("/result", async (req, res) => {
   }
 });
 
-export default router;
+/**
+ * -----------------------------------------------------------------------------------------------
+ *  GET /api/registry/history
+ *  Description:
+ *    Returns full Flow‑9.6 ledger history (multi-record support).
+ * -----------------------------------------------------------------------------------------------
+ */
+router.get("/history", async (req, res) => {
+  try {
+    return res.json({
+      ok: true,
+      code: "REGISTRY_HISTORY_SUCCESS",
+      records: ledger
+    });
+  } catch (err) {
+    return res.status(500).json({
+      ok: false,
+      code: "REGISTRY_HISTORY_EXCEPTION",
+      message: err.message || "Unable to load registry history."
+    });
+  }
+});
 
+export default router;
