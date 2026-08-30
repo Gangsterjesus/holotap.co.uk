@@ -2,22 +2,37 @@
  * =================================================================================================
  *  HOLOTAP — REGISTRY BIND ACTION PAGE
  *  File: apps/web/src/pages/registry/bind.jsx
- *  Date: 13/08/2026 version 2.0 
+ *  Date: 30/08/2026 — version 2.6
  *
  *  Engineering:
- *    • Raymond Newton — Lead Engineer, HoloTap Engineering
- *    • Copilot — Engineering Assistant 'Watson'
+ *    • Raymond Newton — Lead Engineer, HoloTap Engineering (E5357171)
+ *    • Copilot — Engineering Assistant
  *
  *  Module:
  *    Flow‑9 Registry Binding — Creator Identity Finalisation Surface
  *
  *  Revision:
- *    v2.0 — Deterministic Payload Finalisation (Flow‑9.2 → Flow‑9.3)
+ *    v2.6 — Deterministic Binding + Ledger Write + Stateless Result Routing (Flow‑9.2 → Flow‑9.6)
  *
  *  Overview:
- *    This module provides the creator‑facing registry binding surface. It triggers the binding
- *    operation between identity session, badge, device, and merchant profile. The result of the
- *    binding operation is displayed deterministically and routed to the registry result surface.
+ *    Creator‑facing registry binding surface. Executes deterministic binding between identity
+ *    session, badge, device fingerprint, and merchant context. Writes binding record into the
+ *    Flow‑9.6 registry ledger and routes deterministically to the stateless result surface.
+ *
+ *  Backend Contract:
+ *    POST /registry/bind
+ *      → {
+ *           ok: true,
+ *           code: "REGISTRY_BIND_SUCCESS",
+ *           record: {
+ *             sessionId,
+ *             badgeId,
+ *             device,
+ *             merchant,
+ *             status,
+ *             timestamp
+ *           }
+ *         }
  *
  *  Compliance:
  *    HoloTap Engineering Header Standard v1.0
@@ -26,7 +41,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import { api } from "../../services/api";
 
 export default function RegistryBind() {
   const navigate = useNavigate();
@@ -34,15 +49,23 @@ export default function RegistryBind() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Deterministic Flow‑9.2 payload
+   * (Flow‑6, Flow‑7 placeholders until identity wiring is complete)
+   */
   function buildPayload() {
     return {
-      sessionId: "session-001",       // Flow‑6 placeholder
-      badgeId: "badge-creator-001",   // Flow‑7 placeholder
-      device: navigator.userAgent,    // deterministic browser fingerprint
-      merchant: "merchant-001"        // deterministic merchant context
+      sessionId: "session-001",
+      badgeId: "badge-creator-001",
+      device: navigator.userAgent,
+      merchant: "merchant-001"
     };
   }
 
+  /**
+   * Flow‑9.2 → Flow‑9.6
+   * Deterministic binding + ledger write + stateless routing
+   */
   async function bindRegistry() {
     setLoading(true);
 
@@ -52,9 +75,8 @@ export default function RegistryBind() {
 
       setResult(res);
 
-      // ⭐ Correct deterministic routing → Flow‑9.3
-      // Pass the sessionId to the result page
-      navigate(`/registry/result/${res.sessionId}`);
+      // ⭐ Correct deterministic routing (Flow‑9.4 → Flow‑9.6)
+      navigate("/registry/result");
     } catch (err) {
       setResult({ error: err.message });
     } finally {
