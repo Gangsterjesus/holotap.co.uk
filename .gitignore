@@ -7,3 +7,5 @@ apps/mobile/.metro/
 node_modules/
 *.log
 *.tsbuildinfo
+$RECYCLE.BIN/
+pnpm-store/
