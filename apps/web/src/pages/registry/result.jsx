@@ -1,39 +1,75 @@
 /**
- * ============================================================
- *  HoloTap — Registry Result (Flow‑9.3)
+ * =================================================================================================
+ *  HoloTap — Registry Result Surface (Flow‑9.4)
  *  File: apps/web/src/pages/registry/result.jsx
- *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
- *  Layer: web-ui (creator)
- *  Revision: v2.0 — Deterministic Flow‑9.3 Result Surface
- * ============================================================
+ *
+ *  Engineers:
+ *    • Raymond Newton — Lead Engineer (E5357171)
+ *    • Copilot — Engineering Assistant
+ *
+ *  Layer:
+ *    Web‑UI (Creator Interface)
+ *
+ *  Revision:
+ *    v2.1 — Deterministic Flow‑9.4 Result Surface (Backend‑Aligned)
+ *
+ *  Backend Contract:
+ *    GET /api/registry/result
+ *      • Stateless deterministic result endpoint
+ *      • Returns latest registry binding record
+ *      • Response shape:
+ *          {
+ *            ok: true,
+ *            code: "REGISTRY_RESULT_SUCCESS",
+ *            record: {
+ *              sessionId,
+ *              badgeId,
+ *              device,
+ *              merchant,
+ *              status,
+ *              timestamp
+ *            }
+ *          }
+ *
  *  Description:
- *    Deterministic rendering of registry binding results.
- *    Consumes backend: GET /api/registry/result/:sessionId
- *    Renders: sessionId, badgeId, device, merchant, status, timestamp.
- *    Includes deterministic error surfaces and payload validation.
- * ============================================================
+ *    Deterministic rendering of the latest registry binding record.
+ *    Consumes backend Flow‑9.4 result endpoint (no sessionId parameter).
+ *    Implements:
+ *      • Deterministic loading state
+ *      • Deterministic error surfaces
+ *      • Deterministic payload validation
+ *      • Deterministic success rendering
+ *    Renders:
+ *      sessionId, badgeId, device, merchant, status, timestamp.
+ *
+ *  Notes:
+ *    Flow‑9.4 replaces Flow‑9.3 session‑parameter routing with stateless
+ *    latest‑record retrieval for unified web/mobile architecture.
+ *
+ *  Compliance:
+ *    HoloTap Engineering Header Standard v1.0
+ * =================================================================================================
  */
 
+
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import api from "../../services/api";
 
 export default function RegistryResult() {
-  const { sessionId } = useParams();   // ⭐ deterministic sessionId extraction
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
   /**
    * Deterministic load on mount
-   * Flow‑9.3 → registry result surface
+   * Flow‑9.4 → registry result surface
    */
   useEffect(() => {
     async function load() {
       try {
-        const res = await api.getRegistryResult(sessionId);  // ⭐ correct API call
+        const res = await api.getRegistryResult(); // ⭐ backend-aligned (no params)
 
         // deterministic payload validation
-        if (!res || typeof res !== "object") {
+        if (!res || typeof res !== "object" || !res.record) {
           setError({
             code: "REGISTRY_RESULT_INVALID",
             message: "Registry result payload malformed."
@@ -41,7 +77,9 @@ export default function RegistryResult() {
           return;
         }
 
-        if (!res.sessionId || !res.badgeId) {
+        const record = res.record;
+
+        if (!record.sessionId || !record.badgeId) {
           setError({
             code: "REGISTRY_FIELDS_MISSING",
             message: "Required registry fields missing."
@@ -49,7 +87,7 @@ export default function RegistryResult() {
           return;
         }
 
-        setResult(res);
+        setResult(record);
       } catch (err) {
         setError({
           code: "REGISTRY_RESULT_ERROR",
@@ -59,7 +97,7 @@ export default function RegistryResult() {
     }
 
     load();
-  }, [sessionId]);
+  }, []);
 
   /**
    * Deterministic error surface
