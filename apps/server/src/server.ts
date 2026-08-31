@@ -29,7 +29,6 @@
  *   • Bound to 0.0.0.0 for LAN + Caddy reverse proxy compatibility
  * =============================================================================
  */
-
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -38,7 +37,7 @@ import crypto from "crypto";
 // -----------------------------------------------------------------------------
 // Identity Subsystem (Flow 11)
 // -----------------------------------------------------------------------------
-import { actorPipeline } from "./identity/actorPipeline";
+import { actorPipeline } from "./middleware/actorPipeline";
 
 // -----------------------------------------------------------------------------
 // Middleware Subsystem (Flow 12)
@@ -93,28 +92,33 @@ app.use((req, _res, next) => {
 
 /**
  * =============================================================================
- * Flow 11 — Unified Actor Pipeline Integration
+ * Flow 11 — Unified Actor Pipeline Integration (Middleware Registration)
  * =============================================================================
- * Description:
- *   Injects the UnifiedActor identity envelope into req.actor for all inbound
- *   requests. This MUST run before any middleware that depends on identity.
+ * Subsystem: Identity Resolution Layer (Flow 11)
+ * Engineer: Raymond Newton — HoloTap Engineering Team (E5357171)
+ *
+ * SECTION: Overview
+ *   Registers the Unified Actor Pipeline as an Express middleware. This pipeline
+ *   resolves raw identity envelopes (founder override, session identity, QR
+ *   identity) into a deterministic UnifiedActor object. The resulting envelope
+ *   is injected into req.actor for downstream flows.
+ *
+ * SECTION: Purpose
+ *   • Consolidate identity sources into a single UnifiedActor envelope.
+ *   • Ensure Flow 12 Identity Logger receives a stable identity object.
+ *   • Provide deterministic identity propagation for Flow 7 and Flow 8.
+ *
+ * SECTION: Ordering Requirements
+ *   • MUST run before Flow 12 Identity Logger.
+ *   • MUST run before any middleware that depends on req.actor.
+ *   • MUST run after correlation ID generation (Flow 12.2).
+ *
+ * SECTION: Stability Notes
+ *   • actorPipeline is an Express middleware and MUST NOT be invoked manually.
+ *   • Express will automatically supply (req, res, next).
  * =============================================================================
  */
-app.use((req, _res, next) => {
-  const request = req as typeof req & {
-    founderOverride?: unknown;
-    sessionIdentity?: unknown;
-    qrIdentity?: unknown;
-  };
-
-  req.actor = actorPipeline({
-    founder: request.founderOverride as any,
-    session: request.sessionIdentity as any,
-    qr: request.qrIdentity as any,
-  });
-
-  next();
-});
+app.use(actorPipeline);
 
 /**
  * =============================================================================
@@ -144,8 +148,8 @@ app.get("/", (req, res) => {
 // -----------------------------------------------------------------------------
 // Mount API Namespaces
 // -----------------------------------------------------------------------------
-app.use("/api/session", statusRouter); // Flow 7 — Status Page Backend
-app.use("/api", apiRouter);            // Consumer API
+app.use("/api/session", statusRouter);
+app.use("/api", apiRouter);
 
 // -----------------------------------------------------------------------------
 // Error Middleware (must be last)

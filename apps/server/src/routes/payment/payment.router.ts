@@ -1,11 +1,12 @@
+
 /**
  * ────────────────────────────────────────────────────────────────────────────────
  * HoloTap Engineering Header
  * File: payment.router.ts
  * Subsystem: Flow 8 — Payment Lifecycle Routing Layer
  * Engineer: Raymond Newton (E5357171)
- * Version: 1.0.0
- * Date: 22 Aug 2026
+ * Version: 1.1.0
+ * Date: 31 Aug 2026
  *
  * DESCRIPTION:
  *   Defines the HTTP routing endpoints for the Flow 8 payment lifecycle. Each
@@ -32,11 +33,16 @@ import {
   payoutController,
 } from "../../controllers/payment/payment.controller";
 
+
 const router = Router();
 
+// Flow 8 — Payment Initiation
 router.post("/initiate", initiatePaymentController);
+
+// Flow 9 — Payment Settlement
 router.post("/settle", settlePaymentController);
+
+// Flow 13 — Merchant Payout
 router.post("/payout", payoutController);
 
 export default router;
-

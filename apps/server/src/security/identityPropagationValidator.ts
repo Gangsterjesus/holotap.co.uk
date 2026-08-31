@@ -32,15 +32,14 @@
  * ────────────────────────────────────────────────────────────────────────────────
  */
 
-
-import type { UnifiedActor } from "../identity/actorPipeline";
-
 export interface IdentityPropagationResult {
   valid: boolean;
   reason?: string;
 }
 
-export function validateIdentityPropagation(actor: UnifiedActor | undefined): IdentityPropagationResult {
+export function validateIdentityPropagation(
+  actor: any
+): IdentityPropagationResult {
   if (!actor) {
     return { valid: false, reason: "Missing actor" };
   }

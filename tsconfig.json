@@ -1,13 +1,17 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "moduleResolution": "bundler",
-    "target": "ESNext",
-    "module": "ESNext",
-    "isolatedModules": true,
-    "strict": true
+    "target": "es2020",
+    "module": "commonjs",
+    
+"rootDir": "./apps",
+
+
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["./apps/web/src", "./apps/web/types"]
+  "include": ["src/**/*.ts", "**/*.ts"],
+  "exclude": ["node_modules"]
 }

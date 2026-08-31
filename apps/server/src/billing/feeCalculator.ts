@@ -24,12 +24,13 @@
  * ────────────────────────────────────────────────────────────────────────────────
  */
 
+import { PrismaClient } from "@prisma/client";
 
-import { prisma } from "../db";
+const prisma = new PrismaClient();
 
 export async function feeCalculator(amount: number, merchantId: string): Promise<number> {
   try {
-    const feeConfig = await prisma.merchant_fees.findUnique({
+    const feeConfig = await prisma.merchant_fees.findFirst({
       where: { merchant_id: merchantId },
     });
 

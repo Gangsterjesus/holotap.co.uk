@@ -15,15 +15,17 @@
  * ────────────────────────────────────────────────────────────────────────────────
  */
 
-import { prisma } from "../db";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function settlementEngine(paymentId: string) {
   try {
-    const payment = await prisma.payment.findUnique({
-      where: { paymentId },
+    const payment = await prisma.payments.findUnique({
+      where: { id: paymentId },
     });
 
-    if (!payment) {
+    if (!payment || !payment.metadata) {
       return {
         settled: false,
         netAmount: 0,
@@ -31,7 +33,8 @@ export async function settlementEngine(paymentId: string) {
       };
     }
 
-    const netAmount = payment.amount - payment.fees.totalFee;
+    const metadata = typeof payment.metadata === "string" ? JSON.parse(payment.metadata) : payment.metadata;
+    const netAmount = (metadata as any).net_amount ?? 0;
 
     return {
       settled: true,

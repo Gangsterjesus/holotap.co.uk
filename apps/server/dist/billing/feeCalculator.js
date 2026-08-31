@@ -26,10 +26,11 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.feeCalculator = feeCalculator;
-const db_1 = require("../db");
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
 async function feeCalculator(amount, merchantId) {
     try {
-        const feeConfig = await db_1.prisma.merchant_fees.findUnique({
+        const feeConfig = await prisma.merchant_fees.findFirst({
             where: { merchant_id: merchantId },
         });
         if (!feeConfig) {

@@ -1,4 +1,8 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * =============================================================================
  * HOLOTAP API — SERVER ENTRYPOINT v2.3 (Engineering Edition)
@@ -30,10 +34,6 @@
  *   • Bound to 0.0.0.0 for LAN + Caddy reverse proxy compatibility
  * =============================================================================
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -41,7 +41,7 @@ const crypto_1 = __importDefault(require("crypto"));
 // -----------------------------------------------------------------------------
 // Identity Subsystem (Flow 11)
 // -----------------------------------------------------------------------------
-const actorPipeline_1 = require("./identity/actorPipeline");
+const actorPipeline_1 = require("./middleware/actorPipeline");
 // -----------------------------------------------------------------------------
 // Middleware Subsystem (Flow 12)
 // -----------------------------------------------------------------------------
@@ -87,22 +87,33 @@ app.use((req, _res, next) => {
 });
 /**
  * =============================================================================
- * Flow 11 — Unified Actor Pipeline Integration
+ * Flow 11 — Unified Actor Pipeline Integration (Middleware Registration)
  * =============================================================================
- * Description:
- *   Injects the UnifiedActor identity envelope into req.actor for all inbound
- *   requests. This MUST run before any middleware that depends on identity.
+ * Subsystem: Identity Resolution Layer (Flow 11)
+ * Engineer: Raymond Newton — HoloTap Engineering Team (E5357171)
+ *
+ * SECTION: Overview
+ *   Registers the Unified Actor Pipeline as an Express middleware. This pipeline
+ *   resolves raw identity envelopes (founder override, session identity, QR
+ *   identity) into a deterministic UnifiedActor object. The resulting envelope
+ *   is injected into req.actor for downstream flows.
+ *
+ * SECTION: Purpose
+ *   • Consolidate identity sources into a single UnifiedActor envelope.
+ *   • Ensure Flow 12 Identity Logger receives a stable identity object.
+ *   • Provide deterministic identity propagation for Flow 7 and Flow 8.
+ *
+ * SECTION: Ordering Requirements
+ *   • MUST run before Flow 12 Identity Logger.
+ *   • MUST run before any middleware that depends on req.actor.
+ *   • MUST run after correlation ID generation (Flow 12.2).
+ *
+ * SECTION: Stability Notes
+ *   • actorPipeline is an Express middleware and MUST NOT be invoked manually.
+ *   • Express will automatically supply (req, res, next).
  * =============================================================================
  */
-app.use((req, _res, next) => {
-    const request = req;
-    req.actor = (0, actorPipeline_1.actorPipeline)({
-        founder: request.founderOverride,
-        session: request.sessionIdentity,
-        qr: request.qrIdentity,
-    });
-    next();
-});
+app.use(actorPipeline_1.actorPipeline);
 /**
  * =============================================================================
  * Flow 12 — Identity Logger Middleware Integration
@@ -129,8 +140,8 @@ app.get("/", (req, res) => {
 // -----------------------------------------------------------------------------
 // Mount API Namespaces
 // -----------------------------------------------------------------------------
-app.use("/api/session", status_router_1.default); // Flow 7 — Status Page Backend
-app.use("/api", index_1.default); // Consumer API
+app.use("/api/session", status_router_1.default);
+app.use("/api", index_1.default);
 // -----------------------------------------------------------------------------
 // Error Middleware (must be last)
 // -----------------------------------------------------------------------------

@@ -17,20 +17,22 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.settlementEngine = settlementEngine;
-const db_1 = require("../db");
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
 async function settlementEngine(paymentId) {
     try {
-        const payment = await db_1.prisma.payment.findUnique({
-            where: { paymentId },
+        const payment = await prisma.payments.findUnique({
+            where: { id: paymentId },
         });
-        if (!payment) {
+        if (!payment || !payment.metadata) {
             return {
                 settled: false,
                 netAmount: 0,
                 settledAt: null,
             };
         }
-        const netAmount = payment.amount - payment.fees.totalFee;
+        const metadata = typeof payment.metadata === "string" ? JSON.parse(payment.metadata) : payment.metadata;
+        const netAmount = metadata.net_amount ?? 0;
         return {
             settled: true,
             netAmount,

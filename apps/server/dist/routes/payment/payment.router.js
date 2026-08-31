@@ -5,8 +5,8 @@
  * File: payment.router.ts
  * Subsystem: Flow 8 — Payment Lifecycle Routing Layer
  * Engineer: Raymond Newton (E5357171)
- * Version: 1.0.0
- * Date: 22 Aug 2026
+ * Version: 1.1.0
+ * Date: 31 Aug 2026
  *
  * DESCRIPTION:
  *   Defines the HTTP routing endpoints for the Flow 8 payment lifecycle. Each
@@ -29,7 +29,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const payment_controller_1 = require("../../controllers/payment/payment.controller");
 const router = (0, express_1.Router)();
+// Flow 8 — Payment Initiation
 router.post("/initiate", payment_controller_1.initiatePaymentController);
+// Flow 9 — Payment Settlement
 router.post("/settle", payment_controller_1.settlePaymentController);
+// Flow 13 — Merchant Payout
 router.post("/payout", payment_controller_1.payoutController);
 exports.default = router;
