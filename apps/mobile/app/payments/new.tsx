@@ -4,8 +4,8 @@
  * =============================================================================
  * Engineer:      Raymond Newton (E5357171)
  * Assistant:     Copilot Engineering Assistant
- * File:          app/payment.tsx
- * Date:          28 July 2026
+ * File:          app/payments/new.tsx
+ * Date:          01 September 2026
  * =============================================================================
  * PURPOSE:
  * Implements Flow 6 + Flow 7 — Payment Initialisation & Submission.
@@ -20,7 +20,7 @@
  *   4. Navigate to Payment Result screen
  *
  * VERSION NOTES:
- *   • v4: Correct Expo Router v6 param narrowing
+ *   • Correct Expo Router v6 param narrowing
  *   • No generics, no TS2344, no invalid constraints
  *   • Unstyled, deterministic, identity‑aligned
  *   • Pure TypeScript, pure fintech flow
@@ -32,21 +32,12 @@
  *   Flow 8 → Payment Result
  * =============================================================================
  */
-// Identity Envelope
-import { buildIdentityEnvelope } from "@/identity/buildIdentityEnvelope";
-
-// Encryption Layer
-import { encryptPayload } from "@/security/encryptPayload";
-
-// QR Logic
-import { generateQrCode } from "@/qr/generateQrCode";
-import { applyHolographicOverlay } from "@/qr/applyHolographicOverlay";
-
-// Backend (Flow 6)
-import { createPayment } from "@/api/payment/createPayment";
 
 import React, { useState } from "react";
-import { SafeAreaView, Text, View, TextInput, Button } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, TextInput, Button } from "react-native";
+
+
 import { useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { apiPost } from "../../api/client";
 
@@ -83,10 +74,6 @@ export default function PaymentScreen() {
 
   /**
    * Correct Expo Router v6 param narrowing
-   * ---------------------------------------------------------
-   * DO NOT use generics.
-   * DO NOT cast the entire object.
-   * Narrow individual fields only.
    */
   const params = useLocalSearchParams();
 

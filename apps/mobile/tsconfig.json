@@ -4,6 +4,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
+
+
+
+      
     },
 
     "strict": true,
