@@ -1,15 +1,18 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+
     "strict": true,
     "noEmit": true,
     "isolatedModules": true,
     "moduleResolution": "bundler",
     "allowJs": true,
     "types": ["react", "react-native"],
-    "paths": {
-      "@/*": ["./*"],
-      
-    },
+
     "plugins": [
       {
         "name": "react-compiler",

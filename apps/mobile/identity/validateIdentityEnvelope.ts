@@ -23,35 +23,13 @@
  * ============================================================
  */
 
-import { IdentityEnvelope } from "./IdentityEnvelope";
-import { IdentityResponse } from "./IdentityResponse";
+import type { IdentityEnvelope } from "./IdentityEnvelope";
 
-export function validateIdentityEnvelope(
-  env: IdentityEnvelope
-): IdentityResponse {
-  if (!env.deviceId || typeof env.deviceId !== "string") {
-    return {
-      valid: false,
-      message: "Missing or invalid deviceId",
-    };
-  }
+export function validateIdentityEnvelope(env: IdentityEnvelope): boolean {
+  if (!env.deviceId || typeof env.deviceId !== "string") return false;
+  if (!env.issuedAt || typeof env.issuedAt !== "number") return false;
 
-  if (!env.issuedAt || typeof env.issuedAt !== "number") {
-    return {
-      valid: false,
-      message: "Missing or invalid issuedAt timestamp",
-    };
-  }
+  if (typeof env.payload !== "object" || env.payload === null) return false;
 
-  if (typeof env.payload !== "object" || env.payload === null) {
-    return {
-      valid: false,
-      message: "Invalid payload structure",
-    };
-  }
-
-  return {
-    valid: true,
-    payload: env.payload,
-  };
+  return true;
 }

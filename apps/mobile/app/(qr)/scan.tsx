@@ -25,7 +25,7 @@ import React, { useCallback } from "react";
 import { View, StyleSheet } from "react-native";
 import { CameraView } from "expo-camera";
 import { useRouter } from "expo-router";
-import { useIdentityActions } from "../content/IdentityContext";
+import { useIdentityActions } from "../(content)/IdentityContext";
 
 /* --------------------------------------------------------------------------
  *  Component: QRScanScreen

@@ -23,8 +23,12 @@
  * ============================================================
  */
 
+export type ActorType = "customer" | "merchant" | "device";
+
 export interface IdentityResponse {
-  valid: boolean;
-  message?: string;
-  payload?: Record<string, unknown>;
+  actorId: string;
+  actorType: ActorType;
+  issuedAt: number;
+  expiresAt: number;
+  sessionToken: string;
 }

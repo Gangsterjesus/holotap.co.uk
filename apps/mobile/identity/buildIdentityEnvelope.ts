@@ -27,17 +27,16 @@
  * ============================================================
  */
 
-import { IdentityEnvelope } from "./IdentityEnvelope";
+import type { IdentityEnvelope } from "./IdentityEnvelope";
 import { getDeviceIdentity } from "./deviceIdentity";
 
-/**
- * Build a transport‑safe identity envelope.
- */
-export function buildIdentityEnvelope(
+export async function buildIdentityEnvelope(
   payload: Record<string, unknown>
-): IdentityEnvelope {
+): Promise<IdentityEnvelope> {
+  const deviceId = await getDeviceIdentity();
+
   return {
-    deviceId: getDeviceIdentity(),
+    deviceId,
     issuedAt: Date.now(),
     payload,
   };

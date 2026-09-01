@@ -26,8 +26,26 @@
  * ============================================================
  */
 
-export * from "./IdentityEnvelope";
-export * from "./IdentityResponse";
-export * from "./buildIdentityEnvelope";
-export * from "./deviceIdentity";
-export * from "./validateIdentityEnvelope";
+import * as SecureStore from "expo-secure-store";
+import type { IdentityResponse } from "./IdentityResponse";
+
+const SESSION_KEY = "holotap.identity.session";
+
+export async function bindIdentitySession(res: IdentityResponse): Promise<void> {
+  await SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(res));
+}
+
+export async function getIdentitySession(): Promise<IdentityResponse | null> {
+  const raw = await SecureStore.getItemAsync(SESSION_KEY);
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw) as IdentityResponse;
+  } catch {
+    return null;
+  }
+}
+
+export async function clearIdentitySession(): Promise<void> {
+  await SecureStore.deleteItemAsync(SESSION_KEY);
+}
