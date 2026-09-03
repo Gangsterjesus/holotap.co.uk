@@ -2,8 +2,7 @@
   "name": "holotap-monorepo",
   "private": true,
   "workspaces": [
-    "apps/web",
-    "apps/server"
+    "apps/web"
   ],
   "dependencies": {
     
