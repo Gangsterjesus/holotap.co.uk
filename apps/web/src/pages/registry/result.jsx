@@ -11,7 +11,7 @@
  *    Web‑UI (Creator Interface)
  *
  *  Revision:
- *    v2.1 — Deterministic Flow‑9.4 Result Surface (Backend‑Aligned)
+ *    v2.2 — Deterministic Flow‑9.4 Result Surface (Backend‑Aligned + Timestamp Formatting)
  *
  *  Backend Contract:
  *    GET /api/registry/result
@@ -40,7 +40,13 @@
  *      • Deterministic payload validation
  *      • Deterministic success rendering
  *    Renders:
- *      sessionId, badgeId, device, merchant, status, timestamp.
+ *      sessionId, badgeId, device, merchant, status, timestamp (formatted).
+ *  *  Rendering:
+ *    • Deterministic timestamp formatting (en‑GB locale)
+ *    • Deterministic field ordering
+ *    • Deterministic error surfaces
+ *    • Stateless latest‑record rendering (Flow‑9.4)
+
  *
  *  Notes:
  *    Flow‑9.4 replaces Flow‑9.3 session‑parameter routing with stateless
@@ -50,7 +56,6 @@
  *    HoloTap Engineering Header Standard v1.0
  * =================================================================================================
  */
-
 
 import { useEffect, useState } from "react";
 import api from "../../services/api";
@@ -140,7 +145,17 @@ export default function RegistryResult() {
         <p><strong>Device:</strong> {result.device}</p>
         <p><strong>Merchant:</strong> {result.merchant}</p>
         <p><strong>Status:</strong> {result.status}</p>
-        <p><strong>Timestamp:</strong> {result.timestamp}</p>
+        <p>
+          <strong>Timestamp:</strong>{" "}
+          {new Date(result.timestamp).toLocaleString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+          })}
+        </p>
       </div>
 
       <a
