@@ -1,11 +1,11 @@
 /**
  * =============================================================================
- * HOLOTAP API — SERVER ENTRYPOINT v2.3 (Engineering Edition)
+ * HOLOTAP API — SERVER ENTRYPOINT v2.4 (Engineering Edition)
  * =============================================================================
  * Engineer:      Raymond Newton — HoloTap Engineering Team (E5357171)
  * Assistant:     Copilot Engineering Assistant
  * File:          server.ts
- * Date:          22 August 2026
+ * Date:          03 September 2026
  * =============================================================================
  * PURPOSE:
  *   Bootstraps the HoloTap backend API.
@@ -17,7 +17,7 @@
  *   • Register correlation ID generator (Flow 12.2)
  *   • Register identity logger (Flow 12)
  *   • Register global middleware
- *   • Mount API route namespaces (Flow 7, Consumer API)
+ *   • Mount API route namespaces (Flow 7, Flow 10, Consumer API)
  *   • Provide root diagnostics endpoint
  *   • Start HTTP listener
  *
@@ -25,10 +25,11 @@
  *   • Identity pipeline MUST run before any middleware that depends on req.actor
  *   • Correlation ID MUST be generated before identity logger
  *   • Identity logger MUST run after identity pipeline
- *   • Error middleware MUST be registered last
+ *   • Flow‑10 MUST mount before error middleware
  *   • Bound to 0.0.0.0 for LAN + Caddy reverse proxy compatibility
  * =============================================================================
  */
+
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -53,6 +54,13 @@ import statusRouter from "./routes/status/status.router";
 // Root Consumer API Router
 // -----------------------------------------------------------------------------
 import apiRouter from "./routes/consumer/index";
+
+// -----------------------------------------------------------------------------
+// Flow 10 — Identity Session API (create / resolve / revoke)
+// -----------------------------------------------------------------------------
+import createSessionRoute from "./routes/identity/session/createSessionRoute";
+import resolveSessionRoute from "./routes/identity/session/resolveSessionRoute";
+import revokeSessionRoute from "./routes/identity/session/revokeSessionRoute";
 
 // -----------------------------------------------------------------------------
 // Error Middleware
@@ -80,10 +88,6 @@ app.use(express.json());
  * =============================================================================
  * Flow 12.2 — Correlation ID Generator
  * =============================================================================
- * Description:
- *   Generates a unique correlation ID for every inbound request. Used by Flow 12
- *   Identity Logger, Flow 7 Status Page, and Flow 8 Payment Lifecycle.
- * =============================================================================
  */
 app.use((req, _res, next) => {
   req.correlationId = crypto.randomUUID();
@@ -92,30 +96,7 @@ app.use((req, _res, next) => {
 
 /**
  * =============================================================================
- * Flow 11 — Unified Actor Pipeline Integration (Middleware Registration)
- * =============================================================================
- * Subsystem: Identity Resolution Layer (Flow 11)
- * Engineer: Raymond Newton — HoloTap Engineering Team (E5357171)
- *
- * SECTION: Overview
- *   Registers the Unified Actor Pipeline as an Express middleware. This pipeline
- *   resolves raw identity envelopes (founder override, session identity, QR
- *   identity) into a deterministic UnifiedActor object. The resulting envelope
- *   is injected into req.actor for downstream flows.
- *
- * SECTION: Purpose
- *   • Consolidate identity sources into a single UnifiedActor envelope.
- *   • Ensure Flow 12 Identity Logger receives a stable identity object.
- *   • Provide deterministic identity propagation for Flow 7 and Flow 8.
- *
- * SECTION: Ordering Requirements
- *   • MUST run before Flow 12 Identity Logger.
- *   • MUST run before any middleware that depends on req.actor.
- *   • MUST run after correlation ID generation (Flow 12.2).
- *
- * SECTION: Stability Notes
- *   • actorPipeline is an Express middleware and MUST NOT be invoked manually.
- *   • Express will automatically supply (req, res, next).
+ * Flow 11 — Unified Actor Pipeline Integration
  * =============================================================================
  */
 app.use(actorPipeline);
@@ -123,10 +104,6 @@ app.use(actorPipeline);
 /**
  * =============================================================================
  * Flow 12 — Identity Logger Middleware Integration
- * =============================================================================
- * Description:
- *   Logs identity envelopes, correlation IDs, and redacted metadata for all
- *   inbound requests. Provides observability for Flow 7, Flow 8, and hardening.
  * =============================================================================
  */
 app.use(identityLoggerMiddleware);
@@ -146,10 +123,34 @@ app.get("/", (req, res) => {
 });
 
 // -----------------------------------------------------------------------------
-// Mount API Namespaces
+// Flow 7 — Status + Consumer API
 // -----------------------------------------------------------------------------
 app.use("/api/session", statusRouter);
 app.use("/api", apiRouter);
+
+/**
+ * =============================================================================
+ * Flow 10 — Identity Session API Route Integration
+ * =============================================================================
+ * Subsystem: Identity Session API (Flow‑10)
+ * Engineer: Raymond Newton — HoloTap Engineering Team (E5357171)
+ *
+ * SECTION: Overview
+ *   Mounts the Flow‑10 Identity Session route surfaces into the Express runtime.
+ *
+ * SECTION: Routes
+ *   • POST /identity/session/create   — Create identity session
+ *   • POST /identity/session/resolve  — Resolve identity session
+ *   • POST /identity/session/revoke   — Revoke identity session
+ *
+ * SECTION: Stability Notes
+ *   • MUST mount before error middleware
+ *   • MUST remain deterministic across all flows
+ * =============================================================================
+ */
+app.use("/identity/session/create", createSessionRoute);
+app.use("/identity/session/resolve", resolveSessionRoute);
+app.use("/identity/session/revoke", revokeSessionRoute);
 
 // -----------------------------------------------------------------------------
 // Error Middleware (must be last)

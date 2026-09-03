@@ -65,7 +65,6 @@ model mobile_devices {
 
   user mobile_users @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  // ⭐ REQUIRED BACK‑RELATION
   sessions mobile_sessions[]
 
   @@index([device_id])
@@ -136,18 +135,38 @@ model sessions {
   actor org_users @relation(fields: [actor_id], references: [id], onDelete: Cascade)
 }
 
+//
+// ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+//  FLOW‑10 — IDENTITY SESSION STORE (CORRECTED)
+// ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+//
+
 model identity_sessions {
-  id         String     @id @default(uuid())
-  role       String
-  merchantId String?
-  state      String     @default("active")
-  metadata   Json?
-  created_at DateTime   @default(now())
-  expires_at DateTime
-  payments   payments[]
+  session_id   String   @id
+  actor_id     String
+  badge_id     String?
+  device_id    String?
+  merchant_id  String?
+
+  role         String?
+  state        String
+  risk_state   String
+
+  created_at   DateTime
+  expires_at   DateTime
+
+  source       String
+  metadata     Json?
+
+  payments     payments[]
+
+  @@index([actor_id, state])
+  @@index([badge_id, device_id, merchant_id])
+  @@index([merchant_id, created_at])
 
   @@map("identity_sessions")
 }
+
 
 //
 // ─────────────────────────────────────────────
@@ -177,9 +196,10 @@ model payments {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  identity identity_sessions @relation(fields: [identity_id], references: [id], onDelete: Cascade)
+  identity identity_sessions @relation(fields: [identity_id], references: [session_id], onDelete: Cascade)
   merchant org_users         @relation(fields: [merchant_id], references: [id], onDelete: Cascade)
 
   @@index([identity_id])
   @@index([merchant_id])
 }
+
