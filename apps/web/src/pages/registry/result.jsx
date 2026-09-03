@@ -39,22 +39,23 @@
  *      • Deterministic error surfaces
  *      • Deterministic payload validation
  *      • Deterministic success rendering
- *    Renders:
- *      sessionId, badgeId, device, merchant, status, timestamp (formatted).
- *  *  Rendering:
- *    • Deterministic timestamp formatting (en‑GB locale)
- *    • Deterministic field ordering
- *    • Deterministic error surfaces
- *    • Stateless latest‑record rendering (Flow‑9.4)
-
+ *
+ *  Renders:
+ *      • sessionId
+ *      • badgeId
+ *      • device
+ *      • merchant
+ *      • status
+ *      • timestamp (formatted)
+ *
+ *  Rendering:
+ *      • Deterministic timestamp formatting (en‑GB locale)
+ *      • Deterministic field ordering
+ *      • Deterministic error surfaces
+ *      • Stateless latest‑record rendering (Flow‑9.4)
  *
  *  Notes:
- *    Flow‑9.4 replaces Flow‑9.3 session‑parameter routing with stateless
- *    latest‑record retrieval for unified web/mobile architecture.
- *
- *  Compliance:
- *    HoloTap Engineering Header Standard v1.0
- * =================================================================================================
+ *    Flow‑9.4 replaces Flow‑9.3 session‑parameter routing with stat
  */
 
 import { useEffect, useState } from "react";
