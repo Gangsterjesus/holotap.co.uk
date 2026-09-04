@@ -1,11 +1,11 @@
 /**
  * =============================================================================
- * HOLOTAP API — SERVER ENTRYPOINT v2.4 (Engineering Edition)
+ * HOLOTAP API — SERVER ENTRYPOINT v2.5 (Engineering Edition)
  * =============================================================================
  * Engineer:      Raymond Newton — HoloTap Engineering Team (E5357171)
  * Assistant:     Copilot Engineering Assistant
  * File:          server.ts
- * Date:          03 September 2026
+ * Date:          04 September 2026
  * =============================================================================
  * PURPOSE:
  *   Bootstraps the HoloTap backend API.
@@ -17,7 +17,7 @@
  *   • Register correlation ID generator (Flow 12.2)
  *   • Register identity logger (Flow 12)
  *   • Register global middleware
- *   • Mount API route namespaces (Flow 7, Flow 10, Consumer API)
+ *   • Mount API route namespaces (Flow 7, Flow 10, Consumer API, Merchant API)
  *   • Provide root diagnostics endpoint
  *   • Start HTTP listener
  *
@@ -26,6 +26,7 @@
  *   • Correlation ID MUST be generated before identity logger
  *   • Identity logger MUST run after identity pipeline
  *   • Flow‑10 MUST mount before error middleware
+ *   • Merchant API MUST mount inside /api namespace
  *   • Bound to 0.0.0.0 for LAN + Caddy reverse proxy compatibility
  * =============================================================================
  */
@@ -54,6 +55,12 @@ import statusRouter from "./routes/status/status.router";
 // Root Consumer API Router
 // -----------------------------------------------------------------------------
 import apiRouter from "./routes/consumer/index";
+
+// -----------------------------------------------------------------------------
+// Merchant API Router (NEW)
+// -----------------------------------------------------------------------------
+import merchantRouter from "./routes/merchant.routes";
+
 
 // -----------------------------------------------------------------------------
 // Flow 10 — Identity Session API (create / resolve / revoke)
@@ -123,29 +130,15 @@ app.get("/", (req, res) => {
 });
 
 // -----------------------------------------------------------------------------
-// Flow 7 — Status + Consumer API
+// Flow 7 — Status + Consumer API + Merchant API
 // -----------------------------------------------------------------------------
 app.use("/api/session", statusRouter);
 app.use("/api", apiRouter);
+app.use("/api/merchant", merchantRouter);
 
 /**
  * =============================================================================
  * Flow 10 — Identity Session API Route Integration
- * =============================================================================
- * Subsystem: Identity Session API (Flow‑10)
- * Engineer: Raymond Newton — HoloTap Engineering Team (E5357171)
- *
- * SECTION: Overview
- *   Mounts the Flow‑10 Identity Session route surfaces into the Express runtime.
- *
- * SECTION: Routes
- *   • POST /identity/session/create   — Create identity session
- *   • POST /identity/session/resolve  — Resolve identity session
- *   • POST /identity/session/revoke   — Revoke identity session
- *
- * SECTION: Stability Notes
- *   • MUST mount before error middleware
- *   • MUST remain deterministic across all flows
  * =============================================================================
  */
 app.use("/identity/session/create", createSessionRoute);

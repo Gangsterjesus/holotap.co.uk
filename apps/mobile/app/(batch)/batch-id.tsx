@@ -5,9 +5,8 @@
  * Engineer: Raymond Newton (E5357171)
  * Assistant: Copilot Engineering Assistant
  * Date: 12 August 2026
- * © 2026 HoloTap Technologies Ltd. All rights reserved.
  * =============================================================================
- * Deterministic mobile rendering of settlement batch payloads:
+ * Deterministic rendering of settlement batch payloads:
  * - Fetches batch metadata + transaction list
  * - Applies currency formatting rules (GBP, BTC, ETH, BRICS, CBDC)
  * - Handles loading, error, and null‑payload states
@@ -15,7 +14,7 @@
  * =============================================================================
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Text,
   View,
@@ -27,7 +26,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 /**
- * Inline deterministic styles (no external stylesheet)
+ * Inline deterministic styles
  */
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
@@ -37,7 +36,7 @@ const styles = StyleSheet.create({
   link: { marginTop: 16, color: "#0078FF" },
   txCard: {
     padding: 12,
-    marginBottom: 10,
+    marginBottom: 10, 
     borderRadius: 8,
     backgroundColor: "#f7f7f7",
   },
@@ -110,6 +109,12 @@ export default function BatchDetail() {
 
   useEffect(() => {
     async function loadBatch() {
+      if (!batchId) {
+        setError(true);
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await fetch(`https://api.holotap.co/batch/${batchId}`);
         const json = await res.json();
@@ -148,28 +153,31 @@ export default function BatchDetail() {
     );
   }
 
-  const renderItem = ({ item }: { item: BatchItem }) => (
-    <View style={styles.txCard}>
-      <Text style={styles.txLabel}>Transaction ID:</Text>
-      <Text style={styles.txValue}>{item.txId}</Text>
+  const renderItem = useCallback(
+    ({ item }: { item: BatchItem }) => (
+      <View style={styles.txCard}>
+        <Text style={styles.txLabel}>Transaction ID:</Text>
+        <Text style={styles.txValue}>{item.txId}</Text>
 
-      <Text style={styles.txLabel}>Amount:</Text>
-      <Text style={styles.txValue}>
-        {formatCurrency(item.amount, item.currency)}
-      </Text>
+        <Text style={styles.txLabel}>Amount:</Text>
+        <Text style={styles.txValue}>
+          {formatCurrency(item.amount, item.currency)}
+        </Text>
 
-      <Text style={styles.txLabel}>Status:</Text>
-      <Text
-        style={[
-          styles.txValue,
-          item.status === "success"
-            ? styles.statusSuccess
-            : styles.statusFailed,
-        ]}
-      >
-        {item.status}
-      </Text>
-    </View>
+        <Text style={styles.txLabel}>Status:</Text>
+        <Text
+          style={[
+            styles.txValue,
+            item.status === "success"
+              ? styles.statusSuccess
+              : styles.statusFailed,
+          ]}
+        >
+          {item.status}
+        </Text>
+      </View>
+    ),
+    []
   );
 
   return (

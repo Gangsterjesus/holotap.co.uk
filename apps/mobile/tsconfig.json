@@ -3,20 +3,20 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
-
-
-
-      
+      "@/*": [
+        "./*"
+      ]
     },
-
     "strict": true,
     "noEmit": true,
     "isolatedModules": true,
     "moduleResolution": "bundler",
     "allowJs": true,
-    "types": ["react", "react-native"],
-
+    "skipLibCheck": true,
+    "jsx": "react-native",
+    "types": [
+      "expo"
+    ],
     "plugins": [
       {
         "name": "react-compiler",
@@ -30,6 +30,8 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ],
-  "exclude": ["node_modules"],
+  "exclude": [
+    "node_modules"
+  ],
   "extends": "expo/tsconfig.base"
 }
