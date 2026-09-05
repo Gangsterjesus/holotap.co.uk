@@ -1,6 +1,5 @@
 holotap.co.uk, www.holotap.co.uk {
-
-    root * C:\Holotap.co.uk\apps\web\dist
+    root * D:\holotap.co.uk\apps\web\dist
     file_server
 
     handle_path /api/* {
