@@ -1,11 +1,11 @@
 /**
  * =============================================================================
- * HOLOTAP API — SERVER ENTRYPOINT v2.5 (Engineering Edition)
+ * HOLOTAP API — SERVER ENTRYPOINT v2.6 (Engineering Edition)
  * =============================================================================
  * Engineer:      Raymond Newton — HoloTap Engineering Team (E5357171)
  * Assistant:     Copilot Engineering Assistant
  * File:          server.ts
- * Date:          04 September 2026
+ * Date:          06 September 2026
  * =============================================================================
  * PURPOSE:
  *   Bootstraps the HoloTap backend API.
@@ -16,8 +16,7 @@
  *   • Register identity pipeline (Flow 11)
  *   • Register correlation ID generator (Flow 12.2)
  *   • Register identity logger (Flow 12)
- *   • Register global middleware
- *   • Mount API route namespaces (Flow 7, Flow 10, Consumer API, Merchant API)
+ *   • Mount API route namespaces (Flow 7, Flow 8, Flow 10, Consumer API, Merchant API)
  *   • Provide root diagnostics endpoint
  *   • Start HTTP listener
  *
@@ -26,7 +25,7 @@
  *   • Correlation ID MUST be generated before identity logger
  *   • Identity logger MUST run after identity pipeline
  *   • Flow‑10 MUST mount before error middleware
- *   • Merchant API MUST mount inside /api namespace
+ *   • Payment API MUST mount inside /api namespace
  *   • Bound to 0.0.0.0 for LAN + Caddy reverse proxy compatibility
  * =============================================================================
  */
@@ -58,10 +57,14 @@ import statusRouter from "./routes/status/status.router";
 import apiRouter from "./routes/consumer/index";
 
 // -----------------------------------------------------------------------------
-// Merchant API Router (NEW)
+// Merchant API Router
 // -----------------------------------------------------------------------------
 import merchantRouter from "./routes/merchant.routes";
 
+// -----------------------------------------------------------------------------
+// Flow 8 / 9 / 13 — Payment Lifecycle API
+// -----------------------------------------------------------------------------
+import paymentRouter from "./routes/payment/payment.router";
 
 // -----------------------------------------------------------------------------
 // Flow 10 — Identity Session API (create / resolve / revoke)
@@ -136,8 +139,12 @@ app.get("/", (req, res) => {
 // -----------------------------------------------------------------------------
 app.use("/api/session", statusRouter);
 app.use("/api/consumer", apiRouter);
-
 app.use("/api/merchant", merchantRouter);
+
+// -----------------------------------------------------------------------------
+// Flow 8 / 9 / 13 — Payment Lifecycle API
+// -----------------------------------------------------------------------------
+app.use("/api/payment", paymentRouter);
 
 /**
  * =============================================================================
