@@ -2,31 +2,42 @@
   ────────────────────────────────────────────────────────────────────────────────
   HoloTap Engineering — Identity Session Module
   Engineer: R. Newton (E5357171)
-  File: createSession.ts
-  Subsystem: Flow‑10 Identity Session — Engine Layer
-  Date: 03 Sep 2026
+  File: createSessionRoute.ts
+  Subsystem: Flow‑10 Identity Session — Route Layer
+  Date: 06 Sep 2026
 
   SECTION: Overview
-    Defines the deterministic engine surface for Flow‑10 session creation.
+    Defines the deterministic route surface for Flow‑10 session creation.
 
   SECTION: Purpose
-    • Provide a stable engine interface for session creation.
-    • Ensure deterministic envelope propagation.
+    • Expose POST /identity/session/create
+    • Bridge API → Flow‑10 session engine
+    • Ensure deterministic envelope propagation
 
   SECTION: Stability Notes
-    • Engine signatures must remain stable.
-    • Additional fields must be backward‑compatible.
+    • Route signature must remain stable.
+    • Response envelopes must remain deterministic.
   ────────────────────────────────────────────────────────────────────────────────
 */
-// @ts-expect-error TS2306: consumed as a runtime module by this route.
+
+import { Router } from "express";
+// @ts-expect-error Engine is JS-only at runtime
 import { createSession } from "../../../identity/session/createSession";
 
-export async function createSession(payload: any) {
-  return {
-    success: true,
-    sessionId: "placeholder",
-    payload,
-  };
-}
+const router = Router();
 
-export default createSession;
+router.post("/", async (req, res) => {
+  try {
+    const session = await createSession(req.body);
+    res.status(201).json(session);
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: "session_creation_failed",
+      details: err instanceof Error ? err.message : String(err),
+    });
+  }
+});
+
+export default router;
+

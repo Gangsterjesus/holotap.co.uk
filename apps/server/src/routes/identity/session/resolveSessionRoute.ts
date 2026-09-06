@@ -2,34 +2,62 @@
   ────────────────────────────────────────────────────────────────────────────────
   HoloTap Engineering — Identity Session Module
   Engineer: R. Newton (E5357171)
-  File: resolveSession.ts
-  Subsystem: Flow‑10 Identity Session — Engine Layer
-  Date: 03 Sep 2026
+  File: resolveSessionRoute.ts
+  Subsystem: Flow‑10 Identity Session — Route Layer
+  Date: 06 Sep 2026
 
   SECTION: Overview
-    Defines the deterministic engine surface for Flow‑10 session resolution.
+    Provides the HTTP surface for resolving identity sessions. Accepts a
+    sessionId, invokes the Flow‑10 session resolver, and returns a deterministic
+    UnifiedSessionEnvelope for upstream identity propagation (Flow‑11).
 
   SECTION: Purpose
-    • Resolve an identity session by sessionId.
-    • Provide a stable engine interface for Flow‑10 route surfaces.
-    • Ensure deterministic envelope propagation for Flow‑11.
+    • Resolve identity sessions deterministically.
+    • Bind Flow‑10 session resolution to Express routing.
+    • Ensure compatibility with Flow‑11 Unified Actor Pipeline.
 
   SECTION: Stability Notes
-    • Engine signatures must remain stable.
-    • Additional fields must be backward‑compatible.
+    • MUST remain backward‑compatible across all flows.
+    • MUST NOT perform identity resolution directly — delegated to subsystem.
   ────────────────────────────────────────────────────────────────────────────────
 */
 
-export async function resolveSession(sessionId: string) {
-  // Placeholder deterministic envelope until subsystem is fully wired.
-  return {
-    success: true,
-    sessionId,
-    resolvedAt: new Date().toISOString(),
-    actor: {
-      type: "session",
-      sessionId,
-    },
-  };
-}
-export default resolveSession;
+import { Router } from "express";
+// @ts-expect-error Engine is JS-only at runtime
+import { resolveSession } from "../../../identity/session/resolveSession";
+
+const router = Router();
+
+/**
+ * ROUTE: POST /identity/session/resolve
+ * Body:
+ *   {
+ *     "sessionId": "string"
+ *   }
+ */
+router.post("/", async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+
+    if (!sessionId || typeof sessionId !== "string") {
+      return res.status(400).json({
+        success: false,
+        error: "invalid_session_id",
+        message: "sessionId is required and must be a string",
+      });
+    }
+
+    const envelope = await resolveSession(sessionId);
+
+    return res.status(200).json(envelope);
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: "session_resolution_failed",
+      message: err instanceof Error ? err.message : String(err),
+    });
+  }
+});
+
+export default router;
+
