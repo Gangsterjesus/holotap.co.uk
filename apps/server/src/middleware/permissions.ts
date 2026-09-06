@@ -1,48 +1,35 @@
 /**
- * ============================================================
- *  HoloTapServer — Identity Layer
- *  Flow 9 — Deterministic Permission Resolver (permission.ts)
+ * ────────────────────────────────────────────────────────────────────────────────
+ * HoloTapServer — Identity Layer
+ * Flow 9 — Deterministic Permission Resolver (TypeScript Edition)
  *
- *  Engineer: Raymond Newton (Founder‑Architect, E5357171)
- *  Version: 2.4.2
- *  Date: 15 August 2026
- *  © 2026 HoloTap Technologies Ltd. All rights reserved.
- * ============================================================
+ * Engineer: Raymond Newton (Founder‑Architect, E5357171)
+ * Version: 3.0.0
+ * Date: 06 September 2026
+ * ────────────────────────────────────────────────────────────────────────────────
  *
- *  Overview:
- *  ------------------------------------------------------------
- *  Flow 9 produces a deterministic permission array for the
- *  authenticated actor. It consumes identity context from:
+ * Overview:
+ *   Flow 9 produces a deterministic permission array for the authenticated actor.
+ *   It consumes identity context from:
+ *     • Flow 6 — actor identity
+ *     • Flow 7 — session lifecycle
+ *     • Flow 8 — organisation resolution
  *
- *      • Flow 6 — actor identity
- *      • Flow 7 — session lifecycle
- *      • Flow 8 — organisation resolution
- *
- *  This resolver is intentionally pure and contains no domain
- *  logic, no destructive operations, and no schema mutations.
- *
- *  Responsibilities:
- *  ------------------------------------------------------------
- *  - Collect roles from actor, session, and orgUser
- *  - Map roles → permissions deterministically
- *  - Deduplicate permission output
- *  - Provide stable permission array for Flow 11
- *
- *  Guarantees:
- *  ------------------------------------------------------------
- *  - Pure resolution logic only
- *  - Deterministic output across releases
- *  - No dependency on tenant correctness
- * ============================================================
+ * Guarantees:
+ *   • Pure resolution logic only
+ *   • Deterministic output across releases
+ *   • No destructive operations
+ *   • No schema mutations
+ * ────────────────────────────────────────────────────────────────────────────────
  */
 
-import { Request } from "express";
+import type { Request } from "express";
 
 /**
  * resolvePermissions
- * ------------------------------------------------------------
- * Produces a deterministic permission array based on identity
- * context from upstream flows.
+ * -------------------------------------------------------------------------------
+ * Produces a deterministic permission array based on identity context from
+ * upstream flows.
  *
  * Input:
  *   req.actor   → Flow 6 identity
@@ -53,25 +40,28 @@ import { Request } from "express";
  *   string[] — stable permission identifiers
  */
 export function resolvePermissions(req: Request): string[] {
-  // ------------------------------------------------------------
+  // Tag flow for debugging + Flow‑12 error envelopes
+  (req as any).flow = "flow-9";
+
+  // ---------------------------------------------------------------------------
   // 1. Extract identity context from request
-  // ------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   const actor = (req as any).actor ?? null;
   const session = (req as any).session ?? null;
   const orgUser = (req as any).orgUser ?? null;
 
-  // ------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // 2. Collect raw roles from all upstream flows
-  // ------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   const rawRoles = [
     actor?.role ?? null,
     session?.role ?? null,
     orgUser?.role ?? null,
   ].filter(Boolean);
 
-  // ------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // 3. Deterministic role → permission mapping
-  // ------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   const permissionMap: Record<string, string[]> = {
     founder: ["platform.admin", "tenant.admin", "merchant.admin"],
     admin: ["tenant.admin", "merchant.admin"],
@@ -83,9 +73,9 @@ export function resolvePermissions(req: Request): string[] {
 
   const permissions = new Set<string>();
 
-  // ------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // 4. Map each role to its permission set
-  // ------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   for (const role of rawRoles) {
     const mapped = permissionMap[role];
     if (mapped) {
@@ -93,8 +83,15 @@ export function resolvePermissions(req: Request): string[] {
     }
   }
 
-  // ------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // 5. Deterministic output (deduplicated)
-  // ------------------------------------------------------------
-  return Array.from(permissions);
+  // ---------------------------------------------------------------------------
+  const finalPermissions = Array.from(permissions);
+
+  // ---------------------------------------------------------------------------
+  // 6. Bind permissions for Flow‑11 (Unified Actor Pipeline)
+  // ---------------------------------------------------------------------------
+  (req as any).permissions = finalPermissions;
+
+  return finalPermissions;
 }

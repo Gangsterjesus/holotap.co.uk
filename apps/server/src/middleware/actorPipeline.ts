@@ -14,13 +14,16 @@ import type { UnifiedActor } from "../types/UnifiedActor";
 import type { Actor } from "../identity/actor";
 import { resolveFounder } from "../identity/resolveFounder";
 
+// Flow‑9.6 PostgreSQL Ledger
+import { addRecord } from "../registryLedger.pg";
+
 /**
  * ────────────────────────────────────────────────────────────────────────────────
  * Unified Actor Pipeline (Flow‑11)
  * ────────────────────────────────────────────────────────────────────────────────
  */
 
-export function actorPipeline(
+export async function actorPipeline(
   req: Request,
   _res: Response,
   next: NextFunction
@@ -50,6 +53,38 @@ export function actorPipeline(
   };
 
   (req as any).actor = unified;
+
+  /**
+   * ────────────────────────────────────────────────────────────────────────────────
+   * Flow‑11 → Flow‑9.6 Ledger Emission
+   * -------------------------------------------------------------------------------
+   * Every inbound request now produces a deterministic actor envelope.
+   * This enables:
+   *   • Full actor replay (Flow‑15)
+   *   • Full identity traceability (Flow‑12)
+   *   • Full audit history for all flows
+   *   • Deterministic debugging + correlation
+   * ────────────────────────────────────────────────────────────────────────────────
+   */
+  try {
+    await addRecord({
+      flow: "flow-11",
+     event_type: "actor_pipeline_resolved",
+
+      sessionId: unified.session?.id ?? null,
+      actor: {
+        type: unified.type,
+        sessionId: unified.session?.id ?? null,
+        merchantId: unified.merchantId ?? null,
+        consumerId: unified.identityId ?? null
+      },
+      correlationId: req.correlationId ?? "no-correlation-id",
+      envelope: unified,
+      timestamp: Date.now()
+    });
+  } catch (err) {
+    console.error("[Flow‑11 Ledger] Failed to write actor envelope:", err);
+  }
 
   next();
 }

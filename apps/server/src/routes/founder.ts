@@ -25,7 +25,7 @@
  */
 
 import { Router } from 'express';
-import { requireFounder } from '../middleware/founder';
+import { requireFounder } from '../middleware/founderMiddleware';
 
 export const founderRoute = Router();
 

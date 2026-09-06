@@ -134,6 +134,28 @@ model sessions {
 
   actor org_users @relation(fields: [actor_id], references: [id], onDelete: Cascade)
 }
+//
+// ─────────────────────────────────────────────
+//  FLOW‑9.6 — DETERMINISTIC LEDGER (PostgreSQL)
+// ─────────────────────────────────────────────
+//
+
+model ledger_records {
+  id             BigInt     @id @default(autoincrement())
+  flow           String
+  event_type     String
+  session_id     String?
+  actor_type     String
+  actor_id       String?
+  correlation_id String
+  envelope       Json
+  created_at     DateTime   @default(now())
+
+  @@index([session_id])
+  @@index([actor_id])
+  @@index([flow])
+  @@index([event_type])
+}
 
 //
 // ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
