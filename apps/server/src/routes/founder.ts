@@ -1,129 +1,205 @@
 /**
- * HoloTapServer
- * Route Module — Founder Operations
- * Flow 10 — Founder-Only Override Layer
- * Author: R. Newton (Founder-Architect)
- * Date: 2026-08-06
+ * ────────────────────────────────────────────────────────────────────────────────
+ * HoloTap Engineering Header
+ * File: routes/founder.ts
+ * Flow: 10 — Founder Override Layer
+ * Subsystem: Privileged Operations + Flow‑9.6 Ledger
+ * Engineer: Raymond Newton (E5357171)
+ * Date: 06 September 2026
  *
  * Overview:
- * Provides privileged system-level routes accessible only to the founder.
- * These routes bypass org, role, and permission layers, enabling direct
- * inspection, repair, and override operations across the platform.
- *
- * Descriptors:
- * Module Type: Privileged Route Module
- * Layer: Flow 10 — Founder Override Layer
- * Stability Level: Critical — Restricted to founder-only access
- * Internal Contracts:
- *   - Requires req.isFounder from Flow 10 middleware
- *   - Provides system-level introspection and repair endpoints
+ *   Provides privileged system‑level routes accessible only to the founder.
+ *   All routes emit Flow‑9.6 ledger envelopes for deterministic replay and
+ *   auditability. Requires req.isFounder from Flow‑10 middleware.
  *
  * Guarantees:
- *   - No destructive operations unless explicitly coded
- *   - No dependency on org, role, or tenant layers
- *   - Pure founder-only access logic
+ *   • Pure founder‑only access logic
+ *   • No destructive operations unless explicitly coded
+ *   • Deterministic envelopes + correlation IDs
+ *   • Ledger‑safe + replay‑safe
+ * ────────────────────────────────────────────────────────────────────────────────
  */
 
-import { Router } from 'express';
-import { requireFounder } from '../middleware/founderMiddleware';
+import { Router, Request, Response } from "express";
+import { requireFounder } from "../middleware/founderMiddleware";
+import { addRecord } from "../registryLedger.pg";
 
 export const founderRoute = Router();
 
 /**
- * GET /founder/ping
- *
- * Simple founder-only endpoint verifying override access.
+ * Utility: Emit Flow‑9.6 ledger entry for founder actions
  */
-founderRoute.get('/ping', requireFounder, (req, res) => {
+async function emitFounderLedger(
+  req: Request,
+  event_type: string,
+  envelope: Record<string, unknown>
+) {
+  const actor = (req as any)?.actor ?? {};
+  const correlationId = (req as any)?.correlationId ?? "no-correlation-id";
+
+  await addRecord({
+    flow: "flow-10",
+    event_type,
+    sessionId: actor.session?.id ?? null,
+    actor: {
+      type: actor.type ?? "founder",
+      sessionId: actor.session?.id ?? null,
+      merchantId: actor.merchantId ?? null,
+      consumerId: actor.identityId ?? null
+    },
+    correlationId,
+    envelope,
+    timestamp: Date.now()
+  });
+}
+
+/**
+ * GET /founder/ping
+ * Founder override verification
+ */
+founderRoute.get("/ping", requireFounder, async (req: Request, res: Response) => {
+  const envelope = {
+    message: "Founder override active",
+    timestamp: Date.now()
+  };
+
+  await emitFounderLedger(req, "founder_ping", envelope);
+
   res.json({
     ok: true,
     founder: true,
-    message: 'Founder override active.',
+    message: "Founder override active."
   });
 });
+
 /**
  * GET /founder/system
- *
- * Returns high-level system introspection for founder-only diagnostics.
+ * System introspection
  */
-founderRoute.get('/system', requireFounder, (req, res) => {
+founderRoute.get("/system", requireFounder, async (req: Request, res: Response) => {
+  const envelope = {
+    node: process.version,
+    platform: process.platform,
+    uptime: process.uptime(),
+    timestamp: Date.now()
+  };
+
+  await emitFounderLedger(req, "founder_system_introspection", envelope);
+
   res.json({
     ok: true,
-    system: {
-      node: process.version,
-      platform: process.platform,
-      uptime: process.uptime(),
-    },
+    system: envelope
   });
 });
 
 /**
  * GET /founder/env
- *
- * Returns environment visibility for founder-only inspection.
- * (Does NOT expose secrets unless explicitly coded.)
+ * Safe environment visibility
  */
-founderRoute.get('/env', requireFounder, (req, res) => {
+founderRoute.get("/env", requireFounder, async (req: Request, res: Response) => {
   const safeEnv = {
     NODE_ENV: process.env.NODE_ENV,
-    VERSION: process.env.VERSION,
-    // founder secret intentionally omitted
+    VERSION: process.env.VERSION
   };
+
+  await emitFounderLedger(req, "founder_env_inspection", safeEnv);
 
   res.json({
     ok: true,
-    env: safeEnv,
+    env: safeEnv
   });
 });
 
 /**
  * POST /founder/recovery/activate
- *
- * Activates founder recovery mode — used when identity/session/org layers fail.
+ * Founder recovery mode activation
  */
-founderRoute.post('/recovery/activate', requireFounder, (req, res) => {
-  res.json({
-    ok: true,
-    recovery: true,
-    message: 'Founder recovery mode activated.',
-  });
-});
+founderRoute.post(
+  "/recovery/activate",
+  requireFounder,
+  async (req: Request, res: Response) => {
+    const envelope = {
+      recovery: true,
+      timestamp: Date.now()
+    };
+
+    await emitFounderLedger(req, "founder_recovery_activated", envelope);
+
+    res.json({
+      ok: true,
+      recovery: true,
+      message: "Founder recovery mode activated."
+    });
+  }
+);
 
 /**
  * POST /founder/qr/override
- *
- * Founder-only QR override endpoint.
- * Placeholder for your QR override logic (Flow 10 → QR subsystem).
+ * Founder QR override trigger
  */
-founderRoute.post('/qr/override', requireFounder, (req, res) => {
-  res.json({
-    ok: true,
-    action: 'QR_OVERRIDE_TRIGGERED',
-  });
-});
+founderRoute.post(
+  "/qr/override",
+  requireFounder,
+  async (req: Request, res: Response) => {
+    const envelope = {
+      action: "QR_OVERRIDE_TRIGGERED",
+      received: req.body,
+      timestamp: Date.now()
+    };
+
+    await emitFounderLedger(req, "founder_qr_override", envelope);
+
+    res.json({
+      ok: true,
+      action: "QR_OVERRIDE_TRIGGERED"
+    });
+  }
+);
 
 /**
  * POST /founder/tenant/repair
- *
- * Founder-only tenant repair endpoint.
- * Placeholder for your tenant repair logic.
+ * Founder tenant repair trigger
  */
-founderRoute.post('/tenant/repair', requireFounder, (req, res) => {
-  res.json({
-    ok: true,
-    action: 'TENANT_REPAIR_TRIGGERED',
-  });
-});
+founderRoute.post(
+  "/tenant/repair",
+  requireFounder,
+  async (req: Request, res: Response) => {
+    const envelope = {
+      action: "TENANT_REPAIR_TRIGGERED",
+      received: req.body,
+      timestamp: Date.now()
+    };
+
+    await emitFounderLedger(req, "founder_tenant_repair", envelope);
+
+    res.json({
+      ok: true,
+      action: "TENANT_REPAIR_TRIGGERED"
+    });
+  }
+);
 
 /**
  * POST /founder/user/repair
- *
- * Founder-only user repair endpoint.
- * Placeholder for your user repair logic.
+ * Founder user repair trigger
  */
-founderRoute.post('/user/repair', requireFounder, (req, res) => {
-  res.json({
-    ok: true,
-    action: 'USER_REPAIR_TRIGGERED',
-  });
-});
+founderRoute.post(
+  "/user/repair",
+  requireFounder,
+  async (req: Request, res: Response) => {
+    const envelope = {
+      action: "USER_REPAIR_TRIGGERED",
+      received: req.body,
+      timestamp: Date.now()
+    };
+
+    await emitFounderLedger(req, "founder_user_repair", envelope);
+
+    res.json({
+      ok: true,
+      action: "USER_REPAIR_TRIGGERED"
+    });
+  }
+);
+
+export default founderRoute;

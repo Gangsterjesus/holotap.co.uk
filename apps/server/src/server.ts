@@ -49,7 +49,9 @@ import identityLoggerMiddleware from "./middleware/identityLogger.middleware";
 // -----------------------------------------------------------------------------
 // Flow 7 — Status Page Backend
 // -----------------------------------------------------------------------------
-import statusRouter from "./routes/status/status.router";
+import statusRouter from "./routes/session/status.router";
+
+
 
 // -----------------------------------------------------------------------------
 // Root Consumer API Router
