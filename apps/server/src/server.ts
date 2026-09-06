@@ -35,6 +35,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import crypto from "crypto";
+import { founderRoute } from "./routes/founder";
 
 // -----------------------------------------------------------------------------
 // Identity Subsystem (Flow 11)
@@ -90,6 +91,7 @@ const port = Number(process.env.PORT) || 4000;
 // -----------------------------------------------------------------------------
 app.use(cors());
 app.use(express.json());
+app.use("/api/founder", founderRoute);
 
 /**
  * =============================================================================
@@ -133,7 +135,8 @@ app.get("/", (req, res) => {
 // Flow 7 — Status + Consumer API + Merchant API
 // -----------------------------------------------------------------------------
 app.use("/api/session", statusRouter);
-app.use("/api", apiRouter);
+app.use("/api/consumer", apiRouter);
+
 app.use("/api/merchant", merchantRouter);
 
 /**
