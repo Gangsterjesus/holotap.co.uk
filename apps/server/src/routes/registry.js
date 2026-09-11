@@ -15,31 +15,28 @@
  *    GET    /api/registry/result
  *    GET    /api/registry/history
  *
- *  Notes:
- *    Uses deterministic in-memory ledger storage.
- *    Designed for future repository and PostgreSQL migration.
+ *  Architecture:
+ *
+ *    Routes
+ *       ↓
+ *    RegistryService
+ *       ↓
+ *    RegistryRepository
+ *       ↓
+ *    Ledger / Database
+ *
  * =================================================================================================
  */
 
 import express from "express";
+import RegistryService from "../services/RegistryService.js";
 
 const router = express.Router();
 
 /**
- * Flow-9 Registry Ledger
- * Temporary in-memory storage.
- */
-const ledger = [];
-
-/**
- * Generate deterministic registry identifier
- */
-function createRegistryId() {
-  return `REG-${Date.now()}`;
-}
-
-/**
- * Validate registry binding payload
+ * -----------------------------------------------------------------------------------------------
+ * Validate registry payload
+ * -----------------------------------------------------------------------------------------------
  */
 function validateBindingPayload(payload) {
   const { sessionId, badgeId, device, merchant } = payload || {};
@@ -69,54 +66,21 @@ router.post("/bind", async (req, res) => {
       });
     }
 
-    const {
-      sessionId,
-      badgeId,
-      device,
-      merchant
-    } = req.body;
+    const result =
+      RegistryService.createBinding(req.body);
 
-    /**
-     * Prevent duplicate active bindings
-     */
-    const existing = ledger.find(
-      (record) =>
-        record.sessionId === sessionId &&
-        record.badgeId === badgeId
-    );
-
-    if (existing) {
-      return res.status(409).json({
-        ok: false,
-        code: "REGISTRY_BIND_DUPLICATE",
-        message: "Registry binding already exists.",
-        record: existing
-      });
+    if (!result.ok) {
+      return res.status(409).json(result);
     }
 
-    const record = {
-      registryId: createRegistryId(),
-      sessionId,
-      badgeId,
-      device,
-      merchant,
-      status: "BOUND",
-      timestamp: new Date().toISOString()
-    };
-
-    ledger.push(record);
-
-    return res.status(200).json({
-      ok: true,
-      code: "REGISTRY_BIND_SUCCESS",
-      record
-    });
+    return res.status(200).json(result);
   } catch (error) {
     return res.status(500).json({
       ok: false,
       code: "REGISTRY_BIND_EXCEPTION",
       message:
-        error?.message || "Registry binding failed."
+        error?.message ||
+        "Registry binding failed."
     });
   }
 });
@@ -128,20 +92,13 @@ router.post("/bind", async (req, res) => {
  */
 router.get("/status", async (_req, res) => {
   try {
-    const latest =
-      ledger.length > 0
-        ? ledger[ledger.length - 1]
-        : null;
+    const status =
+      RegistryService.getStatus();
 
     return res.json({
       ok: true,
       code: "REGISTRY_STATUS_SUCCESS",
-      status: {
-        registry: latest ? "ACTIVE" : "IDLE",
-        totalRecords: ledger.length,
-        lastBinding: latest,
-        timestamp: new Date().toISOString()
-      }
+      status
     });
   } catch (error) {
     return res.status(500).json({
@@ -162,9 +119,7 @@ router.get("/status", async (_req, res) => {
 router.get("/result", async (_req, res) => {
   try {
     const latest =
-      ledger.length > 0
-        ? ledger[ledger.length - 1]
-        : null;
+      RegistryService.getLatestBinding();
 
     if (!latest) {
       return res.status(404).json({
@@ -197,11 +152,14 @@ router.get("/result", async (_req, res) => {
  */
 router.get("/history", async (_req, res) => {
   try {
+    const records =
+      RegistryService.getHistory();
+
     return res.json({
       ok: true,
       code: "REGISTRY_HISTORY_SUCCESS",
-      totalRecords: ledger.length,
-      records: [...ledger].reverse()
+      totalRecords: records.length,
+      records
     });
   } catch (error) {
     return res.status(500).json({

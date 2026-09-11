@@ -1,124 +1,122 @@
 /**
  * =================================================================================================
- *  HOLOTAP — REGISTRY REPOSITORY
- *  File: apps/server/src/repositories/RegistryRepository.js
+ * HOLOTAP — REGISTRY SERVICE
+ * File: apps/server/src/services/RegistryService.js
  *
- *  Engineer:
- *    Raymond Newton (E5357171)
+ * Engineer:
+ *   Raymond Newton (E5357171)
  *
- *  Purpose:
- *    Flow‑9 Registry Repository Layer
+ * Purpose:
+ *   Flow-9 Registry business logic layer.
  *
- *  Overview:
- *    Provides deterministic repository operations for registry records.
- *    Abstracts storage implementation from route handlers.
+ * Architecture:
  *
- *  Current Storage:
- *    In-memory ledger
+ *     Registry Routes
+ *          ↓
+ *     Registry Service
+ *          ↓
+ *     Registry Repository
+ *          ↓
+ *     Ledger / Database
  *
- *  Future Storage:
- *    PostgreSQL ledger
- *    registryLedger.pg.ts
- *
- *  Compliance:
- *    HoloTap Engineering Header Standard v1.0
  * =================================================================================================
  */
 
-const ledger = [];
+import RegistryRepository from "../repositories/RegistryRepository.js";
 
 /**
- * ----*----------------------------------*----------------------------------*--------------------
- * Create Reg*stry Record
- * -------------------*----------------------------------*----------------------------------*-----
+ * -------------------------------------------------------------------------------------------------
+ * Generate Registry Identifier
+ * -------------------------------------------------------------------------------------------------
  */
-function create(record) {
-  ledger.push(record);
-
-  return record;
+function createRegistryId() {
+  return `REG-${Date.now()}`;
 }
 
 /**
- * -----------------*----------------------------------*----------------------------------*-------
- * Get Latest Registry Rec*rd
- * ----------------------------*----------------------------------*-------------------------------
+ * -------------------------------------------------------------------------------------------------
+ * Create Registry Binding
+ * -------------------------------------------------------------------------------------------------
  */
-function getLatest() {
-  if (ledger.length === 0) {
-    return null;
+function createBinding(payload) {
+  const {
+    sessionId,
+    badgeId,
+    device,
+    merchant
+  } = payload;
+
+  const duplicate = RegistryRepository.findDuplicate(
+    sessionId,
+    badgeId
+  );
+
+  if (duplicate) {
+    return {
+      ok: false,
+      code: "REGISTRY_BIND_DUPLICATE",
+      message: "Registry binding already exists.",
+      record: duplicate
+    };
   }
 
-  return ledger[ledger.length - 1];
+  const record = {
+    registryId: createRegistryId(),
+    sessionId,
+    badgeId,
+    device,
+    merchant,
+    status: "BOUND",
+    timestamp: new Date().toISOString()
+  };
+
+  RegistryRepository.create(record);
+
+  return {
+    ok: true,
+    code: "REGISTRY_BIND_SUCCESS",
+    record
+  };
 }
 
 /**
- * ------------------*----------------------------------*----------------------------------*------
- * Get All Registry Records* * -------------------------------*----------------------------------*----------------------------
+ * -------------------------------------------------------------------------------------------------
+ * Latest Registry Record
+ * -------------------------------------------------------------------------------------------------
  */
-function getAll() {
-  return [...ledger].reverse();
+function getLatestBinding() {
+  return RegistryRepository.getLatest();
 }
 
 /**
- * ---------*----------------------------------*----------------------------------*---------------
- * Get Record Coun*
- * ------------------------------*----------------------------------*-----------------------------
+ * -------------------------------------------------------------------------------------------------
+ * Registry History
+ * -------------------------------------------------------------------------------------------------
  */
-function count() {
-  return ledger.length;
+function getHistory() {
+  return RegistryRepository.getAll();
 }
 
 /**
- * -----------------*----------------------------------*----------------------------------*-------
- * Find By Registry Id
- * *----------------------------------*----------------------------------*------------------------
+ * -------------------------------------------------------------------------------------------------
+ * Registry Status
+ * -------------------------------------------------------------------------------------------------
+ */
+function getStatus() {
+  const latest = RegistryRepository.getLatest();
+
+  return {
+    registry: latest ? "ACTIVE" : "IDLE",
+    totalRecords: RegistryRepository.count(),
+    lastBinding: latest,
+    timestamp: new Date().toISOString()
+  };
+}
+
+/**
+ * -------------------------------------------------------------------------------------------------
+ * Find By Registry ID
+ * -------------------------------------------------------------------------------------------------
  */
 function findByRegistryId(registryId) {
-  return ledger.find(
-    (record) => record.registryId === registryId
-  );
 }
-
-/**
- * -------------------*----------------------------------*----------------------------------*-----
- * Find By Session Id
- * ---*----------------------------------*----------------------------------*---------------------
- */
-function findBySessionId(sessionId) {
-  return ledger.filter(
-    (record) => record.sessionId === sessionId
-  );
-}
-
-/**
- * ------------------------*----------------------------------*----------------------------------*
- * Check Duplicate Binding
- * ---*----------------------------------*----------------------------------*---------------------
- */
-function findDuplicate(sessionId, badgeId) {
-  return ledger.find(
-    (record) =>
-      record.sessionId === sessionId &&
-      record.badgeId === badgeId
-  );
-}
-
-/**
- * -----------------------------------------------------------------------------------------------
- * Clear Ledger (Testing Only)
- * -----------------------------------------------------------------------------------------------
- */
-function clear() {
-  ledger.length = 0;
-}
-
-export default {
-  create,
-  getLatest,
-  getAll,
-  count,
-  findByRegistryId,
-  findBySessionId,
-  findDuplicate,
-  clear
-};
