@@ -58,37 +58,38 @@ export default function Activate() {
     }
   }
 
-  return ErrorBoundary({
-    children: (setError) => (
-      <Layout
+return (
+  <ErrorBoundary>
+    <Layout
+      title="Activate HoloTap"
+      subtitle="Enter your activation code to begin"
+    >
+      <PageHeader
         title="Activate HoloTap"
         subtitle="Enter your activation code to begin"
-      >
-        <PageHeader
-          title="Activate HoloTap"
-          subtitle="Enter your activation code to begin"
-          actions={null}
+        actions={null}
+      />
+
+      <div className="max-w-md mx-auto flex flex-col gap-6 mt-6">
+        <Input
+          label="Activation Code"
+          placeholder="Enter activation code"
+          value={code}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setCode(e.target.value)
+          }
+          error={null}
         />
 
-        <div className="max-w-md mx-auto flex flex-col gap-6 mt-6">
-          <Input
-            label="Activation Code"
-            placeholder="Enter activation code"
-            value={code}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value)}
-
-            error={null}
-          />
-
-          <Button
-            variant="primary"
-            disabled={false}
-            onClick={() => handleActivate(setError)}
-          >
-            Activate
-          </Button>
-        </div>
-      </Layout>
-    ),
-  });
-}
+        <Button
+          variant="primary"
+          disabled={false}
+          onClick={() => handleActivate(console.error)}
+        >
+          Activate
+        </Button>
+      </div>
+    </Layout>
+  </ErrorBoundary>
+);
+  }
