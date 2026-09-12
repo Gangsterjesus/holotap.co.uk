@@ -41,7 +41,21 @@ import Navigation from "./components/Navigation.jsx";
 /* ============================
    LAZY-LOADED PAGES
    ============================ */
+const RegistryOverview = lazy(() =>
+  import("./pages/registry/index.jsx")
+);
 
+const RegistryBind = lazy(() =>
+  import("./pages/registry/bind.jsx")
+);
+
+const RegistryStatus = lazy(() =>
+  import("./pages/registry/status.jsx")
+);
+
+const RegistryResult = lazy(() =>
+  import("./pages/registry/result.jsx")
+);
 const UnderConstruction = lazy(() => import("./pages/UnderConstruction.jsx"));
 
 /* PUBLIC */
@@ -91,7 +105,27 @@ export default function MainRouter() {
 
       <Suspense fallback={<div />}>
         <Routes>
+{/* FLOW-9 REGISTRY */}
 
+<Route
+  path="/registry"
+  element={<RegistryOverview />}
+/>
+
+<Route
+  path="/registry/bind"
+  element={<RegistryBind />}
+/>
+
+<Route
+  path="/registry/status"
+  element={<RegistryStatus />}
+/>
+
+<Route
+  path="/registry/result"
+  element={<RegistryResult />}
+/>
           {/* PUBLIC */}
           <Route path="/" element={<UnderConstruction />} />
           <Route path="/onboarding" element={<Onboarding />} />
