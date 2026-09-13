@@ -23,10 +23,20 @@
  * ────────────────────────────────────────────────────────────────────────────────
  */
 
+export type ActorType =
+  | "anonymous"
+  | "creator"
+  | "merchant"
+  | "system"
+  | "founder"
+  | "session"
+  | "qr";
+
 export interface UnifiedActor {
   id: string | null;
   identityId: string | null;
-  type: string | null;
+  type: ActorType;
+
   merchantId?: string | null;
   role?: string | null;
   metadata?: any;
@@ -37,5 +47,5 @@ export interface UnifiedActor {
   permissions?: any[];
   isFounder?: boolean;
 
-  issuedAt: number;   // REQUIRED for Flow‑11 + Flow‑12
+  issuedAt: number;
 }

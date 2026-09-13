@@ -70,10 +70,15 @@ export async function getSessionStatusController(req: Request, res: Response) {
   }
 
   // Severity classification (Flow 12)
-  const severity = classifySeverity(`session:${session.status}`);
+  const severity = classifySeverity(
+    `session:${session.status}` as Parameters<typeof classifySeverity>[0],
+  );
 
   // Disclosure policy (Flow 13)
-  const disclosure = evaluateDisclosure(req.actor!.type, `session:${session.status}`);
+  const disclosure = evaluateDisclosure(
+    req.actor!.type,
+    `session:${session.status}` as Parameters<typeof evaluateDisclosure>[1],
+  );
 
   // Final envelope
   return res.json({

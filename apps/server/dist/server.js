@@ -1,12 +1,12 @@
 "use strict";
 /**
  * =============================================================================
- * HOLOTAP API — SERVER ENTRYPOINT v2.4 (Engineering Edition)
+ * HOLOTAP API — SERVER ENTRYPOINT v2.6 (Engineering Edition)
  * =============================================================================
  * Engineer:      Raymond Newton — HoloTap Engineering Team (E5357171)
  * Assistant:     Copilot Engineering Assistant
  * File:          server.ts
- * Date:          03 September 2026
+ * Date:          06 September 2026
  * =============================================================================
  * PURPOSE:
  *   Bootstraps the HoloTap backend API.
@@ -17,8 +17,7 @@
  *   • Register identity pipeline (Flow 11)
  *   • Register correlation ID generator (Flow 12.2)
  *   • Register identity logger (Flow 12)
- *   • Register global middleware
- *   • Mount API route namespaces (Flow 7, Flow 10, Consumer API)
+ *   • Mount API route namespaces (Flow 7, Flow 8, Flow 10, Consumer API, Merchant API)
  *   • Provide root diagnostics endpoint
  *   • Start HTTP listener
  *
@@ -27,6 +26,7 @@
  *   • Correlation ID MUST be generated before identity logger
  *   • Identity logger MUST run after identity pipeline
  *   • Flow‑10 MUST mount before error middleware
+ *   • Payment API MUST mount inside /api namespace
  *   • Bound to 0.0.0.0 for LAN + Caddy reverse proxy compatibility
  * =============================================================================
  */
@@ -38,6 +38,7 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const crypto_1 = __importDefault(require("crypto"));
+const founder_1 = require("./routes/founder");
 // -----------------------------------------------------------------------------
 // Identity Subsystem (Flow 11)
 // -----------------------------------------------------------------------------
@@ -49,11 +50,19 @@ const identityLogger_middleware_1 = __importDefault(require("./middleware/identi
 // -----------------------------------------------------------------------------
 // Flow 7 — Status Page Backend
 // -----------------------------------------------------------------------------
-const status_router_1 = __importDefault(require("./routes/status/status.router"));
+const status_router_1 = __importDefault(require("./routes/session/status.router"));
 // -----------------------------------------------------------------------------
 // Root Consumer API Router
 // -----------------------------------------------------------------------------
 const index_1 = __importDefault(require("./routes/consumer/index"));
+// -----------------------------------------------------------------------------
+// Merchant API Router
+// -----------------------------------------------------------------------------
+const merchant_routes_1 = __importDefault(require("./routes/merchant.routes"));
+// -----------------------------------------------------------------------------
+// Flow 8 / 9 / 13 — Payment Lifecycle API
+// -----------------------------------------------------------------------------
+const payment_router_1 = __importDefault(require("./routes/payment/payment.router"));
 // -----------------------------------------------------------------------------
 // Flow 10 — Identity Session API (create / resolve / revoke)
 // -----------------------------------------------------------------------------
@@ -78,6 +87,7 @@ const port = Number(process.env.PORT) || 4000;
 // -----------------------------------------------------------------------------
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+app.use("/api/founder", founder_1.founderRoute);
 /**
  * =============================================================================
  * Flow 12.2 — Correlation ID Generator
@@ -113,28 +123,18 @@ app.get("/", (req, res) => {
     });
 });
 // -----------------------------------------------------------------------------
-// Flow 7 — Status + Consumer API
+// Flow 7 — Status + Consumer API + Merchant API
 // -----------------------------------------------------------------------------
 app.use("/api/session", status_router_1.default);
-app.use("/api", index_1.default);
+app.use("/api/consumer", index_1.default);
+app.use("/api/merchant", merchant_routes_1.default);
+// -----------------------------------------------------------------------------
+// Flow 8 / 9 / 13 — Payment Lifecycle API
+// -----------------------------------------------------------------------------
+app.use("/api/payment", payment_router_1.default);
 /**
  * =============================================================================
  * Flow 10 — Identity Session API Route Integration
- * =============================================================================
- * Subsystem: Identity Session API (Flow‑10)
- * Engineer: Raymond Newton — HoloTap Engineering Team (E5357171)
- *
- * SECTION: Overview
- *   Mounts the Flow‑10 Identity Session route surfaces into the Express runtime.
- *
- * SECTION: Routes
- *   • POST /identity/session/create   — Create identity session
- *   • POST /identity/session/resolve  — Resolve identity session
- *   • POST /identity/session/revoke   — Revoke identity session
- *
- * SECTION: Stability Notes
- *   • MUST mount before error middleware
- *   • MUST remain deterministic across all flows
  * =============================================================================
  */
 app.use("/identity/session/create", createSessionRoute_1.default);

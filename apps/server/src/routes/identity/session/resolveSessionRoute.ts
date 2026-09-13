@@ -23,7 +23,7 @@
 */
 
 import { Router } from "express";
-// @ts-expect-error Engine is JS-only at runtime
+
 import { resolveSession } from "../../../identity/session/resolveSession";
 
 const router = Router();
@@ -47,7 +47,7 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const envelope = await resolveSession(sessionId);
+    const envelope = await resolveSession({ session_id: sessionId });
 
     return res.status(200).json(envelope);
   } catch (err) {

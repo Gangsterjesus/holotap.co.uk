@@ -17,21 +17,10 @@
  * ────────────────────────────────────────────────────────────────────────────────
  */
 
-export type ActorType =
-  | "anonymous"
-  | "creator"
-  | "merchant"
-  | "system"
-  | "founder";
-
-export interface UnifiedActor {
-  type: ActorType;
-  issuedAt: number; // epoch ms
-  actorId?: string;
-  sessionId?: string;
-  correlationId?: string;
-  [key: string]: unknown;
-}
+import type {
+  UnifiedActor,
+  ActorType
+} from "../types/UnifiedActor";
 
 export interface IdentityPropagationResult {
   valid: boolean;
@@ -39,28 +28,41 @@ export interface IdentityPropagationResult {
 }
 
 /**
- * Deterministic Flow‑11 identity propagation validator.
+ * Deterministic Flow-11 identity propagation validator.
  * Must never throw.
  */
 export function validateIdentityPropagation(
   actor: UnifiedActor | undefined | null
 ): IdentityPropagationResult {
-  if (!actor) {
-    return { valid: false, reason: "Missing actor envelope" };
-  }
+  try {
+    if (!actor) {
+      return { valid: false, reason: "Missing actor envelope" };
+    }
 
-  if (!actor.type) {
-    return { valid: false, reason: "Actor missing type" };
-  }
+    if (!actor.type) {
+      return { valid: false, reason: "Actor missing type" };
+    }
 
-  if (!actor.issuedAt) {
-    return { valid: false, reason: "Actor missing issuedAt timestamp" };
-  }
+    if (actor.issuedAt == null) {
+      return { valid: false, reason: "Actor missing issuedAt timestamp" };
+    }
 
-  // Optional: enforce timestamp sanity (non‑zero, non‑future)
-  if (typeof actor.issuedAt !== "number" || actor.issuedAt <= 0) {
-    return { valid: false, reason: "Actor issuedAt timestamp invalid" };
-  }
+    if (
+      typeof actor.issuedAt !== "number" ||
+      !Number.isFinite(actor.issuedAt) ||
+      actor.issuedAt <= 0
+    ) {
+      return {
+        valid: false,
+        reason: "Actor issuedAt timestamp invalid",
+      };
+    }
 
-  return { valid: true };
+    return { valid: true };
+  } catch {
+    return {
+      valid: false,
+      reason: "Validator failure",
+    };
+  }
 }

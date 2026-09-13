@@ -86,11 +86,22 @@ export const orgUsers = {
     prisma.org_users.findMany({ where })
 };
 
+export const auditLogs = {
+  insert: (data: any) =>
+    prisma.audit_logs.create({ data }),
+
+  findMany: (where: any = {}) =>
+    prisma.audit_logs.findMany({ where })
+};
+
+
+
 // ---------------------------------------------------------------------------
 // Unified DAL Adapter
 // ---------------------------------------------------------------------------
 
 export const db = {
+  auditLogs,
   identitySessions,
   qrTokens,
   orgTenants,

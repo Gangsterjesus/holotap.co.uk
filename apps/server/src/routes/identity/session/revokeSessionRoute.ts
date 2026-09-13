@@ -22,31 +22,13 @@
  */
 
 import { Router } from "express";
-// The implementation is currently not recognized by TypeScript as an ES module.
-// Load it through CommonJS to avoid TS2306 while preserving the route contract.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+
 const { revokeSession } = require("../../../identity/session/revokeSession") as {
   revokeSession: (sessionId: string) => Promise<unknown>;
 };
 
 const revokeSessionRoute = Router();
 
-/**
- * =============================================================================
- * ROUTE: POST /identity/session/revoke
- * =============================================================================
- * Request Body:
- *   {
- *     "sessionId": "string"
- *   }
- *
- * Response:
- *   • 200 — UnifiedSessionEnvelope (revoked)
- *   • 400 — Missing or invalid sessionId
- *   • 404 — Session not found
- *   • 500 — Internal subsystem error
- * =============================================================================
- */
 revokeSessionRoute.post("/", async (req, res) => {
   try {
     const { sessionId } = req.body;

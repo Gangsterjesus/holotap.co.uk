@@ -21,7 +21,7 @@
 */
 
 import { Router } from "express";
-// @ts-expect-error Engine is JS-only at runtime
+
 import { createSession } from "../../../identity/session/createSession";
 
 const router = Router();

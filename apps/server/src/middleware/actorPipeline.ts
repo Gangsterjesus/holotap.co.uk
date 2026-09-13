@@ -40,7 +40,7 @@ export async function actorPipeline(
   const unified: UnifiedActor = {
     id: raw?.id ?? null,
     identityId: raw?.id ?? null,
-    type: raw?.type ?? null,
+    type: (raw?.type ?? null) as UnifiedActor["type"],
     merchantId: null,
     role: raw?.role ?? null,
     metadata: (raw as any)?.metadata ?? null,

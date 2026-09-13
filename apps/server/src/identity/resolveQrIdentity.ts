@@ -28,7 +28,7 @@
  */
 
 import { decryptPayload } from "../utils/token";
-import { Actor } from "./actor";
+import type { Actor } from "./actor";
 
 export async function resolveQrIdentity(qrToken: string): Promise<Actor | null> {
   try {
@@ -44,24 +44,31 @@ export async function resolveQrIdentity(qrToken: string): Promise<Actor | null> 
     // ------------------------------------------------------------
     // 2. Validate required fields
     // ------------------------------------------------------------
-    const { userId, name, mobile, issuedAt } = payload;
+const {
+  actorId,
+  timestamp,
+} = payload;
 
-    if (!userId || !issuedAt) {
-      return null;
-    }
+if (!actorId || !timestamp) {
+  return null;
+}
 
-    // ------------------------------------------------------------
-    // 3. Produce deterministic Actor identity
-    // ------------------------------------------------------------
-    return {
-      id: userId,
-      type: "qr",
-      method: "qr",
-      role: null,            // QR identity does not carry role
-      issuedAt: issuedAt,    // timestamp from QR payload
-    };
-  } catch (err) {
-    console.error("[Flow 6] resolveQrIdentity Error:", err);
+const issuedAt = Date.parse(timestamp);
+
+if (Number.isNaN(issuedAt)) {
+  return null;
+}
+
+return {
+  id: actorId,
+  type: "qr",
+  method: "qr",
+  role: null,
+  issuedAt,
+};
+
+
+  } catch (error) {
     return null;
   }
 }

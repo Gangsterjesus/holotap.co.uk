@@ -22,8 +22,9 @@ export type ActorType =
   | "creator"
   | "merchant"
   | "system"
-  | "founder";
-
+  | "founder"
+  | "session"
+  | "qr";
 export type EventType =
   | `identity:${string}`
   | `payment:${string}`

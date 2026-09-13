@@ -1,147 +1,71 @@
 "use strict";
 /**
- * HoloTapServer
- * Data Access Layer — Prisma-backed Repository Adapter
- * Flow 5 — Deterministic DB Abstraction
- * Author: R. Newton (Founder-Architect)
- * Date: 2026-08-06
+ * ────────────────────────────────────────────────────────────────────────────────
+ * HoloTap Engineering Header
+ * File: db.ts
+ * Flow: 5 → Modernised for Flow‑10 / Flow‑11 / Flow‑12 / Flow‑9.6
+ * Engineer: Raymond Newton (E5357171)
+ * Date: 06 September 2026
  *
  * Overview:
- * Centralised, deterministic data access adapter for HoloTapServer.
- * Provides stable repository interfaces over PrismaClient, ensuring
- * consistent, predictable behaviour across all server flows including
- * Flow 6 (Identity Layer) and Flow 7 (Session Management).
+ *   Centralised Prisma adapter for HoloTapServer. Modernised to expose
+ *   Flow‑10 identity sessions, Flow‑8 org models, Flow‑4 QR tokens, and
+ *   deterministic repository interfaces.
  *
- * Descriptors:
- * Module Type: Core Infrastructure Component
- * Layer: Flow 5 — Data Access Layer (DAL)
- * Stability Level: Critical — Must remain deterministic across releases
- * External Dependencies: PrismaClient (auto-generated), PostgreSQL (holotap schema)
- * Internal Contracts:
- *   - Provides repository interfaces consumed by Flow 6 (Identity Layer)
- *   - Provides QR-token persistence for Flow 4 and Flow 5
- *   - Provides audit logging for all flows requiring traceability
- *   - Provides session lifecycle management for Flow 7
- *
- * Performance Characteristics:
- *   - All operations are single-query, low-latency, and index-friendly
- *   - No multi-join or heavy aggregation inside this layer
- *   - DAL guarantees minimal overhead and predictable execution paths
- *
- * Safety & Determinism:
- *   - No schema mutations, migrations, or destructive operations
- *   - No dynamic SQL; all queries are Prisma-generated and typed
- *   - No direct database access outside this adapter
- *
- * Architectural Guarantees:
- *   - DAL remains stable even if domain logic evolves
- *   - Repository naming and signatures remain invariant
- *   - Flow-driven architecture ensures forward compatibility
+ * Notes:
+ *   • Replaces legacy Flow‑7 sessions
+ *   • Audit logs now handled by Flow‑9.6 ledger engine
+ *   • Fully TypeScript
+ * ────────────────────────────────────────────────────────────────────────────────
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.db = exports.prisma = void 0;
-// Runtime-safe PrismaClient loader (works even when TS cannot see generated types)
-const { PrismaClient } = require("@prisma/client");
-exports.prisma = new PrismaClient();
+exports.db = exports.auditLogs = exports.orgUsers = exports.orgTenants = exports.qrTokens = exports.identitySessions = exports.prisma = void 0;
+const client_1 = require("@prisma/client");
+exports.prisma = new client_1.PrismaClient();
 // ---------------------------------------------------------------------------
-// Flow 5 — Audit Logs
+// Flow‑10 — Identity Sessions
 // ---------------------------------------------------------------------------
-async function insertAuditLog(event) {
-    return exports.prisma.audit_logs.create({
-        data: {
-            actor_id: event.actor_id ?? null,
-            actor_type: event.actor_type ?? null,
-            action: event.action,
-            metadata: event.metadata ?? null,
-        },
-    });
-}
+exports.identitySessions = {
+    create: (data) => exports.prisma.identity_sessions.create({ data }),
+    findOne: (where) => exports.prisma.identity_sessions.findUnique({ where }),
+    findMany: (where = {}) => exports.prisma.identity_sessions.findMany({ where }),
+    update: (where, data) => exports.prisma.identity_sessions.updateMany({ where, data }),
+    deleteExpired: () => exports.prisma.identity_sessions.deleteMany({
+        where: { expires_at: { lt: new Date() } }
+    })
+};
 // ---------------------------------------------------------------------------
-// Flow 5 — QR Tokens
+// Flow‑4 / Flow‑11 — QR Tokens
 // ---------------------------------------------------------------------------
-async function insertQrCode(data) {
-    return exports.prisma.qr_codes.create({ data });
-}
-async function findQrCode(where) {
-    return exports.prisma.qr_codes.findFirst({ where });
-}
-async function updateQrCode(where, update) {
-    return exports.prisma.qr_codes.updateMany({
-        where,
-        data: update,
-    });
-}
+exports.qrTokens = {
+    insert: (data) => exports.prisma.qr_codes.create({ data }),
+    findOne: (where) => exports.prisma.qr_codes.findFirst({ where }),
+    updateOne: (where, data) => exports.prisma.qr_codes.updateMany({ where, data })
+};
 // ---------------------------------------------------------------------------
-// Flow 7 — Sessions (Aligned to Prisma Schema)
+// Flow‑8 — Org Tenants / Org Users
 // ---------------------------------------------------------------------------
-async function createSession(data) {
-    return exports.prisma.sessions.create({
-        data: {
-            actor_id: data.actor_id,
-            role: data.role,
-            state: data.state,
-            metadata: data.metadata ?? null,
-            expires_at: data.expires_at ?? null,
-        },
-    });
-}
-async function findSession(where) {
-    return exports.prisma.sessions.findFirst({ where });
-}
-async function invalidateSession(where) {
-    return exports.prisma.sessions.updateMany({
-        where,
-        data: { expires_at: new Date() },
-    });
-}
+exports.orgTenants = {
+    create: (data) => exports.prisma.org_tenants.create({ data }),
+    findOne: (where) => exports.prisma.org_tenants.findFirst({ where }),
+    findMany: (where = {}) => exports.prisma.org_tenants.findMany({ where })
+};
+exports.orgUsers = {
+    create: (data) => exports.prisma.org_users.create({ data }),
+    findOne: (where) => exports.prisma.org_users.findFirst({ where }),
+    findMany: (where = {}) => exports.prisma.org_users.findMany({ where })
+};
+exports.auditLogs = {
+    insert: (data) => exports.prisma.audit_logs.create({ data }),
+    findMany: (where = {}) => exports.prisma.audit_logs.findMany({ where })
+};
 // ---------------------------------------------------------------------------
-// Flow 8 — Org Access (org_tenants, org_users)
-// ---------------------------------------------------------------------------
-// org_tenants ---------------------------------------------------------------
-async function createTenant(data) {
-    return exports.prisma.org_tenants.create({ data });
-}
-async function findTenant(where) {
-    return exports.prisma.org_tenants.findFirst({ where });
-}
-async function listTenants(where = {}) {
-    return exports.prisma.org_tenants.findMany({ where });
-}
-// org_users -----------------------------------------------------------------
-async function createOrgUser(data) {
-    return exports.prisma.org_users.create({ data });
-}
-async function findOrgUser(where) {
-    return exports.prisma.org_users.findFirst({ where });
-}
-async function listOrgUsers(where = {}) {
-    return exports.prisma.org_users.findMany({ where });
-}
-// ---------------------------------------------------------------------------
-// Unified DAL Adapter (Flows 5, 7, 8)
+// Unified DAL Adapter
 // ---------------------------------------------------------------------------
 exports.db = {
-    auditLogs: {
-        insert: insertAuditLog,
-    },
-    qrTokens: {
-        insert: insertQrCode,
-        findOne: findQrCode,
-        updateOne: updateQrCode,
-    },
-    sessions: {
-        create: createSession,
-        findOne: findSession,
-        invalidate: invalidateSession,
-    },
-    orgTenants: {
-        create: createTenant,
-        findOne: findTenant,
-        findMany: listTenants,
-    },
-    orgUsers: {
-        create: createOrgUser,
-        findOne: findOrgUser,
-        findMany: listOrgUsers,
-    },
+    auditLogs: exports.auditLogs,
+    identitySessions: exports.identitySessions,
+    qrTokens: exports.qrTokens,
+    orgTenants: exports.orgTenants,
+    orgUsers: exports.orgUsers
 };

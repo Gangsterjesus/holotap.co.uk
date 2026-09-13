@@ -42,23 +42,23 @@ async function resolveQrIdentity(qrToken) {
         // ------------------------------------------------------------
         // 2. Validate required fields
         // ------------------------------------------------------------
-        const { userId, name, mobile, issuedAt } = payload;
-        if (!userId || !issuedAt) {
+        const { actorId, timestamp, } = payload;
+        if (!actorId || !timestamp) {
             return null;
         }
-        // ------------------------------------------------------------
-        // 3. Produce deterministic Actor identity
-        // ------------------------------------------------------------
+        const issuedAt = Date.parse(timestamp);
+        if (Number.isNaN(issuedAt)) {
+            return null;
+        }
         return {
-            id: userId,
+            id: actorId,
             type: "qr",
             method: "qr",
-            role: null, // QR identity does not carry role
-            issuedAt: issuedAt, // timestamp from QR payload
+            role: null,
+            issuedAt,
         };
     }
-    catch (err) {
-        console.error("[Flow 6] resolveQrIdentity Error:", err);
+    catch (error) {
         return null;
     }
 }

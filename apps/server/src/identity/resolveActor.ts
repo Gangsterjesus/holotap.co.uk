@@ -1,52 +1,32 @@
 /**
  * ============================================================
- *  HoloTapServer — Identity Layer
- *  Flow 6 — Modern Actor Resolver (identity/resolveActor.ts)
+ * HoloTapServer — Identity Layer
+ * Flow 6 — Modern Actor Resolver
  *
- *  Engineer: Raymond Newton (Founder‑Architect, E5357171)
- *  Version: 2.4.2
- *  Date: 15 August 2026
- * ============================================================
- *
- *  Overview:
- *  ------------------------------------------------------------
- *  Flow 6 resolves the primary Actor identity for every request.
- *  This resolver provides full support for:
- *
- *      • Founder identity (x-founder-key)
- *      • Session identity (x-identity-session)
- *      • QR identity (x-qr-token)
- *      • Anonymous identity (fallback)
- *
- *  Responsibilities:
- *  ------------------------------------------------------------
- *  - Produce a deterministic Actor object
- *  - Conform to identity/actor.ts interface
- *  - Guarantee stable identity propagation for Flows 7–11
- *
- *  Guarantees:
- *  ------------------------------------------------------------
- *  - No destructive operations
- *  - No schema mutations
- *  - Pure resolution logic only
+ * Engineer: Raymond Newton (E5357171)
  * ============================================================
  */
 
-import { Actor } from "./actor";
-import { resolveSession } from "./resolveSession";
+import type { Request } from "express";
+
+import type { Actor } from "./actor";
 import { resolveFounder } from "./resolveFounder";
+import { resolveSession } from "./resolveSession";
 import { resolveQrIdentity } from "./resolveQrIdentity";
 
-export async function resolveActor(req: any): Promise<Actor> {
+export async function resolveActor(
+  req: Request
+): Promise<Actor> {
   try {
     // ------------------------------------------------------------
-    // 1. Founder identity (highest priority)
+    // 1. Founder Identity
     // ------------------------------------------------------------
-    const founderKey = req.headers["x-founder-key"];
-    if (founderKey) {
-      const { isFounder } = resolveFounder(null, req);
+    const founderKey = req.header("x-founder-key");
 
-      if (isFounder) {
+    if (founderKey) {
+      const founder = resolveFounder(founderKey, req);
+
+      if (founder) {
         return {
           id: "founder",
           type: "founder",
@@ -58,11 +38,14 @@ export async function resolveActor(req: any): Promise<Actor> {
     }
 
     // ------------------------------------------------------------
-    // 2. Session identity
+    // 2. Session Identity
     // ------------------------------------------------------------
-    const sessionId = req.headers["x-identity-session"];
+    const sessionId = req.header("x-identity-session");
+
     if (sessionId) {
-      const session = await resolveSession({ session_id: sessionId });
+      const session = await resolveSession({
+        session_id: sessionId,
+      });
 
       if (session) {
         return {
@@ -76,19 +59,20 @@ export async function resolveActor(req: any): Promise<Actor> {
     }
 
     // ------------------------------------------------------------
-    // 3. QR identity
+    // 3. QR Identity
     // ------------------------------------------------------------
-    const qrToken = req.headers["x-qr-token"];
-    if (qrToken) {
-      const qr = await resolveQrIdentity(qrToken);
+    const qrToken = req.header("x-qr-token");
 
-      if (qr) {
-        return qr; // Already conforms to Actor interface
+    if (qrToken) {
+      const actor = await resolveQrIdentity(qrToken);
+
+      if (actor) {
+        return actor;
       }
     }
 
     // ------------------------------------------------------------
-    // 4. Anonymous identity (fallback)
+    // 4. Anonymous Fallback
     // ------------------------------------------------------------
     return {
       id: null,
@@ -97,10 +81,9 @@ export async function resolveActor(req: any): Promise<Actor> {
       role: null,
       issuedAt: null,
     };
-  } catch (err) {
-    console.error("[Flow 6] resolveActor Error:", err);
+  } catch (error) {
+    console.error("[Flow 6] resolveActor Error:", error);
 
-    // Deterministic fallback
     return {
       id: null,
       type: "anonymous",
