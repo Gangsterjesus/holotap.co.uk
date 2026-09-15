@@ -29,7 +29,7 @@ async function actorPipeline(req, _res, next) {
     const unified = {
         id: raw?.id ?? null,
         identityId: raw?.id ?? null,
-        type: (raw?.type ?? null),
+        type: raw?.type ?? "anonymous",
         merchantId: null,
         role: raw?.role ?? null,
         metadata: raw?.metadata ?? null,

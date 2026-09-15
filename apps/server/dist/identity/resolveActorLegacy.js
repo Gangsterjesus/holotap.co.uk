@@ -1,90 +1,134 @@
 "use strict";
-/**
- * ============================================================
- *  HoloTapServer — Identity Layer (Legacy Resolver)
- *  Flow 6 — Actor Resolution (Prototype Compatibility)
- *
- *  Engineer: Raymond Newton (Founder‑Architect, E5357171)
- *  Version: 2.4.2
- *  Date: 15 August 2026
- *  © 2026 HoloTap Technologies Ltd. All rights reserved.
- * ============================================================
- *
- *  Purpose:
- *  ------------------------------------------------------------
- *  This module provides the legacy header‑based identity resolver
- *  originally built on 05 August 2026. It remains in service as:
- *
- *    • Founder override path (x-founder-key)
- *    • QR identity fallback (x-qr-token)
- *    • Anonymous identity fallback
- *
- *  Notes:
- *  ------------------------------------------------------------
- *  - Updated to match actual Prisma schema fields
- *  - identity_sessions has no `token` → using `id`
- *  - Merchant is an org_user → loaded via org_users
- *  - qr_codes has no `token` → using `id`
- *
- * ============================================================
- */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveActorLegacy = resolveActorLegacy;
-const db_1 = require("../db");
 /**
- * resolveActorLegacy
- * ------------------------------------------------------------
- * Legacy identity resolver using header-based authentication.
+ * ============================================================================
+ * HoloTapServer — Identity Layer (Legacy Resolver)
+ * Flow 6 — Legacy Actor Resolution Compatibility Layer
  *
- * Resolution Order:
- *   1. Founder override (x-founder-key)
- *   2. Identity session (x-identity-session)
- *   3. QR token fallback (x-qr-token)
- *   4. Anonymous identity
+ * Engineer: Raymond Newton (Founder-Architect, E5357171)
+ * Version: 5.0.0
+ * Date: 15 September 2026
+ * © 2026 HoloTap Technologies Ltd. All Rights Reserved.
+ * ============================================================================
+ *
+ * PURPOSE
+ * ----------------------------------------------------------------------------
+ * Provides backward-compatible header-based identity resolution for legacy
+ * requests that have not yet migrated to the Unified Actor Pipeline.
+ *
+ * This resolver acts as a compatibility bridge between historical Flow 6
+ * identity mechanisms and the modern Flow 11 Unified Actor architecture.
+ *
+ * RESOLUTION ORDER
+ * ----------------------------------------------------------------------------
+ * 1. Founder Override       (x-founder-key)
+ * 2. Identity Session       (x-identity-session)
+ * 3. QR Identity Fallback   (x-qr-token)
+ * 4. Anonymous Identity
+ *
+ * FLOW INTEGRATION
+ * ----------------------------------------------------------------------------
+ * Consumed By:
+ *   • Flow 6  - Legacy Identity Resolution
+ *   • Flow 7  - Session Resolution
+ *   • Flow 10 - Identity Session APIs
+ *   • Flow 11 - Unified Actor Pipeline
+ *
+ * COMPATIBILITY NOTES
+ * ----------------------------------------------------------------------------
+ * This module remains operational to support legacy clients and migration
+ * flows. New identity implementations should prefer the Unified Actor
+ * Pipeline where possible.
+ *
+ * SCHEMA ALIGNMENT (v5)
+ * ----------------------------------------------------------------------------
+ * Updated to align with current Prisma schema:
+ *
+ *   identity_sessions
+ *     • session_id
+ *     • actor_id
+ *     • merchant_id
+ *
+ *   qr_codes
+ *     • id
+ *
+ *   org_users
+ *     • id
+ *
+ * Legacy assumptions regarding:
+ *   • token
+ *   • merchantId
+ *   • session.id
+ *
+ * have been removed in favour of generated Prisma model fields.
+ *
+ * ENGINEERING NOTES
+ * ----------------------------------------------------------------------------
+ * • Legacy compatibility layer only.
+ * • Must remain deterministic.
+ * • Must never throw on missing identity headers.
+ * • Must always produce a valid actor envelope.
+ * • Supports founder override for platform administration.
+ * • Intended for progressive migration toward Flow 11+ identity services.
+ *
+ * CHANGE LOG
+ * ----------------------------------------------------------------------------
+ * v5.0.0
+ *   • Rebuilt against generated Prisma v6 client.
+ *   • Updated identity_sessions field mappings.
+ *   • Removed obsolete token-based assumptions.
+ *   • Added Flow 11 compatibility documentation.
+ *   • Standardised engineering documentation format.
+ * ============================================================================
  */
+const db_1 = require("../db");
 async function resolveActorLegacy(req) {
-    // ------------------------------------------------------------
-    // 1. Founder Override
-    // ------------------------------------------------------------
     const founderKey = req.headers["x-founder-key"];
-    if (founderKey && founderKey === process.env.FOUNDER_KEY) {
+    if (founderKey &&
+        founderKey === process.env.FOUNDER_KEY) {
         return {
             type: "founder",
             id: "founder",
             method: "founder-key",
         };
     }
-    // ------------------------------------------------------------
-    // 2. Identity Session (Flow 6 Primary)
-    // ------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // Identity Session
+    // -------------------------------------------------------------------------
     const sessionToken = req.headers["x-identity-session"];
-    if (sessionToken) {
+    if (typeof sessionToken === "string") {
         const session = await db_1.prisma.identity_sessions.findUnique({
-            where: { id: sessionToken }, // Correct: token does not exist
+            where: {
+                session_id: sessionToken,
+            },
         });
         if (session) {
             let merchant = null;
-            // Merchant is an org_user
-            if (session.merchantId) {
+            if (session.merchant_id) {
                 merchant = await db_1.prisma.org_users.findUnique({
-                    where: { id: session.merchantId },
+                    where: {
+                        id: session.merchant_id,
+                    },
                 });
             }
             return {
                 type: "session",
-                id: session.id,
+                id: session.actor_id,
                 merchant,
                 method: "identity-session",
             };
         }
     }
-    // ------------------------------------------------------------
-    // 3. QR Token (Legacy Fallback)
-    // ------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // QR Identity Fallback
+    // -------------------------------------------------------------------------
     const qrToken = req.headers["x-qr-token"];
-    if (qrToken) {
+    if (typeof qrToken === "string") {
         const qr = await db_1.prisma.qr_codes.findUnique({
-            where: { id: qrToken }, // Correct: token does not exist
+            where: {
+                id: qrToken,
+            },
         });
         if (qr) {
             return {
@@ -94,9 +138,9 @@ async function resolveActorLegacy(req) {
             };
         }
     }
-    // ------------------------------------------------------------
-    // 4. Anonymous Identity
-    // ------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // Anonymous Identity
+    // -------------------------------------------------------------------------
     return {
         type: "anonymous",
         id: null,

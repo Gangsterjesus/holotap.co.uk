@@ -1,9 +1,72 @@
 /**
  * ============================================================
- * HoloTapServer — Identity Layer
- * Flow 6 — Modern Actor Resolver
+ * HoloTapServer — Modern Actor Resolver
+ * Flow 6 — Identity Resolution Layer
  *
- * Engineer: Raymond Newton (E5357171)
+ * Engineer: Raymond Newton (Founder‑Architect, E5357171)
+ * Engineer ID: E5357171
+ * Version: 5.0.0
+ * Date: 15 September 2026
+ * © 2026 HoloTap Technologies Ltd. All Rights Reserved.
+ * ============================================================
+ *
+ * PURPOSE
+ * ------------------------------------------------------------
+ * Resolves inbound request identities into deterministic actor
+ * envelopes used throughout the HoloTap platform.
+ *
+ * The Modern Actor Resolver provides the primary identity entry
+ * point for Flow 6 and supplies actor information consumed by
+ * later identity, auditing, and registry workflows.
+ *
+ * RESOLUTION ORDER
+ * ------------------------------------------------------------
+ * • Founder Identity
+ * • Session Identity
+ * • QR Identity
+ * • Anonymous Identity
+ *
+ * RESPONSIBILITIES
+ * ------------------------------------------------------------
+ * • Resolve request actor identity
+ * • Validate active sessions
+ * • Resolve founder access
+ * • Resolve QR-based identities
+ * • Generate deterministic actor envelopes
+ * • Support downstream identity propagation
+ *
+ * FLOW INTEGRATION
+ * ------------------------------------------------------------
+ * • Flow 6   — Identity Resolution
+ * • Flow 7   — Session Lifecycle
+ * • Flow 9   — Registry Binding
+ * • Flow 11  — Unified Actor Pipeline
+ * • Flow 12  — Correlation & Audit
+ *
+ * ENGINEERING NOTES
+ * ------------------------------------------------------------
+ * • Resolution logic only.
+ * • No direct HTTP responses.
+ * • No persistence operations.
+ * • Deterministic actor generation.
+ * • Must remain backwards compatible with legacy flows.
+ *
+ * OUTPUT CONTRACT
+ * ------------------------------------------------------------
+ * Returns:
+ * • Founder actor
+ * • Session actor
+ * • QR actor
+ * • Anonymous actor
+ *
+ * CHANGE LOG
+ * ------------------------------------------------------------
+ * v5.0.0
+ * • Flow 11 compatibility review.
+ * • Session resolution modernised.
+ * • Actor envelope standardisation.
+ * • Documentation aligned with engineering standards.
+ *
  * ============================================================
  */
 
@@ -40,24 +103,24 @@ export async function resolveActor(
     // ------------------------------------------------------------
     // 2. Session Identity
     // ------------------------------------------------------------
-    const sessionId = req.header("x-identity-session");
 
-    if (sessionId) {
-      const session = await resolveSession({
-        session_id: sessionId,
-      });
+const sessionId = req.header("x-identity-session");
 
-      if (session) {
-        return {
-          id: session.actor_id,
-          type: "session",
-          method: "session",
-          role: session.role ?? null,
-          issuedAt: session.created_at?.getTime() ?? null,
-        };
-      }
-    }
+if (sessionId) {
+  const session = await resolveSession({
+    id: sessionId,
+  });
 
+  if (session) {
+    return {
+      id: session.actor_id,
+      type: "session",
+      method: "session",
+      role: session.role ?? null,
+      issuedAt: session.created_at?.getTime() ?? Date.now(),
+    };
+  }
+}
     // ------------------------------------------------------------
     // 3. QR Identity
     // ------------------------------------------------------------

@@ -1,7 +1,8 @@
 import { Router } from "express";
-// @ts-expect-error Controller is JavaScript and has no type declarations
-import { createMerchant, getMerchant } from "../controllers/merchant.controller.js";
-
+import {
+  createMerchant,
+  getMerchant,
+} from "../controllers/merchant.controller";
 
 const router = Router();
 

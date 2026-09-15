@@ -48,8 +48,8 @@ async function getSessionStatusController(req, res) {
     // Fetch session
     let session;
     try {
-        session = await db_1.prisma.session.findUnique({
-            where: { sessionId },
+        session = await db_1.prisma.sessions.findUnique({
+            where: { id: sessionId },
         });
     }
     catch (err) {
@@ -67,9 +67,11 @@ async function getSessionStatusController(req, res) {
         });
     }
     // Severity classification (Flow 12)
-    const severity = (0, severityMatrix_1.classifySeverity)(`session:${session.status}`);
+    const sessionRecord = session;
+    const sessionState = sessionRecord.state ?? sessionRecord.status ?? "unknown";
+    const severity = (0, severityMatrix_1.classifySeverity)(`session:${sessionState}`);
     // Disclosure policy (Flow 13)
-    const disclosure = (0, disclosurePolicy_1.evaluateDisclosure)(req.actor.type, `session:${session.status}`);
+    const disclosure = (0, disclosurePolicy_1.evaluateDisclosure)(req.actor.type, `session:${sessionState}`);
     // Final envelope
     return res.json({
         ok: true,
@@ -77,11 +79,11 @@ async function getSessionStatusController(req, res) {
         severity,
         disclosure: disclosure.allowed,
         session: {
-            sessionId: session.sessionId,
-            merchantName: session.merchantName,
-            qrToken: session.qrToken,
-            hologramStatus: session.hologramStatus,
-            status: session.status,
+            sessionId: sessionRecord.sessionId ?? sessionRecord.id,
+            merchantName: sessionRecord.merchantName ?? null,
+            qrToken: sessionRecord.qrToken ?? null,
+            hologramStatus: sessionRecord.hologramStatus ?? null,
+            status: sessionState,
         },
     });
 }
