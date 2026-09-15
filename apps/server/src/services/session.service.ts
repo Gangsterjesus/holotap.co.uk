@@ -1,7 +1,12 @@
-import { prisma } from '../prisma';
+import { prisma } from "../db";
 
+interface ResolveSessionArgs {
+  actor_id: string;
+}
 
-export async function resolveSession({ actor_id }) {
+export async function resolveSession(
+  { actor_id }: ResolveSessionArgs
+) {
   // Check if a session already exists for this actor
   let session = await prisma.sessions.findFirst({
     where: { actor_id },
@@ -12,7 +17,8 @@ export async function resolveSession({ actor_id }) {
     session = await prisma.sessions.create({
       data: {
         actor_id,
-        state: 'idle', // default Flow 7 state
+        role:"user",
+        state: "idle",
       },
     });
   }

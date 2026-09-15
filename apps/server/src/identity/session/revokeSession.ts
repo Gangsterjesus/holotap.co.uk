@@ -36,7 +36,7 @@ export async function revokeSession(
   sessionId: string
 ): Promise<boolean> {
   try {
-    await prisma.session.delete({
+    await prisma.sessions.delete({
       where: {
         id: sessionId,
       },

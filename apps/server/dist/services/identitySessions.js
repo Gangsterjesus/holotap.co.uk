@@ -1,37 +1,35 @@
 "use strict";
-/*
- * HoloTapServer — Identity Session Service
- * Flow 6 — Merchant Identity Layer
- * Engineer: Raymond Newton (E5357171)
- *
- * Description:
- * Deterministic creation of merchant identity sessions.
- * This service is invoked by Flow 6 (Identity Resolver) and
- * provides a stable interface for generating identity sessions
- * used in downstream flows (Flow 7: Session Resolver,
- * Flow 8: Org Access Layer, and Flow 9: Payment Lifecycle).
- *
- * Responsibilities:
- * - Create identity_sessions rows with strict field mapping
- * - Enforce schema correctness (role, merchantId, metadata, expires_at)
- * - Maintain separation from actor sessions (sessions model)
- * - Provide deterministic behaviour across all flows
- *
- * Guarantees:
- * - No domain logic
- * - No mutations outside identity_sessions
- * - No side effects beyond DB write
- * - No assumptions about Flow 7 or Flow 8
- */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createIdentitySession = createIdentitySession;
-async function createIdentitySession(prisma, { role, merchantId = null, metadata = null, expiresAt, }) {
+const client_1 = require("@prisma/client");
+/**
+ * Flow 10 Defaults
+ * ------------------------------------------------------------
+ * Canonical session creation defaults.
+ *
+ * Any modification to these values requires review of:
+ *   • Flow 10 Identity Session Store
+ *   • Flow 11 Unified Actor Pipeline
+ *   • Flow 12 Audit & Correlation
+ */
+const DEFAULT_SESSION_STATE = "active";
+const DEFAULT_RISK_STATE = "normal";
+const DEFAULT_SOURCE = "flow-10";
+async function createIdentitySession(prisma, { sessionId, actorId, role, merchantId = null, metadata = null, expiresAt, }) {
     return prisma.identity_sessions.create({
         data: {
+            session_id: sessionId,
+            actor_id: actorId,
             role,
-            merchantId,
-            metadata,
+            merchant_id: merchantId,
+            state: DEFAULT_SESSION_STATE,
+            risk_state: DEFAULT_RISK_STATE,
+            source: DEFAULT_SOURCE,
+            created_at: new Date(),
             expires_at: expiresAt,
+            metadata: metadata === null
+                ? client_1.Prisma.JsonNull
+                : metadata,
         },
     });
 }
