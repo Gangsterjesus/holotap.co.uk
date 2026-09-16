@@ -50,3 +50,10 @@ apps/web/out/
 # Temporary
 tmp/
 temp/
+# SSL/TLS
+*.key
+*.csr
+*.crt
+*.pem
+*.pfx
+*.backup
