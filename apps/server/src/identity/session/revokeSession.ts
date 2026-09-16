@@ -35,6 +35,10 @@ import { prisma } from "../../db";
 export async function revokeSession(
   sessionId: string
 ): Promise<boolean> {
+  console.log(
+    `[Flow 10] revokeSession requested for session ${sessionId}`
+  );
+
   try {
     await prisma.sessions.delete({
       where: {
@@ -42,9 +46,17 @@ export async function revokeSession(
       },
     });
 
+    console.log(
+      `[Flow 10] Session revoked successfully: ${sessionId}`
+    );
+
     return true;
   } catch (error) {
-    console.error("[Flow 10] revokeSession Error:", error);
+    console.error(
+      `[Flow 10] Failed to revoke session: ${sessionId}`,
+      error
+    );
+
     return false;
   }
 }

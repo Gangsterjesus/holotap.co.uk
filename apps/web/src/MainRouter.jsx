@@ -127,6 +127,7 @@ export default function MainRouter() {
   element={<RegistryResult />}
 />
           {/* PUBLIC */}
+          <Route path="/" element={<Home />} />
           <Route path="/" element={<UnderConstruction />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/verify" element={<Verify />} />

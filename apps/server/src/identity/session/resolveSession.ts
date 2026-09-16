@@ -1,36 +1,70 @@
 /**
  * =============================================================================
  * HoloTap Engineering Header
- * File: resolveSession.ts
+ * File: revokeSession.ts
  * Flow: 10 — Identity Session Resolution
  * Engineer: Raymond Newton (E5357171)
+ * Layer: Identity / Session
+ *
+ * Purpose:
+ *   Revokes an active identity session from the session store.
+ *
+ * Responsibilities:
+ *   • Validate session identifier
+ *   • Remove session record
+ *   • Emit diagnostic logging
+ *   • Return deterministic success/failure result
  * =============================================================================
  */
+import { prisma } from "../../db";
 
-import { db } from "../../db";
+/**
+ * Revokes a session from persistent storage.
+ *
+ * @param sessionId Session identifier to revoke
+ * @returns true if the session was deleted successfully
+ */
+export async function revokeSession(
+  sessionId: string
+): Promise<boolean> {
 
-export interface ResolveSessionQuery {
-  session_id: string;
-}
-
-export async function resolveSession(
-  query: ResolveSessionQuery
-) {
-  if (!query.session_id) {
-    return null;
-  }
-
-  const session = await db.identitySessions.findOne({
-    session_id: query.session_id,
+  /**
+   * Engineering Trace
+   * Helps correlate registry, identity and payment flows.
+   */
+  console.log("[Flow 10] revokeSession()", {
+    sessionId,
+    timestamp: new Date().toISOString(),
   });
 
-  if (!session) {
-    return null;
-  }
+  try {
+    /**
+     * Delete session using Prisma session delegate.
+     */
+    await prisma.sessions.delete({
+      where: {
+        id: sessionId,
+      },
+    });
 
-  if (session.state !== "active") {
-    return null;
-  }
+    /**
+     * Success audit log.
+     */
+    console.log("[Flow 10] Session revoked successfully", {
+      sessionId,
+    });
 
-  return session;
+    return true;
+  } catch (error) {
+    /**
+     * Failure audit log.
+     * Captures Prisma and database exceptions for diagnostics.
+     */
+    console.error("[Flow 10] Session revocation failed", {
+      sessionId,
+      error,
+    });
+
+    return false;
+  }
 }

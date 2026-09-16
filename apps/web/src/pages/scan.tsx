@@ -73,28 +73,27 @@ export default function Scan() {
   }, []);
 
   return (
-    <ErrorBoundary>
-      {() => (
-        <Layout
-          title="QR Scan"
-          subtitle="Scan a HoloTap QR code to resume or create a session"
-        >
-          <PageHeader
-            title="QR Scan"
-            subtitle="Flow 6 — QR → Validation → Session Resume"
-            actions={null}
-          />
+  <ErrorBoundary>
+  <Layout
+    title="QR Scan"
+    subtitle="Scan a HoloTap QR code to resume or create a session"
+  >
+    <PageHeader
+      title="QR Scan"
+      subtitle="Flow 6 — QR → Validation → Session Resume"
+      actions={null}
+    />
 
-          <DashboardCard title="Scanner" value="">
-            <div className="flex justify-center mt-4">
-              <div
-                id="qr-reader"
-                className="w-[320px] h-[320px] border rounded-lg shadow-md bg-white"
-              />
-            </div>
-          </DashboardCard>
-        </Layout>
-      )}
-    </ErrorBoundary>
+    <DashboardCard title="Scanner" value="">
+      <div className="flex justify-center mt-4">
+        <div
+          id="qr-reader"
+          className="w-[320px] h-[320px] border rounded-lg shadow-md bg-white"
+        />
+      </div>
+    </DashboardCard>
+  </Layout>
+</ErrorBoundary>
   );
+
 }

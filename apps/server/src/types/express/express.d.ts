@@ -1,9 +1,15 @@
 import "express-serve-static-core";
-import type { UnifiedActor } from "./UnifiedActor";
 
 declare module "express-serve-static-core" {
   interface Request {
-    actor?: UnifiedActor;
     correlationId?: string;
+
+    actor?: {
+      id?: string;
+      role?: string;
+      type?: string;
+    };
   }
 }
+
+export {};
