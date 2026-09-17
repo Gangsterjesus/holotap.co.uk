@@ -15,7 +15,6 @@
  *    - Surface platform status
  * ============================================================
  */
-
 import Layout from "../components/Layout.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 
@@ -31,21 +30,28 @@ export default function Home() {
         actions={null}
       />
 
-      {/* CTA */}
-      <div className="flex justify-center mt-10">
-        <a
-          href="/onboarding"
-          className="px-6 py-3 bg-holotap-accent text-black font-semibold rounded-lg shadow-md hover:shadow-xl transition"
-        >
-          Get Started
-        </a>
+      <div className="flex justify-center mt-8 mb-8">
+        <img
+          src="/icon.png"
+          alt="HoloTap"
+          className="h-24"
+        />
       </div>
 
-      {/* Status Box */}
-      <div className="mt-12 bg-white shadow-md rounded-xl p-6 max-w-md mx-auto text-center">
-        <p className="text-sm text-gray-500 mb-2">Platform Status</p>
+      <a
+          href="/onboarding"
+          className="block px-6 py-3 mb-8 rounded-lg bg-holotap-primary text-white shadow-md max-w-md mx-auto text-center"
+        >
+          Get started
+      </a>
+
+      <div className="bg-white shadow-md rounded-xl p-6 max-w-md mx-auto text-center">
+        <p className="text-sm text-gray-500 mb-2">
+          Platform Status
+        </p>
+
         <p className="text-holotap-primary font-semibold">
-          Identity & QR Modules: Initialisation Phase
+          Identity &amp; QR Modules: Initialisation Phase
         </p>
       </div>
     </Layout>

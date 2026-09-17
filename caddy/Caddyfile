@@ -1,8 +1,12 @@
 holotap.co.uk, www.holotap.co.uk {
-    root * D:\holotap.co.uk\apps\web\dist
-    file_server
+
+    root * D:\holotap\holotap.co.uk\apps\web\dist
 
     handle_path /api/* {
         reverse_proxy 127.0.0.1:4000
     }
+
+    try_files {path} /index.html
+
+    file_server
 }

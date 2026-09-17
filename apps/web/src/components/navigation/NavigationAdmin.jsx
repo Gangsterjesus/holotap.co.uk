@@ -24,7 +24,10 @@ export default function NavigationAdmin() {
     <nav className="w-full bg-holotap-primary text-white px-6 py-4 shadow-lg">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
 
-        <div className="text-xl font-bold tracking-wide">HoloTap</div>
+        <div className="flex items-center gap-3">
+          <img src="/icon.png" alt="HoloTap" />
+          <span className="font-semibold tracking-wide">HoloTap</span>
+        </div>
 
         <ul className="flex gap-6 text-sm flex-wrap">
           {LINKS.map((link) => (
