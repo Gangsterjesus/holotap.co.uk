@@ -37,7 +37,15 @@ export default function Home() {
           subtitle="Secure Digital Trust Infrastructure"
         />
 
-     {/* HERO */}
+     {/* ============================================================
+
+HERO
+
+Badge should be centered andremain visually centred on the web page.
+
+Engineer: Raymond Newton (E5357171)
+
+============================================================ */}
 <section className="text-center">
   <div className="flex justify-center mb-8">
     <img
