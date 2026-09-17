@@ -15,12 +15,17 @@
    - Explicit state transitions; no hidden side-effects
    ============================================================ */
 
+
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "./index.css";
 import MainRouter from "./MainRouter.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <MainRouter />
-  </React.StrictMode>
+
+<React.StrictMode>
+
+<MainRouter />
+
+</React.StrictMode>
 );

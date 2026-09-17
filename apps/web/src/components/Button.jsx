@@ -21,26 +21,15 @@
  */
 
 const base =
-  "px-4 py-2 rounded-lg font-medium text-[15px] transition focus:outline-none";
+  "px-6 py-3 rounded-xl font-semibold text-sm tracking-wide transition-all duration-200 focus:outline-none";
 
 const variants = {
-  primary: "bg-blue-600 text-white hover:bg-blue-700",
-  secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300",
-  ghost: "bg-transparent text-blue-600 border border-blue-600 hover:bg-blue-50",
-};
+  primary:
+    "bg-cyan-500 text-slate-950 hover:bg-cyan-400 hover:-translate-y-0.5 shadow-lg",
 
-export default function Button({ variant = "primary", disabled, onClick, children }) {
-  return (
-    <button
-      disabled={disabled}
-      onClick={onClick}
-      className={`
-        ${base}
-        ${variants[variant]}
-        ${disabled ? "opacity-50 cursor-not-allowed" : ""}
-      `}
-    >
-      {children}
-    </button>
-  );
-}
+  secondary:
+    "bg-slate-200 text-slate-900 hover:bg-slate-300 shadow-sm",
+
+  ghost:
+    "border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-slate-950",
+};
