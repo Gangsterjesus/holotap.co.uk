@@ -4,55 +4,191 @@
  *  File: src/pages/public/Home.jsx
  *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
  *  Layer: web-ui
- *  Revision: v2 — Unified Web & Mobile Architecture
- *  ------------------------------------------------------------
- *  Purpose:
- *    Public entry point for HoloTap identity + QR security platform.
+ *  Revision: v5 — Landing Experience System
+ *  Date: 11 September 2026
+ *  © 2026 HoloTap Technologies Ltd. All rights reserved.
+ * ============================================================
  *
- *  Responsibilities:
- *    - Present brand identity
- *    - Provide onboarding CTA
- *    - Surface platform status
+ *  Module Purpose:
+ *    Public entry point for the HoloTap platform,
+ *    introducing Identity, QR Verification,
+ *    and Digital Trust Infrastructure.
+ *
+ *  Module Responsibilities:
+ *    - Present HoloTap branding
+ *    - Explain platform capabilities
+ *    - Route users to onboarding
+ *    - Surface trust indicators
+ *    - Promote identity verification services
  * ============================================================
  */
+
+import { Link } from "react-router-dom";
+
 import Layout from "../components/Layout.jsx";
 import PageHeader from "../components/PageHeader.jsx";
-
+import "../styles/home.css";
 export default function Home() {
   return (
-    <Layout
-      title="HoloTap"
-      subtitle="Secure QR‑identity and organisation‑grade access control"
-    >
-      <PageHeader
-        title="HoloTap"
-        subtitle="Next‑generation digital trust and verification"
-        actions={null}
-      />
-
-      <div className="flex justify-center mt-8 mb-8">
-        <img
-          src="/icon.png"
-          alt="HoloTap"
-          className="h-24"
+    <Layout>
+      <div className="home-container">
+        <PageHeader
+          title="HoloTap"
+          subtitle="Secure Digital Trust Infrastructure"
         />
-      </div>
 
-      <a
-          href="/onboarding"
-          className="block px-6 py-3 mb-8 rounded-lg bg-holotap-primary text-white shadow-md max-w-md mx-auto text-center"
-        >
-          Get started
-      </a>
+     {/* HERO */}
+<section className="text-center">
+  <div className="flex justify-center mb-8">
+    <img
+      src="/icon.png"
+      alt="HoloTap Icon"
+      className="w-24 h-24"
+    />
+  </div>
+          <h2 className="home-title">
+            Secure Every Scan.
+          </h2>
 
-      <div className="bg-white shadow-md rounded-xl p-6 max-w-md mx-auto text-center">
-        <p className="text-sm text-gray-500 mb-2">
-          Platform Status
-        </p>
+          <p className="home-tagline">
+            Identity verification, QR security,
+            access control, and trusted digital
+            infrastructure for organisations,
+            venues, operators, and modern businesses.
+          </p>
 
-        <p className="text-holotap-primary font-semibold">
-          Identity &amp; QR Modules: Initialisation Phase
-        </p>
+          <div className="home-actions">
+            <Link
+              to="/onboarding"
+              className="btn-primary"
+            >
+              Get Started
+            </Link>
+
+            <Link
+              to="/verify"
+              className="btn-secondary"
+            >
+              Verify Badge
+            </Link>
+          </div>
+        </section>
+
+        {/* TRUST BAR */}
+        <section className="home-trust">
+          <div className="home-trust-item">
+            QR Identity
+          </div>
+
+          <div className="home-trust-item">
+            Badge Verification
+          </div>
+
+          <div className="home-trust-item">
+            Audit Logging
+          </div>
+
+          <div className="home-trust-item">
+            Access Control
+          </div>
+        </section>
+
+        {/* FEATURES */}
+        <section className="home-features">
+          <div className="feature-card">
+            <div className="feature-icon">🛡️</div>
+
+            <h3 className="feature-title">
+              Digital Identity
+            </h3>
+
+            <p className="feature-text">
+              Create secure digital identities
+              for people, visitors, staff,
+              merchants, and organisations.
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">📱</div>
+
+            <h3 className="feature-title">
+              QR Verification
+            </h3>
+
+            <p className="feature-text">
+              Validate identities instantly
+              using trusted QR workflows and
+              cryptographically linked records.
+            </p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">🔒</div>
+
+            <h3 className="feature-title">
+              Access Control
+            </h3>
+
+            <p className="feature-text">
+              Secure facilities, events,
+              operations, and trusted
+              organisation environments.
+            </p>
+          </div>
+        </section>
+
+        {/* HOW IT WORKS */}
+        <section className="home-section">
+          <h2 className="feature-title">
+            How HoloTap Works
+          </h2>
+
+          <p className="home-description">
+            Create an identity, issue a badge,
+            scan the QR code, and verify trust
+            in real time across the HoloTap
+            ecosystem.
+          </p>
+        </section>
+
+        {/* PLATFORM STATUS */}
+        <section className="feature-card">
+          <h3 className="feature-title">
+            Platform Status
+          </h3>
+
+          <p className="feature-text">
+            Identity Verification Services:
+            Operational
+          </p>
+
+          <p className="feature-text">
+            QR Infrastructure:
+            Operational
+          </p>
+
+          <p className="feature-text">
+            Trust Services:
+            Active
+          </p>
+        </section>
+
+        {/* FINAL CTA */}
+        <section className="home-section">
+          <h2 className="feature-title">
+            Ready To Secure Every Scan?
+          </h2>
+
+          <div className="home-actions">
+            <Link
+              to="/onboarding"
+              className="btn-primary"
+            >
+              Start Onboarding
+            </Link>
+          </div>
+        </section>
       </div>
     </Layout>
   );

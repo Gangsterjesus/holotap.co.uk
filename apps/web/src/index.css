@@ -1,38 +1,195 @@
 /* ============================================================
-   HoloTap — Engineering Build System
+   HoloTap Engineering — Global Stylesheet
    File: src/index.css
-   Author: Raymond Newton
+   Engineer: Raymond Newton (E5357171)
    Project: HoloTap Identity & QR Security Platform
    Layer: web-ui
-   Revision: v2 — Unified Web & Mobile Architecture
+   Revision: v5 — Engineering Design System
+   Date: 11 September 2026
+
    ------------------------------------------------------------
-   Notes:
-   - Deterministic architecture only
-   - Zero template styling, zero boilerplate
-   - Tailwind v4 CSS-first UI pipeline
-   - Web UI must remain modular and stateless
-   - Identity, QR, and organisation layers isolated
-   - Explicit state transitions; no hidden side-effects
+   Architecture Principles
+
+   • Deterministic architecture only
+   • Zero template styling
+   • Tailwind v4 CSS-first pipeline
+   • Stateless UI components
+   • Modular identity architecture
+   • Explicit state transitions
+   • QR and Identity domains isolated
+   • Engineering-first design language
+
+   Brand Theme
+
+   • Primary:   #2563eb
+   • Secondary: #06b6d4
+   • Success:   #10b981
+   • Text:      #0f172a
+   • Surface:   #ffffff
+   • Border:    #e2e8f0
    ============================================================ */
 
 @import "tailwindcss";
 
 /* ============================================================
-   Global Styles — HoloTap Web UI
+   HoloTap Design Tokens
    ============================================================ */
+
+:root {
+  --holotap-primary: #2563eb;
+  --holotap-secondary: #06b6d4;
+  --holotap-success: #10b981;
+
+  --holotap-text: #0f172a;
+  --holotap-muted: #64748b;
+
+  --holotap-surface: #ffffff;
+  --holotap-border: #e2e8f0;
+
+  --holotap-shadow:
+    0 10px 25px rgba(15, 23, 42, 0.08);
+
+  --holotap-radius: 1rem;
+}
+
+/* ============================================================
+   Base Document Settings
+   ============================================================ */
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
     sans-serif;
-  background-color: #fafafa;
-  color: #111;
+
+  color: var(--holotap-text);
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(37, 99, 235, 0.08),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(6, 182, 212, 0.08),
+      transparent 35%
+    ),
+    #f8fafc;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   Root Application Shell
+   ============================================================ */
+
+#root {
+  min-height: 100vh;
 }
 
 .app-shell {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  isolation: isolate;
 }
+
+/* ============================================================
+   Typography
+   ============================================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  color: var(--holotap-text);
+}
+
+p {
+  line-height: 1.6;
+}
+
+/* ============================================================
+   Links
+   ============================================================ */
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+a:hover {
+  opacity: 0.9;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+
+button {
+  font-family: inherit;
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+/* ============================================================
+   Selection Styling
+   ============================================================ */
+
+::selection {
+  background: var(--holotap-primary);
+  color: white;
+}
+
+/* ============================================================
+   Utility Surface Class
+   ============================================================ */
+
+.holotap-surface {
+  background: var(--holotap-surface);
+  border: 1px solid var(--holotap-border);
+  border-radius: var(--holotap-radius);
+  box-shadow: var(--holotap-shadow);
+}
+
+/* ============================================================
+   Engineering Status Colours
+   ============================================================ */
+
+.status-operational {
+  color: var(--holotap-success);
+}
+
+.status-primary {
+  color: var(--holotap-primary);
+}
+
+.status-secondary {
+  color: var(--holotap-secondary);
+}
+
+/* ============================================================
+   End of File
+   ============================================================ */

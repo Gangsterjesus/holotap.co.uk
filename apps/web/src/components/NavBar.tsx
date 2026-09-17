@@ -24,62 +24,83 @@
  * ============================================================
  */
 
+
 export function NavBar() {
   return (
-    <nav className="w-full bg-gray-100 border-b border-gray-300">
-      <div className="max-w-5xl mx-auto px-4 py-3 flex gap-6 items-center">
-        {/* Brand */}
-        <a href="/" className="font-bold text-lg text-gray-800">
+    <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-6">
+
+        {/* ====================================================
+            BRAND
+            ==================================================== */}
+        <a href="/" className="font-bold text-xl text-slate-900">
           HoloTap
         </a>
 
-        {/* Flow Navigation */}
-        <div className="flex gap-4">
+        {/* ====================================================
+            FLOW NAVIGATION
+            ==================================================== */}
+        <div className="flex flex-wrap gap-4">
 
-          {/* Flow‑1: Registration */}
-          <a href="/flow1/register" className="text-gray-700 hover:text-gray-900">
+          {/* Flow-1 */}
+          <a href="/flow1/register" className="text-slate-700 hover:text-slate-900">
             Registration
           </a>
 
-          {/* Flow‑2: Returning Visitor */}
-          <a href="/flow2/returning" className="text-gray-700 hover:text-gray-900">
+          {/* Flow-2 */}
+          <a href="/flow2/returning" className="text-slate-700 hover:text-slate-900">
             Returning Visitor
           </a>
 
-          {/* Flow‑3: Activation */}
-          <a href="/flow3/activation" className="text-gray-700 hover:text-gray-900">
+          {/* Flow-3 */}
+          <a href="/flow3/activation" className="text-slate-700 hover:text-slate-900">
             Activation
           </a>
 
-          {/* Flow‑4: Calendar / Roster */}
-          <a href="/flow4/calendar" className="text-gray-700 hover:text-gray-900">
+          {/* Flow-4 */}
+          <a href="/flow4/calendar" className="text-slate-700 hover:text-slate-900">
             Calendar
           </a>
 
-          {/* Flow‑5: Payments */}
-          <a href="/flow5/payments" className="text-gray-700 hover:text-gray-900">
+          {/* Flow-5 */}
+          <a href="/flow5/payments" className="text-slate-700 hover:text-slate-900">
             Payments
           </a>
 
-          {/* Flow‑6: Identity Layer */}
-          <a href="/qr/qr" className="text-gray-700 hover:text-gray-900">
+          {/* Flow-6 */}
+          <a href="/qr/qr" className="text-slate-700 hover:text-slate-900">
             Identity QR
           </a>
+
         </div>
 
-        {/* Spacer */}
+        {/* ====================================================
+            FLEX SPACER
+            ==================================================== */}
         <div className="flex-1" />
 
-        {/* Admin Section */}
+        {/* ====================================================
+            ADMIN NAVIGATION
+            ==================================================== */}
         <div className="flex gap-4">
-          <a href="/admin/live" className="text-gray-700 hover:text-gray-900">
+
+          <a href="/admin/live" className="text-slate-700 hover:text-slate-900">
             Live Payments
           </a>
 
-          <a href="/admin/refund" className="text-gray-700 hover:text-gray-900">
+          <a href="/admin/refund" className="text-slate-700 hover:text-slate-900">
             Refund / Void
           </a>
+
         </div>
+
+        {/* ====================================================
+            PRIMARY CTA
+            ==================================================== */}
+        <a href="/onboarding" className="rounded bg-slate-900 px-4 py-2 text-white hover:bg-slate-700">
+          Get Started
+        </a>
+
       </div>
     </nav>
   );

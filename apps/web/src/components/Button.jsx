@@ -33,3 +33,21 @@ const variants = {
   ghost:
     "border border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-slate-950",
 };
+export default function Button({
+  children,
+  variant = "primary",
+  type = "button",
+  disabled = false,
+  onClick,
+}) {
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className={`${base} ${variants[variant] ?? variants.primary}`}
+    >
+      {children}
+    </button>
+  );
+}
