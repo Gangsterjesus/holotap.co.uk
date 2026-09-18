@@ -36,7 +36,8 @@ export async function revokeSession(
   sessionId: string
 ): Promise<boolean> {
   console.log(
-    `[Flow 10] revokeSession requested for session ${sessionId}`
+    "[Flow 10] revokeSession requested for session %s",
+    sessionId
   );
 
   try {
@@ -47,13 +48,15 @@ export async function revokeSession(
     });
 
     console.log(
-      `[Flow 10] Session revoked successfully: ${sessionId}`
+      "[Flow 10] Session revoked successfully: %s",
+      sessionId
     );
 
     return true;
   } catch (error) {
     console.error(
-      `[Flow 10] Failed to revoke session: ${sessionId}`,
+      "[Flow 10] Failed to revoke session: %s",
+      sessionId,
       error
     );
 
