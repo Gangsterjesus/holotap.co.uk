@@ -32,11 +32,12 @@ export default function Home() {
   return (
     <Layout>
       <div className="home-container">
-        <PageHeader
-          title="HoloTap"
-          subtitle="Secure Digital Trust Infrastructure"
-        />
-
+<PageHeader
+  title="HOLOTAP"
+  subtitle="Secure Digital Trust Infrastructure For Identity Verification, QR Security, Access Control And Trusted Organisations"
+  titleClassName="text-cyan-400 text-4xl font-bold"
+  subtitleClassName="text-slate-300 text-lg"
+/>
      {/* ============================================================
 
 HERO

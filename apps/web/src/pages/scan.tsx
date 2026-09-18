@@ -1,17 +1,46 @@
 /**
  * ============================================================
- *  HoloTap Web — QR Scan Page (Flow 6)
+ *  HoloTap Web — QR Scan Surface
  *  File: src/pages/scan.tsx
  *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
- *  Date: 28 July 2026
- * ============================================================
- *
+ *  Project: HoloTap Identity & QR Security Platform
+ *  Layer: web-ui
+ *  Module: Flow 6 Identity Resume
+ *  Revision: v3 — Unified Identity Architecture
+ *  ------------------------------------------------------------
  *  Purpose:
- *    Full‑screen QR scanner for Flow 6.
- *    Validates QR → resumes/creates session → redirects to status page.
+ *    Full-screen QR scanning interface for HoloTap identities.
  *
- *  Subsystem:
- *    Flow 6 — QR → Validation → Session Resume
+ *  Responsibilities:
+ *    - Acquire QR payload
+ *    - Validate QR identity record
+ *    - Resume active identity session
+ *    - Create session when required
+ *    - Redirect to identity status view
+ *
+ *  Flow:
+ *    QR Code
+ *      ↓
+ *    Validation
+ *      ↓
+ *    Identity Resolution
+ *      ↓
+ *    Session Resume
+ *      ↓
+ *    Status View
+ *
+ *  Security Model:
+ *    - QR payload verification
+ *    - Backend identity validation
+ *    - Session-bound identity context
+ *    - Explicit state transitions
+ *    - No hidden side-effects
+ *
+ *  Dependencies:
+ *    - html5-qrcode
+ *    - validateQR()
+ *    - startSession()
+ *    - React Router
  * ============================================================
  */
 
@@ -21,12 +50,14 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 import { validateQR, startSession } from "../lib/api";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import Layout from "../components/Layout.jsx";
-import PageHeader from "../components/PageHeader.jsx";
-import DashboardCard from "../components/DashboardCard.jsx";
+
+
 
 export default function Scan() {
   const navigate = useNavigate();
-  const scannerRef = useRef<any>(null);
+
+  const scannerRef =
+    useRef<Html5QrcodeScanner | null>(null);
 
   async function handleScanSuccess(decodedText: string) {
     try {
@@ -71,29 +102,88 @@ export default function Scan() {
       scannerRef.current = null;
     };
   }, []);
-
-  return (
+return (
   <ErrorBoundary>
-  <Layout
-    title="QR Scan"
-    subtitle="Scan a HoloTap QR code to resume or create a session"
-  >
-    <PageHeader
+    <Layout
       title="QR Scan"
-      subtitle="Flow 6 — QR → Validation → Session Resume"
-      actions={null}
-    />
+      subtitle="Scan a HoloTap QR code to resume or create a session"
+    >
+      <div className="home-container">
 
-    <DashboardCard title="Scanner" value="">
-      <div className="flex justify-center mt-4">
-        <div
-          id="qr-reader"
-          className="w-[320px] h-[320px] border rounded-lg shadow-md bg-white"
-        />
+        <section className="text-center">
+
+          <div className="flex justify-center mb-8">
+            <img
+              src="/icon.png"
+              alt="HoloTap"
+            />
+          </div>
+
+   <h2 className="home-title">
+            Scan Every Identity.
+          </h2>
+
+          <p className="home-tagline">
+            Validate identities, resume secure sessions,
+            and access trusted HoloTap infrastructure
+            through QR verification.
+          </p>
+
+        </section>
+
+        <section className="home-trust">
+          <div className="home-trust-item">
+            QR Identity
+          </div>
+
+          <div className="home-trust-item">
+            Session Resume
+          </div>
+
+          <div className="home-trust-item">
+            Verification
+          </div>
+
+          <div className="home-trust-item">
+            Trust Services
+          </div>
+        </section>
+
+        <section className="feature-card">
+
+          <h3 className="feature-title">
+            QR Scanner
+          </h3>
+
+          <p className="feature-text">
+            Scan a HoloTap QR code to validate identity
+            and establish a secure session.
+          </p>
+
+          <div className="flex justify-center mt-6">
+            <div
+              id="qr-reader"
+              className="w-[320px] h-[320px] bg-white rounded-xl shadow-md border"
+            />
+          </div>
+
+        </section>
+
+        <section className="feature-card">
+
+          <h3 className="feature-title">
+            Scanner Status
+          </h3>
+
+          <p className="feature-text">
+            Camera ready and waiting for a valid
+            HoloTap QR code.
+          </p>
+
+        </section>
+
       </div>
-    </DashboardCard>
-  </Layout>
-</ErrorBoundary>
-  );
-
+    </Layout>
+  </ErrorBoundary>
+);
 }

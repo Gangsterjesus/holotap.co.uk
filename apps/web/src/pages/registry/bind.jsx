@@ -1,99 +1,22 @@
 /**
- * =================================================================================================
- *  HOLOTAP — REGISTRY BIND ACTION PAGE
- *  File: apps/web/src/pages/registry/bind.jsx
- *  Date: 11/09/2026 — Version 2.7
+ * ============================================================
+ * HoloTap Engineering
+ * Engineer Raymond Newton GangsterJesus (E5357171)
+ * Date: 18/9/2026
+ * File: apps/web/src/pages/registry/bind.jsx
+ * Module: Flow 9 Registry Binding
  *
- *  Engineering:
- *    • Raymond Newton — Lead Engineer, HoloTap Engineering (E5357171)
- *    • Copilot — Engineering Assistant
- *
- *  Module:
- *    Flow‑9 Registry Binding — Creator Identity Finalisation Surface
- *
- *  Revision:
- *    v2.7 — Deterministic Binding, Error Surface, and Stateless Result Navigation
- *
- *  Flows:
- *    • Flow‑6 — Identity Session
- *    • Flow‑7 — Identity Verification
- *    • Flow‑8 — Payment Lifecycle
- *    • Flow‑9 — Registry Binding (Flow‑9.2 → Flow‑9.6)
- *
- *  Overview:
- *    Creator‑facing binding surface responsible for registering identity context
- *    against the HoloTap Registry. Successful binding operations generate a
- *    deterministic registry event, trigger a backend ledger write, and route
- *    creators to the Flow‑9.4 Registry Result Surface.
- *
- *  Backend Contract:
- *    POST /api/registry/bind
- *
- *      Success:
- *        {
- *          ok: true,
- *          code: "REGISTRY_BIND_SUCCESS",
- *          record: {
- *            sessionId,
- *            badgeId,
- *            device,
- *            merchant,
- *            status,
- *            timestamp
- *          }
- *        }
- *
- *      Failure:
- *        {
- *          ok: false,
- *          code: "REGISTRY_BIND_INVALID",
- *          message: "..."
- *        }
- *
- *  Features:
- *    • Deterministic Flow‑9.2 binding payload generation
- *    • Deterministic backend response validation
- *    • Deterministic error rendering
- *    • Stateless Flow‑9.4 result navigation
- *    • Ledger‑backed registry integration
- *    • Creator‑safe registry execution surface
- *    • Future Prisma persistence compatibility
- *
- *  Notes:
- *    • Session values currently use deterministic placeholders
- *    • Merchant context wiring pending Flow‑6 integration
- *    • Device fingerprinting currently browser metadata based
- *    • Flow‑9.7 Prisma ledger migration planned
- *    • Flow‑9 Result Surface consumes latest registry record
- *
- *  Navigation Flow:
- *
- *      Creator
- *          ↓
- *      Registry Bind
- *          ↓
- *      POST /registry/bind
- *          ↓
- *      Registry Ledger Write
- *          ↓
- *      /registry/result
- *
- *  Compliance:
- *    • HoloTap Engineering Header Standard v1.0
- *    • Deterministic Rendering Standard
- *    • Flow‑9 Registry Architecture Specification
- *
- * =================================================================================================
+ * Purpose:
+ *   Execute registry binding and route creators to the
+ *   registry result surface following successful registry
+ *   registration and ledger processing.
+ * ============================================================
  */
-
-
-
-
-
-
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Layout from "../../components/Layout";
+import DashboardCard from "../../components/DashboardCard";
 import { api } from "../../services/api";
 
 export default function RegistryBind() {
@@ -102,10 +25,6 @@ export default function RegistryBind() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  /**
-   * Deterministic Flow‑9.2 payload
-   * (Flow‑6, Flow‑7 placeholders until identity wiring is complete)
-   */
   function buildPayload() {
     return {
       sessionId: "session-001",
@@ -115,10 +34,6 @@ export default function RegistryBind() {
     };
   }
 
-  /**
-   * Flow‑9.2 → Flow‑9.6
-   * Deterministic binding + ledger write + stateless routing
-   */
   async function bindRegistry() {
     setLoading(true);
     setError(null);
@@ -126,20 +41,23 @@ export default function RegistryBind() {
     try {
       const payload = buildPayload();
 
-      const res = await api.bindRegistry(payload);
+      const response = await api.bindRegistry(payload);
 
-      if (!res?.ok) {
+      if (!response?.ok) {
         setError({
-          code: res?.code || "REGISTRY_BIND_FAILED",
+          code: response?.code || "REGISTRY_BIND_FAILED",
           message:
-            res?.message ||
+            response?.message ||
             "Unable to complete registry binding.",
         });
+
         return;
       }
 
       navigate("/registry/result");
     } catch (err) {
+      console.error("Registry binding failed:", err);
+
       setError({
         code: "REGISTRY_BIND_EXCEPTION",
         message:
@@ -152,29 +70,93 @@ export default function RegistryBind() {
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">
-        Bind Registry
-      </h1>
+    <Layout
+      title="Registry Binding"
+      subtitle="Flow 9 Creator Registry Registration"
+    >
+      <div className="home-container">
+        <section className="text-center mb-8">
+          <div className="flex justify-center mb-6">
+            /icon.png
+          </div>
 
-      <p className="mb-6 text-gray-600">
-        Complete Flow‑9 Registry Binding.
-      </p>
+          <h1 className="home-title">
+            Bind Creator Registry
+          </h1>
 
-      <button
-        onClick={bindRegistry}
-        disabled={loading}
-        className="bg-holotap-accent text-white px-4 py-2 rounded disabled:opacity-50"
-      >
-        {loading ? "Binding..." : "Bind Registry"}
-      </button>
+          <p className="home-tagline">
+            Register creator identity context,
+            generate a deterministic registry event,
+            and record a trusted ledger transaction.
+          </p>
+        </section>
 
-      {error && (
-        <div className="mt-6 bg-red-900 text-white p-4 rounded">
-          <strong>{error.code}</strong>
-          <p>{error.message}</p>
-        </div>
-      )}
-    </div>
+        <section className="home-trust">
+          <div className="home-trust-item">
+            Registry
+          </div>
+
+          <div className="home-trust-item">
+            Identity
+          </div>
+
+          <div className="home-trust-item">
+            Ledger
+          </div>
+
+          <div className="home-trust-item">
+            Trust
+          </div>
+        </section>
+
+        <DashboardCard>
+          <h3 className="feature-title">
+            Registry Binding
+          </h3>
+
+          <p className="feature-text">
+            Complete Flow 9 registry registration
+            and persist creator identity metadata
+            within the HoloTap trust infrastructure.
+          </p>
+
+          <div className="mt-6">
+            <button
+              onClick={bindRegistry}
+              disabled={loading}
+              className="bg-holotap-accent text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              {loading
+                ? "Binding..."
+                : "Bind Registry"}
+            </button>
+          </div>
+        </DashboardCard>
+
+        {error && (
+          <DashboardCard>
+            <div className="bg-red-900 text-white p-4 rounded">
+              <strong>{error.code}</strong>
+
+              <p className="mt-2">
+                {error.message}
+              </p>
+            </div>
+          </DashboardCard>
+        )}
+
+        <DashboardCard>
+          <h3 className="feature-title">
+            Flow Status
+          </h3>
+
+          <p className="feature-text">
+            Registry binding prepares creator
+            identities for downstream result,
+            status, and history surfaces.
+          </p>
+        </DashboardCard>
+      </div>
+    </Layout>
   );
 }

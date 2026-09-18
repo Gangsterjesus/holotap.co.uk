@@ -5,23 +5,44 @@
  *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
  *  Date: 22 July 2026
  *  © 2026 HoloTap Technologies Ltd. All rights reserved.
- * ============================================================
- *
- *  Purpose:
- *    Public verification page for scanning and validating HoloTap
- *    holographic badges. Used by customers, clients, and operators
- *    to confirm authenticity before initiating a payment or identity
- *    check.
- *
- *  Notes:
- *    - Inline styles removed
- *    - Tailwind v4 CSS-first UI pipeline
- *    - Deterministic architecture only
+ * 
+ * /**
+ * ------------------------------------------------------------
+ * Engineering Backlog
+ * ------------------------------------------------------------
+ * [ ] Replace action button with Button.jsx component
+ * [ ] Extract RegistryPayloadBuilder service
+ * [ ] Replace hardcoded sessionId
+ * [ ] Replace hardcoded badgeId
+ * [ ] Replace hardcoded merchant
+ * [ ] Bind live identity session
+ * [ ] Add TrustBar component
+ * [ ] Adopt Home.jsx layout system
+ * [ ] Add loading card
+ * [ ] Add success state
+ * [ ] Add failure state
+ * [ ] Add confirmation dialog
+ * [ ] Add audit trail display
+ * [ ] Add registry binding result preview
+ * ------------------------------------------------------------
+ 
+`
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
  * ============================================================
  */
 
 import Layout from "../components/Layout.jsx";
 import PageHeader from "../components/PageHeader.jsx";
+
+import "../styles/home.css";
 
 export default function Verify() {
   return (
@@ -29,47 +50,135 @@ export default function Verify() {
       title="Verify Badge"
       subtitle="Public badge authenticity verification"
     >
-      <PageHeader
-        title="Verify a HoloTap Badge"
-        subtitle="Enter a badge code or scan the hologram"
-        actions={null}
-      />
+      <div className="home-container">
 
-      {/* Badge Code Input */}
-      <div className="mt-8 max-w-lg mx-auto">
-        <label className="block text-gray-700 font-medium mb-2">
-          Badge Code
-        </label>
+        <section className="text-center">
 
-        <input
-          type="text"
-          placeholder="Enter badge code (e.g., HT-49302)"
-          className="w-full px-4 py-3 border rounded-lg text-gray-800 shadow-sm"
-        />
+          <div className="flex justify-center mb-8">
+            <img
+              src="/holotap-logo.svg"
+              alt="HoloTap"
+            />
 
-        <button
-          className="mt-4 w-full px-4 py-3 bg-black text-white font-semibold rounded-lg"
-        >
-          Verify Badge
-        </button>
-      </div>
+          </div>
 
-      {/* Scan Instead */}
-      <div className="mt-12 text-center">
-        <h2 className="text-xl font-semibold text-gray-800">
-          Scan Instead
-        </h2>
+          <PageHeader
+            title="Verify A HoloTap Badge"
+            subtitle="Validate identity, authenticity and trust using HoloTap verification services."
+            titleClassName="home-title"
+            subtitleClassName="home-tagline"
+            actions={null}
+          />
 
-        <p className="text-gray-600 mt-2">
-          Use your mobile device to scan the hologram and verify instantly.
-        </p>
+        </section>
 
-        <a
-          href="/scan"
-          className="inline-block mt-4 px-6 py-3 bg-holotap-accent text-black font-semibold rounded-lg shadow-md hover:shadow-xl transition"
-        >
-          Open Scanner
-        </a>
+        <section className="home-trust">
+
+          <div className="home-trust-item"> //needs to be a component//
+            Badge Verification
+          </div>
+
+          <div className="home-trust-item">
+            QR Identity
+          </div>
+
+          <div className="home-trust-item">
+            Trust Services
+          </div>
+
+          <div className="home-trust-item">
+            Real-Time Validation
+          </div>
+
+        </section>
+
+        <section className="feature-card">
+
+          <h3 className="feature-title">
+            Verify Badge
+          </h3>
+
+          <p className="feature-text">
+            Enter a HoloTap badge code and verify
+            that the badge is genuine before
+            proceeding with identity or payment
+            workflows.
+          </p>
+
+          <div className="mt-6">
+
+            <label
+              htmlFor="badgeCode"
+              className="block text-gray-700 font-medium mb-2"
+            >
+              Badge Code
+            </label>
+
+            <input
+              id="badgeCode"
+              name="badgeCode"
+              type="text"
+              placeholder="Enter badge code (e.g. HT-49302)"
+              className="w-full px-4 py-3 border rounded-lg text-gray-800 shadow-sm"
+            />
+
+          </div>
+
+          <div className="home-actions">
+
+            <button
+              type="button"
+              className="btn-primary"
+            >
+              Verify Badge
+            </button>
+
+            <a
+              href="/scan"
+              className="btn-secondary" //needs to be a component// Engineering note: react:router dom link to scanner page//
+            >
+              Open Scanner
+            </a>
+
+          </div>
+
+        </section>
+
+        <section className="feature-card">
+
+          <h3 className="feature-title">
+            Why Verification Matters
+          </h3>
+
+          <p className="feature-text">
+            Verification protects organisations,
+            merchants, venues and operators from
+            counterfeit identities and fraudulent
+            access attempts.
+          </p>
+
+        </section>
+
+        <section className="feature-card">
+
+          <h3 className="feature-title">
+            Platform Status
+          </h3>
+
+          <p className="feature-text">
+            Badge Verification Services: Operational
+          </p>
+
+          <p className="feature-text">
+            QR Infrastructure: Operational
+          </p>
+
+          <p className="feature-text">
+            Trust Services: Active
+          </p>
+
+        </section>
+
       </div>
     </Layout>
   );

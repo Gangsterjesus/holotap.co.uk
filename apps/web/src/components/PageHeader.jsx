@@ -24,27 +24,23 @@ export default function PageHeader({
   title,
   subtitle,
   actions,
+  titleClassName = "text-3xl font-semibold",
+  subtitleClassName = "text-gray-600 text-lg mt-1",
 }) {
   return (
     <div className="flex items-center justify-between mb-8">
-      {/* ============================
-          LEFT SIDE — TITLES
-          ============================ */}
       <div>
-        <h1 className="text-3xl font-semibold">
+        <h1 className={titleClassName}>
           {title}
         </h1>
 
         {subtitle && (
-          <p className="text-gray-600 text-lg mt-1">
+          <p className={subtitleClassName}>
             {subtitle}
           </p>
         )}
       </div>
 
-      {/* ============================
-          RIGHT SIDE — ACTIONS
-          ============================ */}
       {actions && (
         <div className="flex gap-3">
           {actions}
