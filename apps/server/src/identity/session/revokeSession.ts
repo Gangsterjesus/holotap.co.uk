@@ -29,16 +29,30 @@
  *
  * =============================================================================
  */
+/**
+ * ============================================================
+ * HoloTap Engineering
+ * Engineer ID: E5357171
+ *
+ * File: revokeSession.ts
+ * Module: Flow 10 Session Revocation
+ *
+ * Purpose:
+ *   Deterministically revoke an active identity session
+ *   and provide a boolean success contract.
+ * ============================================================
+ */
 
 import { prisma } from "../../db";
 
 export async function revokeSession(
   sessionId: string,
 ): Promise<boolean> {
-
-  console.log(
-    "[Flow 10] revokeSession requested",
-    { sessionId },
+  console.info(
+    "[Flow 10] Session revocation requested",
+    {
+      sessionId,
+    },
   );
 
   try {
@@ -48,17 +62,17 @@ export async function revokeSession(
       },
     });
 
-    console.log(
+    console.info(
       "[Flow 10] Session revoked successfully",
-      { sessionId },
+      {
+        sessionId,
+      },
     );
 
     return true;
-
   } catch (error) {
-
     console.error(
-      "[Flow 10] Failed to revoke session",
+      "[Flow 10] Session revocation failed",
       {
         sessionId,
         error,
