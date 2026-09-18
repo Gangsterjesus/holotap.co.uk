@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createIdentitySession = createIdentitySession;
-const client_1 = require("@prisma/client");
 /**
  * Flow 10 Defaults
  * ------------------------------------------------------------
@@ -27,9 +26,7 @@ async function createIdentitySession(prisma, { sessionId, actorId, role, merchan
             source: DEFAULT_SOURCE,
             created_at: new Date(),
             expires_at: expiresAt,
-            metadata: metadata === null
-                ? client_1.Prisma.JsonNull
-                : metadata,
+            metadata: metadata ?? {},
         },
     });
 }

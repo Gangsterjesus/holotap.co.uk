@@ -18,19 +18,26 @@
  *   - Maintain Prisma compatibility
  * ============================================================
  */
-
-import type { Prisma } from "@prisma/client";
 import { prisma } from "../db";
 
-type ResolvedSession = Prisma.sessionsGetPayload<{
-  include: {
-    actor: true;
-  };
-}>;
+type IdentitySession = {
+  session_id: string;
+  actor_id: string;
+  role: string;
+  state: string;
+  risk_state: string;
+  created_at: Date;
+  expires_at: Date;
+  source: string;
+  metadata: Record<string, unknown> | null;
+};
 
 export async function resolveSession(
-  where: Prisma.sessionsWhereInput,
-): Promise<ResolvedSession | null> {
+  where: {
+    id?: string;
+    actor_id?: string;
+  },
+): Promise<IdentitySession | null> {
   if (!where) {
     return null;
   }
@@ -40,10 +47,25 @@ export async function resolveSession(
       ...where,
       expires_at: null,
     },
-    include: {
-      actor: true,
-    },
   });
 
-  return session;
+  if (!session) {
+    return null;
+  }
+
+  return {
+    session_id: session.id,
+    actor_id: session.actor_id,
+    role: session.role,
+    state: session.state as IdentitySession["state"],
+    risk_state: "low",
+    created_at: session.created_at,
+    expires_at: session.expires_at ?? new Date(),
+    source: "flow7",
+    metadata:
+      (session.metadata as Record<
+        string,
+        unknown
+      > | null) ?? null,
+  };
 }

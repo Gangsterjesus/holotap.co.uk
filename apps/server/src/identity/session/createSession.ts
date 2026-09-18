@@ -1,39 +1,34 @@
 /**
  * =============================================================================
  * HoloTap Engineering Header
- * File: updateSessionState.ts
- * Flow: 10 — Identity Session State Management
+ * File: createSession.ts
+ * Flow: 10 — Identity Session Creation
  * Engineer: Raymond Newton (E5357171)
  * =============================================================================
  */
 
+
+
 import { db } from "../../db";
 
-export interface UpdateSessionStateInput {
-  session_id: string;
-  state: string;
+export interface CreateSessionInput {
+  actor_id: string;
+  role: string | null;
+  state?: string;
 }
 
-export async function updateSessionState(
-  input: UpdateSessionStateInput
+export async function createSession(
+  input: CreateSessionInput
 ) {
-  const session = await db.identitySessions.findOne({
-    session_id: input.session_id,
-  });
-
-  if (!session) {
-    return null;
-  }
-
-  const updatedSession = {
-    ...session,
-    state: input.state,
+  const session = {
+    actor_id: input.actor_id,
+    role: input.role ?? null,
+    state: input.state ?? "pending",
+    created_at: new Date(),
   };
 
-  await db.identitySessions.update(
-    { session_id: input.session_id },
-    { state: input.state }
-  );
+  const createdSession =
+    await db.identitySessions.create(session);
 
-  return updatedSession;
+  return createdSession;
 }

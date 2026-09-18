@@ -29,19 +29,7 @@
  *
  * =============================================================================
  */
-/**
- * ============================================================
- * HoloTap Engineering
- * Engineer ID: E5357171
- *
- * File: revokeSession.ts
- * Module: Flow 10 Session Revocation
- *
- * Purpose:
- *   Deterministically revoke an active identity session
- *   and provide a boolean success contract.
- * ============================================================
- */
+
 
 import { prisma } from "../../db";
 

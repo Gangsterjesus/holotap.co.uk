@@ -1,71 +1,49 @@
 "use strict";
-/**
- * ============================================================
- *  HoloTapServer — Identity Layer
- *  Flow 7 — Session Resolver
- *
- *  Engineer: Raymond Newton (Founder‑Architect, E5357171)
- *  Version: 5.0.0
- *  Date: 15 September 2026
- *  © 2026 HoloTap Technologies Ltd. All rights reserved.
- * ============================================================
- *
- *  Description:
- *  ------------------------------------------------------------
- *  Flow 7 resolves active actor sessions using deterministic
- *  lookup criteria against the canonical Prisma data layer.
- *
- *  This resolver acts as the primary session lookup mechanism
- *  for identity-aware backend flows and provides a stable,
- *  non-mutating access path to session records.
- *
- *  Consumed By:
- *  ------------------------------------------------------------
- *      • Flow 6  — Modern Actor Resolver
- *      • Flow 7  — Session Lifecycle
- *      • Flow 11 — Unified Actor Pipeline
- *      • Flow 12 — Identity Audit & Correlation
- *
- *  Responsibilities:
- *  ------------------------------------------------------------
- *      • Resolve active sessions
- *      • Enforce session activity constraints
- *      • Load actor relations
- *      • Provide deterministic session objects
- *      • Maintain Prisma schema compatibility
- *
- *  Engineering Guarantees:
- *  ------------------------------------------------------------
- *      • Read-only operation
- *      • No destructive database actions
- *      • No schema mutations
- *      • No side effects
- * ============================================================
- */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveSession = resolveSession;
+/**
+ * ============================================================
+ * HoloTap Engineering
+ * Engineer ID: E5357171
+ *
+ * File: resolveSession.ts
+ * Module: Flow 7 Session Resolver
+ *
+ * Purpose:
+ *   Resolve active actor sessions using deterministic
+ *   lookup criteria against the canonical Prisma layer.
+ *
+ * Responsibilities:
+ *   - Resolve active sessions
+ *   - Enforce session activity constraints
+ *   - Load actor relationships
+ *   - Provide deterministic session objects
+ *   - Maintain Prisma compatibility
+ * ============================================================
+ */
 const db_1 = require("../db");
 async function resolveSession(where) {
-    // ------------------------------------------------------------
-    // 1. Defensive guard
-    // ------------------------------------------------------------
     if (!where) {
         return null;
     }
-    // ------------------------------------------------------------
-    // 2. Resolve active (non-expired) session
-    // ------------------------------------------------------------
-    const sessions = await db_1.prisma.sessions.findFirst({
+    const session = await db_1.prisma.sessions.findFirst({
         where: {
             ...where,
             expires_at: null,
         },
-        include: {
-            actor: true,
-        },
     });
-    // ------------------------------------------------------------
-    // 3. Deterministic output
-    // ------------------------------------------------------------
-    return sessions ?? null;
+    if (!session) {
+        return null;
+    }
+    return {
+        session_id: session.id,
+        actor_id: session.actor_id,
+        role: session.role,
+        state: session.state,
+        risk_state: "low",
+        created_at: session.created_at,
+        expires_at: session.expires_at ?? new Date(),
+        source: "flow7",
+        metadata: session.metadata ?? null,
+    };
 }

@@ -22,13 +22,13 @@
 
 import { Router } from "express";
 
-import { createSession } from "../../../identity/session/createSession";
+import { updateSessionState } from "../../../identity/session/updateSessionState.js";
 
 const router = Router();
 
 router.post("/", async (req, res) => {
   try {
-    const session = await createSession(req.body);
+    const session = await updateSessionState(req.body);
     res.status(201).json(session);
   } catch (err) {
     res.status(400).json({

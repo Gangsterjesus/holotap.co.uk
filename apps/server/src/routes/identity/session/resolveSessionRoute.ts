@@ -24,7 +24,8 @@
 
 import { Router } from "express";
 
-import { resolveSession } from "../../../identity/session/resolveSession";
+import { revokeSession } from "../../../identity/session/resolveSession";
+import { resolveSession } from "../../../identity/resolveSession";
 
 const router = Router();
 
@@ -47,7 +48,7 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const envelope = await resolveSession({ session_id: sessionId });
+    const envelope = await resolveSession({ id: sessionId });
 
     return res.status(200).json(envelope);
   } catch (err) {

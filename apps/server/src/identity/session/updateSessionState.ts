@@ -5,46 +5,35 @@
  * Flow: 10 — Identity Session State Management
  * Engineer: Raymond Newton (E5357171)
  * =============================================================================
- *
- * PURPOSE:
- *   Updates the state of an existing Flow‑10 session.
- *
- * RESPONSIBILITIES:
- *   • Locate session by ID
- *   • Update lifecycle state
- *   • Return updated session
- *   • Never throw unhandled exceptions
- *
- * =============================================================================
  */
 
-import { prisma } from "../../db";
+import { db } from "../../db";
 
-export interface UpdateSessionStateRequest {
-  sessionId: string;
+export interface UpdateSessionStateInput {
+  session_id: string;
   state: string;
 }
 
 export async function updateSessionState(
-  request: UpdateSessionStateRequest
+  input: UpdateSessionStateInput
 ) {
-  try {
-    const session = await prisma.sessions.update({
-      where: {
-        id: request.sessionId,
-      },
-      data: {
-        state: request.state,
-      },
-    });
+  const session = await db.identitySessions.findOne({
+    session_id: input.session_id,
+  });
 
-    return session;
-  } catch (error) {
-    console.error(
-      "[Flow 10] updateSessionState Error:",
-      error
-    );
-
+  if (!session) {
     return null;
   }
+
+  const updatedSession = {
+    ...session,
+    state: input.state,
+  };
+
+  await db.identitySessions.update(
+    { session_id: input.session_id },
+    { state: input.state }
+  );
+
+  return updatedSession;
 }

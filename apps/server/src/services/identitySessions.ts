@@ -130,10 +130,7 @@ export async function createIdentitySession(
       created_at: new Date(),
       expires_at: expiresAt,
 
-      metadata:
-        metadata === null
-          ? Prisma.JsonNull
-          : (metadata as Prisma.InputJsonValue),
+      metadata: metadata ?? {},
     },
   });
 }

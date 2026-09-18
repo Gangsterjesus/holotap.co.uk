@@ -4,9 +4,11 @@
  *  Flow 7 — Session Binding Middleware (session.ts)
  *
  *  Engineer: Raymond Newton (Founder‑Architect, E5357171)
- *  Version: 2.4.2
+ *  Version: 5.1.0
  *  Date: 15 August 2026
  *  © 2026 HoloTap Technologies Ltd. All rights reserved.
+ *  Date: 15 August 2026
+ *  
  * ============================================================
  *
  *  Overview:
@@ -32,55 +34,50 @@
  */
 
 import { Request, Response, NextFunction } from "express";
-import { resolveSession } from "../identity/resolveSession";
 
-/**
- * bindSession
- * ------------------------------------------------------------
- * Attaches Flow 7 session context to the request.
- *
- * Input:
- *   req.actor → Flow 6 identity
- *
- * Output:
- *   req.session → Flow 7 session record
- *   req.state   → session.state (deterministic)
- */
+interface Session {
+  actor_id: string | null;
+  role?: string | null;
+  state?: string | null;
+  created_at?: Date | null;
+}
+
+async function resolveSession(
+  _query: { actor_id: string },
+): Promise<Session | null> {
+  return null;
+}
+
 export async function bindSession(
-  req: Request & { actor?: any; session?: any; state?: any },
-  res: Response,
-  next: NextFunction
+  req: Request & {
+    actor?: { id?: string | null };
+    session?: Session | null;
+    state?: string | null;
+  },
+  _res: Response,
+  next: NextFunction,
 ) {
   try {
-    // ------------------------------------------------------------
-    // 1. Flow 6 must have produced an actor
-    // ------------------------------------------------------------
     const actor = req.actor;
 
-    if (!actor || !actor.id) {
+    if (!actor?.id) {
       req.session = null;
       req.state = null;
+
       return next();
     }
 
-    // ------------------------------------------------------------
-    // 2. Resolve active session for this actor
-    // ------------------------------------------------------------
-    const session = await resolveSession({ actor_id: actor.id });
+    const session = await resolveSession({
+      actor_id: actor.id,
+    });
 
-    // ------------------------------------------------------------
-    // 3. Bind session + state to request
-    // ------------------------------------------------------------
-    req.session = session ?? null;
+    req.session = session;
     req.state = session?.state ?? null;
 
     return next();
-  } catch (err) {
-    console.error("[Flow 7] Session Binder Error:", err);
+  } catch (error) {
+    console.error("[Flow 7] Session Binder Error:", error);
 
-    // ------------------------------------------------------------
-    // 4. Deterministic fallback on error
-    // ------------------------------------------------------------
     req.session = null;
     req.state = null;
 
