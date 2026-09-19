@@ -1,28 +1,54 @@
 /**
  * ============================================================
- *  HoloTap — Dashboard Grid Component
- *  File: src/components/DashboardGrid.jsx
- *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
- *  Layer: web-ui
- *  Revision: v2 — Unified Web & Mobile Architecture
- *  Date: 03 August 2026
- *  © 2026 HoloTap Technologies Ltd. All rights reserved.
- * ============================================================
+ * HoloTap Engineering
+ * Engineer ID: E5357171 Ray Newton: AKA GangsterJesus
+ * AI assistant: Co-Pilot (2026)
+ * filePath: apps/web/src/components/DashboardGrid.jsx
+ * File: DashboardGrid.jsx
+ * Layer: Web UI
+ * Component: DashboardGrid
+ * version 5.0.0 
+ * Purpose:
+ *   Provides a responsive dashboard grid for cards,
+ *   analytics widgets, management panels, and future
+ *   Flow 9 / Flow 10 dashboard components.
  *
- *  Purpose:
- *  Provides a responsive grid layout for dashboard cards and
- *  analytics components across creator and admin dashboards.
+ * Responsibilities:
+ *   - Responsive layout management
+ *   - Consistent spacing
+ *   - Dashboard visual alignment
+ *   - Reusable card container
  *
- *  Responsibilities:
- *  - Render children in a responsive grid
- *  - Maintain consistent spacing and alignment
+ * Revision:
+ *   v5.0.0
  * ============================================================
  */
 
-export default function DashboardGrid({ children }) {
+import PropTypes from "prop-types";
+
+export default function DashboardGrid({
+  children,
+  className = "",
+}) {
   return (
-    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div
+      className={`
+        grid
+        grid-cols-1
+        gap-6
+        sm:grid-cols-2
+        lg:grid-cols-3
+        xl:grid-cols-4
+        ${className}
+      `}
+      role="grid"
+    >
       {children}
     </div>
   );
 }
+
+DashboardGrid.propTypes = {
+  children: PropTypes.node,
+  className: PropTypes.string,
+};

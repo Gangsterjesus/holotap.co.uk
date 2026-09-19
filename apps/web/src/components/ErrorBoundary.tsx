@@ -1,30 +1,47 @@
 /**
  * ============================================================
- *  HoloTap Web — Error Boundary Component
- *  File: src/components/ErrorBoundary.tsx
- *  Engineers: Raymond Newton, Copilot Engineering Assistant
- *  Layer: web-ui
- *  Revision: v2 — Unified Web & Mobile Architecture
- *  ------------------------------------------------------------
- *  Purpose:
- *    Provides a controlled UI surface for render‑level failures.
- *    Wraps all Web → UI components (Activation, QR, Session).
+ * HoloTap Engineering
+ * Engineer: Raymond Newton (E5357171)
+ * Alias: GangsterJesus
+ * AI Engineering Assistant: Microsoft Copilot (2026)
  *
- *  Subsystem:
- *    Web → UI Error Handling Layer
+ * Platform: HoloTap Hero v5
  *
- *  Notes:
- *    - Accepts normal JSX children (not render‑props)
- *    - Prevents UI crashes from bubbling
- *    - Deterministic behaviour; no hidden side-effects
+ * File: ErrorBoundary.tsx
+ * FilePath: apps/web/src/components/ErrorBoundary.tsx
+ * Layer: Web UI
+ * Component: ErrorBoundary
+ * Version: 5.0.0
+ * ISO: 27001 Aligned
+ *
+ * Purpose:
+ * ------------------------------------------------------------
+ * Provides controlled render-failure handling for Hero v5
+ * components and prevents UI crashes from propagating through
+ * the application.
+ *
+ * Responsibilities:
+ * ------------------------------------------------------------
+ * - Capture React render failures
+ * - Provide deterministic fallback UI
+ * - Improve application availability
+ * - Support QoS objectives
+ * - Improve operational resilience
+ *
+ * Quality Objectives:
+ * ------------------------------------------------------------
+ * - ISO 27001 Aligned
+ * - QoS Focused
+ * - Availability Focused
+ * - Accessible
+ * - Production Hardened
+ * - Deterministic
+ * - Future Proof
+ *
  * ============================================================
  */
 
 import React from "react";
-
-/* ============================
-   TYPES
-   ============================ */
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -34,38 +51,56 @@ interface ErrorBoundaryState {
   hasError: boolean;
 }
 
-/* ============================
-   COMPONENT
-   ============================ */
-
 export class ErrorBoundary extends React.Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
 > {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false };
+
+    this.state = {
+      hasError: false,
+    };
   }
 
-  /* ============================
-     ERROR CAPTURE
-     ============================ */
-  static getDerivedStateFromError(_: Error): ErrorBoundaryState {
-    return { hasError: true };
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return {
+      hasError: true,
+    };
   }
 
-  componentDidCatch(error: Error, info: React.ErrorInfo): void {
-    console.error("ErrorBoundary caught:", error, info);
+  componentDidCatch(
+    error: Error,
+    info: React.ErrorInfo,
+  ): void {
+    console.error(
+      "[Hero v5] ErrorBoundary",
+      error,
+      info,
+    );
   }
 
-  /* ============================
-     RENDER
-     ============================ */
   render() {
     if (this.state.hasError) {
       return (
-        <div className="p-4 bg-red-100 text-red-700 rounded border border-red-300">
-          <strong>Error:</strong> Something went wrong.
+        <div
+          role="alert"
+          className="
+            rounded-xl
+            border
+            border-red-300
+            bg-red-50
+            p-6
+            text-red-700
+          "
+        >
+          <h2 className="font-semibold">
+            Service Unavailable
+          </h2>
+
+          <p className="mt-2">
+            A component failed to render.
+          </p>
         </div>
       );
     }

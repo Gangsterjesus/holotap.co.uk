@@ -1,51 +1,103 @@
 /**
  * ============================================================
- *  HoloTap — Dashboard Card Component
- *  File: src/components/DashboardCard.jsx
- *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
- *  Layer: web-ui
- *  Revision: v-2 — Unified Web & Mobile Architecture
- *  Date: 03 August 2026
- *  © 2026 HoloTap Technologies Ltd. All rights reserved.
- * ============================================================
+ * HoloTap Engineering
+ * Engineer: Raymond Newton (E5357171)
+ * Alias: GangsterJesus
+ * AI Engineering Assistant: Microsoft Copilot (2026)
  *
- *  Purpose:
- *  Provides a reusable card component for dashboard metrics,
- *  analytics, payment summaries, and admin/creator insights.
+ * Platform: HoloTap Hero v5
  *
- *  Responsibilities:
- *  - Display a title
- *  - Display optional value or content
- *  - Provide consistent styling across all dashboard pages
+ * File: DashboardCard.tsx
+ * FilePath: apps/web/src/components/DashboardCard.jsx
+ * Layer: Web UI
+ * Component: DashboardCard
+ * Version: 5.0.0
+ * ISO: 27001 Aligned
+ * Purpose:
+ * ------------------------------------------------------------
+ * Provides reusable metric and presentation cards for
+ * dashboards, analytics, operational reporting,
+ * identity services and administrative interfaces.
+ *
+ * Responsibilities:
+ * ------------------------------------------------------------
+ * - Render dashboard metrics
+ * - Render dashboard content
+ * - Maintain visual consistency
+ * - Support Flow 9 analytics
+ * - Support Flow 10 identity services
+ * - Support future dashboard expansion
+ *
+ * Quality Objectives:
+ * ------------------------------------------------------------
+ * - ISO 27001 Aligned
+ * - QoS Focused
+ * - Accessible
+ * - Scalable
+ * - Maintainable
+ * - Production Ready
+ * - Future Proof
+ *
  * ============================================================
  */
+export default function DashboardCard({
+  title,
+  value,
+  children,
+  footer,
+  className = "",
+  testId,
+}) {
+  const cardId = `dashboard-card-${title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")}`;
 
-export default function DashboardCard({ title, value, children }) {
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md">
+    <article
+      aria-labelledby={cardId}
+      data-testid={testId}
+      className={`
+        rounded-xl
+        border
+        border-slate-200
+        bg-white
+        p-6
+        shadow-md
+        transition-shadow
+        duration-200
+        hover:shadow-lg
+        ${className}
+      `}
+    >
+      <header>
+        <h2
+          id={cardId}
+          className="mb-3 text-xl font-semibold text-slate-900"
+        >
+          {title}
+        </h2>
+      </header>
 
-      {/* ============================
-          TITLE
-          ============================ */}
-      <h2 className="text-xl font-semibold mb-3">{title}</h2>
-
-      {/* ============================
-          VALUE (OPTIONAL)
-          ============================ */}
-      {value && (
-        <div className="text-3xl font-bold mb-4">
+      {value != null && (
+        <div
+          className="mb-4 text-3xl font-bold text-blue-600"
+          aria-label={`${title} value`}
+        >
           {value}
         </div>
       )}
 
-      {/* ============================
-          CONTENT
-          ============================ */}
-      {children && (
-        <div className="text-gray-700 text-[15px]">
+      {children != null && (
+        <section className="text-[15px] text-slate-700">
           {children}
-        </div>
+        </section>
       )}
-    </div>
+
+      {footer != null && (
+        <footer className="mt-4 border-t border-slate-100 pt-4">
+          {footer}
+        </footer>
+      )}
+    </article>
   );
 }

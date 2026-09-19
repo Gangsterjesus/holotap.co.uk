@@ -1,10 +1,13 @@
 /**
  * ============================================================
  *  HoloTap Web — Flow Navigation Component
- *  File: src/components/NavBar.tsx
+ *  File: src/components/NavBar.tsFilePath: apps/web/src/config/NavBar.tsx
+ *  Engineer ID: E5357171 Ray Newton: AKA GangsterJesus
+ *  AI: Microsoft Copilot (2026)
  *  Engineers: Raymond Newton, Copilot Engineering Assistant
  *  Layer: web-ui
  *  Revision: v2 — Unified Web Architecture
+ *  ISO: 27001 Aligned
  *  ------------------------------------------------------------
  *  Purpose:
  *    Provides deterministic navigation across all HoloTap flows.
