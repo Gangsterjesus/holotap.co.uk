@@ -1,66 +1,54 @@
 /**
  * ============================================================
- *  HoloTap — Admin Home Page
- *  File: src/pages/admin/AdminHome.jsx
- *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
- *  Layer: web-ui
- *  Revision: v2 — Unified Web & Mobile Architecture
- *  Date: 03 August 2026
- *  © 2026 HoloTap Technologies Ltd. All rights reserved.
- * ============================================================
+ * HoloTap Engineering
+ * Engineer ID: E5357171
+ * Version: 5.0.0
  *
- *  Purpose:
- *  The central hub for HoloTap administrators. Provides access
- *  to system logs, refund operations, live monitoring, and
- *  platform‑wide oversight tools. Restricted to admin role only.
+ * Module: Admin Portal
+ * File: AdminHome.jsx
  *
- *  Responsibilities:
- *  - Display core admin metrics
- *  - Provide quick access to admin tools
- *  - Maintain consistent v2 UI structure
+ * Purpose:
+ *   Administrative entry point providing access to
+ *   platform operations, governance, monitoring,
+ *   merchant management and support workflows.
  * ============================================================
  */
 
 import Layout from "../../components/Layout.jsx";
 import PageHeader from "../../components/PageHeader.jsx";
-import DashboardGrid from "../../components/DashboardGrid.jsx";
-import DashboardCard from "../../components/DashboardCard.jsx";
 import Button from "../../components/Button.jsx";
 
-
-/* ============================
-   PAGE
-   ============================ */
+import { adminActions } from "./data/adminAction.js";
 
 export default function AdminHome() {
+  const navigateTo = (route) => {
+    window.location.href = route;
+  };
+
   return (
     <Layout>
       <PageHeader
-        title="Admin Home"
-        subtitle="System‑level controls and monitoring tools for HoloTap operations"
+        title="Admin Portal"
+        subtitle="Access operational, governance and platform management tools"
       />
 
-      {/* Summary Metrics */}
-      <DashboardGrid>
-        <DashboardCard title="Total Creators" value="0" />
-        <DashboardCard title="Active Badges" value="0" />
-        <DashboardCard title="System Alerts" value="None" />
-      </DashboardGrid>
+      <section className="mt-8">
+        <h2 className="mb-4 text-xl font-semibold">
+          Administrative Tools
+        </h2>
 
-      {/* Admin Actions */}
-      <div className="mt-10 flex gap-4 flex-wrap">
-        <Button variant="primary" onClick={() => (window.location.href = "/admin/logs")}>
-          View Logs
-        </Button>
-
-        <Button variant="primary" onClick={() => (window.location.href = "/admin/refunds")}>
-          Refunds
-        </Button>
-
-        <Button variant="primary" onClick={() => (window.location.href = "/admin/live")}>
-          Live Monitoring
-        </Button>
-      </div>
+        <div className="flex flex-wrap gap-4">
+          {adminActions.map((action) => (
+            <Button
+              key={action.key}
+              variant={action.variant ?? "primary"}
+              onClick={() => navigateTo(action.route)}
+            >
+              {action.label}
+            </Button>
+          ))}
+        </div>
+      </section>
     </Layout>
   );
 }
