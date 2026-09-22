@@ -46,117 +46,93 @@ async function emitFounderLedger(req, event_type, envelope) {
         envelope,
         timestamp: Date.now()
     });
+    /**
+     * GET /founder/ping
+     * Founder override verification
+     */
+    exports.founderRoute.get("/ping", founderMiddleware_1.requireFounder, async (req, res) => {
+        const envelope = {
+            message: "Founder override active",
+            timestamp: Date.now()
+        };
+        await emitFounderLedger(req, "founder_ping", envelope);
+        res.json({
+            ok: true,
+            founder: true,
+            message: "Founder override active."
+        });
+    });
+    exports.founderRoute.get("/system", founderMiddleware_1.requireFounder, async (req, res) => {
+        const envelope = {
+            node: process.version,
+            platform: process.platform,
+            uptime: process.uptime(),
+            timestamp: Date.now()
+        };
+        await emitFounderLedger(req, "founder_system_introspection", envelope);
+        res.json({
+            ok: true,
+            system: envelope
+        });
+    });
+    exports.founderRoute.get("/env", founderMiddleware_1.requireFounder, async (req, res) => {
+        const safeEnv = {
+            NODE_ENV: process.env.NODE_ENV,
+            VERSION: process.env.VERSION
+        };
+        await emitFounderLedger(req, "founder_env_inspection", safeEnv);
+        res.json({
+            ok: true,
+            env: safeEnv
+        });
+    });
+    exports.founderRoute.post("/recovery/activate", founderMiddleware_1.requireFounder, async (req, res) => {
+        const envelope = {
+            recovery: true,
+            timestamp: Date.now()
+        };
+        await emitFounderLedger(req, "founder_recovery_activated", envelope);
+        res.json({
+            ok: true,
+            recovery: true,
+            message: "Founder recovery mode activated."
+        });
+    });
+    exports.founderRoute.post("/qr/override", founderMiddleware_1.requireFounder, async (req, res) => {
+        const envelope = {
+            action: "QR_OVERRIDE_TRIGGERED",
+            received: req.body,
+            timestamp: Date.now()
+        };
+        await emitFounderLedger(req, "founder_qr_override", envelope);
+        res.json({
+            ok: true,
+            action: "QR_OVERRIDE_TRIGGERED"
+        });
+    });
+    exports.founderRoute.post("/tenant/repair", founderMiddleware_1.requireFounder, async (req, res) => {
+        const envelope = {
+            action: "TENANT_REPAIR_TRIGGERED",
+            received: req.body,
+            timestamp: Date.now()
+        };
+        await emitFounderLedger(req, "founder_tenant_repair", envelope);
+        res.json({
+            ok: true,
+            action: "TENANT_REPAIR_TRIGGERED"
+        });
+    });
+    exports.founderRoute.post("/user/repair", founderMiddleware_1.requireFounder, async (req, res) => {
+        const envelope = {
+            action: "USER_REPAIR_TRIGGERED",
+            received: req.body,
+            timestamp: Date.now()
+        };
+        await emitFounderLedger(req, "founder_user_repair", envelope);
+        res.json({
+            ok: true,
+            action: "USER_REPAIR_TRIGGERED"
+        });
+    });
 }
-/**
- * GET /founder/ping
- * Founder override verification
- */
-exports.founderRoute.get("/ping", founderMiddleware_1.requireFounder, async (req, res) => {
-    const envelope = {
-        message: "Founder override active",
-        timestamp: Date.now()
-    };
-    await emitFounderLedger(req, "founder_ping", envelope);
-    res.json({
-        ok: true,
-        founder: true,
-        message: "Founder override active."
-    });
-});
-/**
- * GET /founder/system
- * System introspection
- */
-exports.founderRoute.get("/system", founderMiddleware_1.requireFounder, async (req, res) => {
-    const envelope = {
-        node: process.version,
-        platform: process.platform,
-        uptime: process.uptime(),
-        timestamp: Date.now()
-    };
-    await emitFounderLedger(req, "founder_system_introspection", envelope);
-    res.json({
-        ok: true,
-        system: envelope
-    });
-});
-/**
- * GET /founder/env
- * Safe environment visibility
- */
-exports.founderRoute.get("/env", founderMiddleware_1.requireFounder, async (req, res) => {
-    const safeEnv = {
-        NODE_ENV: process.env.NODE_ENV,
-        VERSION: process.env.VERSION
-    };
-    await emitFounderLedger(req, "founder_env_inspection", safeEnv);
-    res.json({
-        ok: true,
-        env: safeEnv
-    });
-});
-/**
- * POST /founder/recovery/activate
- * Founder recovery mode activation
- */
-exports.founderRoute.post("/recovery/activate", founderMiddleware_1.requireFounder, async (req, res) => {
-    const envelope = {
-        recovery: true,
-        timestamp: Date.now()
-    };
-    await emitFounderLedger(req, "founder_recovery_activated", envelope);
-    res.json({
-        ok: true,
-        recovery: true,
-        message: "Founder recovery mode activated."
-    });
-});
-/**
- * POST /founder/qr/override
- * Founder QR override trigger
- */
-exports.founderRoute.post("/qr/override", founderMiddleware_1.requireFounder, async (req, res) => {
-    const envelope = {
-        action: "QR_OVERRIDE_TRIGGERED",
-        received: req.body,
-        timestamp: Date.now()
-    };
-    await emitFounderLedger(req, "founder_qr_override", envelope);
-    res.json({
-        ok: true,
-        action: "QR_OVERRIDE_TRIGGERED"
-    });
-});
-/**
- * POST /founder/tenant/repair
- * Founder tenant repair trigger
- */
-exports.founderRoute.post("/tenant/repair", founderMiddleware_1.requireFounder, async (req, res) => {
-    const envelope = {
-        action: "TENANT_REPAIR_TRIGGERED",
-        received: req.body,
-        timestamp: Date.now()
-    };
-    await emitFounderLedger(req, "founder_tenant_repair", envelope);
-    res.json({
-        ok: true,
-        action: "TENANT_REPAIR_TRIGGERED"
-    });
-});
-/**
- * POST /founder/user/repair
- * Founder user repair trigger
- */
-exports.founderRoute.post("/user/repair", founderMiddleware_1.requireFounder, async (req, res) => {
-    const envelope = {
-        action: "USER_REPAIR_TRIGGERED",
-        received: req.body,
-        timestamp: Date.now()
-    };
-    await emitFounderLedger(req, "founder_user_repair", envelope);
-    res.json({
-        ok: true,
-        action: "USER_REPAIR_TRIGGERED"
-    });
-});
 exports.default = exports.founderRoute;

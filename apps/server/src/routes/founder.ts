@@ -31,28 +31,26 @@ export const founderRoute = Router();
  */
 async function emitFounderLedger(
   req: Request,
-  event_type: string,
+  event: string,
   envelope: Record<string, unknown>
 ) {
   const actor = (req as any)?.actor ?? {};
   const correlationId = (req as any)?.correlationId ?? "no-correlation-id";
 
-  await addRecord({
-    flow: "flow-10",
-    event_type,
+ await addRecord({
+  flow: "flow-10",
+  event: "actor_pipeline_resolved",
+  sessionId: actor.session?.id ?? null,
+  actor: {
+    type: actor.type ?? "founder",
     sessionId: actor.session?.id ?? null,
-    actor: {
-      type: actor.type ?? "founder",
-      sessionId: actor.session?.id ?? null,
-      merchantId: actor.merchantId ?? null,
-      consumerId: actor.identityId ?? null
-    },
-    correlationId,
-    envelope,
-    timestamp: Date.now()
-  });
-}
-
+    merchantId: actor.merchantId ?? null,
+    consumerId: actor.identityId ?? null
+  },
+  correlationId,
+  envelope,
+  timestamp: Date.now()
+});
 /**
  * GET /founder/ping
  * Founder override verification
@@ -72,10 +70,7 @@ founderRoute.get("/ping", requireFounder, async (req: Request, res: Response) =>
   });
 });
 
-/**
- * GET /founder/system
- * System introspection
- */
+
 founderRoute.get("/system", requireFounder, async (req: Request, res: Response) => {
   const envelope = {
     node: process.version,
@@ -92,10 +87,7 @@ founderRoute.get("/system", requireFounder, async (req: Request, res: Response) 
   });
 });
 
-/**
- * GET /founder/env
- * Safe environment visibility
- */
+
 founderRoute.get("/env", requireFounder, async (req: Request, res: Response) => {
   const safeEnv = {
     NODE_ENV: process.env.NODE_ENV,
@@ -110,10 +102,7 @@ founderRoute.get("/env", requireFounder, async (req: Request, res: Response) => 
   });
 });
 
-/**
- * POST /founder/recovery/activate
- * Founder recovery mode activation
- */
+
 founderRoute.post(
   "/recovery/activate",
   requireFounder,
@@ -133,10 +122,7 @@ founderRoute.post(
   }
 );
 
-/**
- * POST /founder/qr/override
- * Founder QR override trigger
- */
+
 founderRoute.post(
   "/qr/override",
   requireFounder,
@@ -156,10 +142,7 @@ founderRoute.post(
   }
 );
 
-/**
- * POST /founder/tenant/repair
- * Founder tenant repair trigger
- */
+
 founderRoute.post(
   "/tenant/repair",
   requireFounder,
@@ -179,10 +162,7 @@ founderRoute.post(
   }
 );
 
-/**
- * POST /founder/user/repair
- * Founder user repair trigger
- */
+
 founderRoute.post(
   "/user/repair",
   requireFounder,
@@ -201,5 +181,5 @@ founderRoute.post(
     });
   }
 );
-
+}
 export default founderRoute;

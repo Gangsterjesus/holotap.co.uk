@@ -130,7 +130,7 @@ export async function createIdentitySession(
       created_at: new Date(),
       expires_at: expiresAt,
 
-      metadata: metadata ?? {},
+    metadata: (metadata ?? {}) as any,
     },
   });
 }

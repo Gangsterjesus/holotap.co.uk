@@ -26,7 +26,7 @@ async function createIdentitySession(prisma, { sessionId, actorId, role, merchan
             source: DEFAULT_SOURCE,
             created_at: new Date(),
             expires_at: expiresAt,
-            metadata: metadata ?? {},
+            metadata: (metadata ?? {}),
         },
     });
 }
