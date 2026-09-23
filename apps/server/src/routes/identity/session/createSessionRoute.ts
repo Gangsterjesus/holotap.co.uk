@@ -21,20 +21,43 @@
 */
 
 import { Router } from "express";
-
-import { updateSessionState } from "../../../identity/session/updateSessionState.js";
+import { prisma } from "../../../db";
+import { createSession } from "../../../identity/session/createSession";
 
 const router = Router();
 
 router.post("/", async (req, res) => {
   try {
-    const session = await updateSessionState(req.body);
-    res.status(201).json(session);
+    const {
+      sessionId,
+      actorId,
+      role,
+      merchantId,
+      metadata,
+      expiresAt,
+    } = req.body;
+
+    const session = await createSession(
+      prisma,
+      {
+        sessionId,
+        actorId,
+        role,
+        merchantId,
+        metadata,
+        expiresAt: new Date(expiresAt),
+      },
+    );
+
+    return res.status(201).json(session);
   } catch (err) {
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       error: "session_creation_failed",
-      details: err instanceof Error ? err.message : String(err),
+      details:
+        err instanceof Error
+          ? err.message
+          : String(err),
     });
   }
 });

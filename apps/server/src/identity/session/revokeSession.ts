@@ -4,34 +4,25 @@
  * File: revokeSession.ts
  * Flow: 10 — Identity Session Revocation
  * Engineer: Raymond Newton (E5357171)
- * Date: 13 September 2026
- * =============================================================================
  *
- * PURPOSE:
- *   Revokes an active identity session within the Flow‑10 identity layer.
+ * Purpose:
+ *   Revokes an active identity session.
  *
- * RESPONSIBILITIES:
- *   • Receive session ID
- *   • Locate identity session record
- *   • Remove or invalidate session
+ * Responsibilities:
+ *   • Validate session existence
+ *   • Revoke session state
+ *   • Preserve auditability
  *   • Return deterministic success/failure response
  *
- * FLOW INTEGRATION:
- *   • Flow 10 — Identity Session Management
+ * Flow Integration:
+ *   • Flow 10 — Identity Sessions
  *   • Flow 11 — Actor Resolution
  *   • Flow 12 — Identity Logging
- *
- * ENGINEERING NOTES:
- *   • Must never throw unhandled exceptions
- *   • Must return boolean result
- *   • Safe for API route consumption
- *   • Emits diagnostic logging on failure
- *
+ *   • Flow 9.6 — Ledger Infrastructure
  * =============================================================================
  */
 
-
-import { prisma } from "../../db";
+import { db } from "../../db";
 
 export async function revokeSession(
   sessionId: string,
@@ -44,11 +35,30 @@ export async function revokeSession(
   );
 
   try {
-    await prisma.sessions.delete({
-      where: {
-        id: sessionId,
+    const session =
+      await db.identitySessions.findOne({
+        session_id: sessionId,
+      });
+
+    if (!session) {
+      console.warn(
+        "[Flow 10] Session not found",
+        {
+          sessionId,
+        },
+      );
+
+      return false;
+    }
+
+    await db.identitySessions.update(
+      {
+        session_id: sessionId,
       },
-    });
+      {
+        state: "revoked",
+      },
+    );
 
     console.info(
       "[Flow 10] Session revoked successfully",

@@ -22,10 +22,8 @@
  */
 
 import { Router } from "express";
-
-const { revokeSession } = require("../../../identity/session/revokeSession") as {
-  revokeSession: (sessionId: string) => Promise<unknown>;
-};
+import { revokeSession }
+  from "../../../identity/session/revokeSession";
 
 const revokeSessionRoute = Router();
 
@@ -39,12 +37,18 @@ revokeSessionRoute.post("/", async (req, res) => {
       });
     }
 
-    const envelope = await revokeSession(sessionId);
+    const revoked = await revokeSession(sessionId);
 
-    return res.status(200).json(envelope);
+    return res.status(200).json({
+      success: revoked,
+      revoked,
+      sessionId,
+    });
   } catch (err) {
-    return res.status(404).json({
-      error: (err as Error).message,
+    return res.status(500).json({
+      error: err instanceof Error
+        ? err.message
+        : String(err),
     });
   }
 });

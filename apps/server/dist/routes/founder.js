@@ -29,12 +29,12 @@ exports.founderRoute = (0, express_1.Router)();
 /**
  * Utility: Emit Flow‑9.6 ledger entry for founder actions
  */
-async function emitFounderLedger(req, event_type, envelope) {
+async function emitFounderLedger(req, event, envelope) {
     const actor = req?.actor ?? {};
     const correlationId = req?.correlationId ?? "no-correlation-id";
     await (0, registryLedger_pg_1.addRecord)({
         flow: "flow-10",
-        event_type,
+        event: "actor_pipeline_resolved",
         sessionId: actor.session?.id ?? null,
         actor: {
             type: actor.type ?? "founder",

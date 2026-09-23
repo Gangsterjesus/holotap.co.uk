@@ -1,62 +1,60 @@
 /**
  * =============================================================================
  * HoloTap Engineering Header
+ * =============================================================================
  * File: resolveSession.ts
- * Flow: 10 — Identity Session Resolution
- * Engineer: Raymond Newton (E5357171)
- * Layer: Identity / Session
+ * Product: HoloTap Hero v5.0.0
+ * Flow: 10 — Identity Session Resolution Service
+ * Subsystem: Identity Session Store
+ *
+ * Engineer: Raymond Newton
+ * Engineer ID: E5357171
+ * Version: 5.0.0
+ * Date: 20 September 2026
  *
  * Purpose:
- *   Revokes an active identity session from the session store.
+ *   Resolves active identity sessions for use throughout
+ *   HoloTap identity, payment and audit flows.
  *
- * Responsibilities:
- *   • Validate session identifier
- *   • Remove session record
- *   • Emit diagnostic logging
- *   • Return deterministic success/failure result
+ * Consumed By:
+ *   • Flow 7 Session Resolution
+ *   • Flow 11 Unified Actor Pipeline
+ *   • Flow 12 Audit Infrastructure
+ *
+ * Status:
+ *   Production Active
  * =============================================================================
  */
+
 import { prisma } from "../../db";
 
-/**
- * Revokes a session from persistent storage.
- *
- * @param sessionId Session identifier to revoke
- * @returns true if the session was deleted successfully
- */
-export async function revokeSession(
-  sessionId: string
-): Promise<boolean> {
+export interface ResolveSessionInput {
+  actorId?: string;
+  sessionId?: string;
+}
 
-
-  console.log("[Flow 10] revokeSession()", {
-    sessionId,
-    timestamp: new Date().toISOString(),
-  });
-
-  try {
-   
-    await prisma.sessions.delete({
+export async function resolveSession(
+  input: ResolveSessionInput,
+) {
+  if (input.sessionId) {
+    return prisma.identity_sessions.findUnique({
       where: {
-        id: sessionId,
+        session_id: input.sessionId,
       },
     });
-
-  
-    console.log("[Flow 10] Session revoked successfully", {
-      sessionId,
-    });
-
-    return true;
-  } catch (error) {
-  
-
-
-    console.error("[Flow 10] Session revocation failed", {
-      sessionId,
-      error,
-    });
-
-    return false;
   }
+
+  if (input.actorId) {
+    return prisma.identity_sessions.findFirst({
+      where: {
+        actor_id: input.actorId,
+        state: "active",
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+  }
+
+  return null;
 }

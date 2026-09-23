@@ -19,9 +19,20 @@
     • Additional fields must be backward‑compatible.
   ────────────────────────────────────────────────────────────────────────────────
 */
-
-export async function revokeSession(sessionId: string) {
-  // Placeholder deterministic envelope until subsystem is fully wired.
+export interface RevokeSessionResult {
+  success: boolean;
+  revoked: boolean;
+  sessionId: string;
+  revokedAt: string;
+  actor: {
+    type: string;
+    sessionId: string;
+    revoked: boolean;
+  };
+}
+export async function revokeSession(
+  sessionId: string,
+): Promise<RevokeSessionResult> {
   return {
     success: true,
     revoked: true,

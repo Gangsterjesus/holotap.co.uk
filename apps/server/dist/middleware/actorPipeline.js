@@ -56,7 +56,7 @@ async function actorPipeline(req, _res, next) {
     try {
         await (0, registryLedger_pg_1.addRecord)({
             flow: "flow-11",
-            event_type: "actor_pipeline_resolved",
+            event: "actor_pipeline_resolved",
             sessionId: unified.session?.id ?? null,
             actor: {
                 type: unified.type,

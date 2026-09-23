@@ -1,36 +1,113 @@
 /**
  * =============================================================================
  * HoloTap Engineering Header
- * File: sessionTypes.ts
- * Flow: 10 — Identity Session Management
- * Engineer: Raymond Newton (E5357171)
  * =============================================================================
+ * File: sessionTypes.ts
+ * FilePath: apps/server/src/identity/session/sessionTypes.ts
+ * Product: HoloTap Hero v5.0.0
+ * Flow: 10 — Identity Session Management
+ * Subsystem: Identity Session Store
+ * ISO 27001: 2026-09-20
+ * Engineer: Raymond Newton
+ * Engineer ID: E5357171
+ * Version: 5.0.0
+ * Date: 20 September 2026
  *
- * PURPOSE:
- *   Canonical type definitions for Flow‑10 identity session lifecycle.
+ * Purpose:
+ *   Canonical Flow 10 session contracts used throughout
+ *   HoloTap identity, payment, audit and ledger flows.
  *
- * USED BY:
+ * Consumed By:
  *   • createSession.ts
  *   • resolveSession.ts
  *   • revokeSession.ts
  *   • createSessionRoute.ts
  *   • resolveSessionRoute.ts
  *   • revokeSessionRoute.ts
+ *   • Flow 7 Session Binding Middleware
+ *   • Flow 11 Unified Actor Pipeline
+ *   • Flow 12 Audit Infrastructure
  *
+ * ISO 27001 Alignment:
+ *   • Access Control
+ *   • Identity & Authentication
+ *   • Session Lifecycle Management
+ *   • Auditability
+ *   • Traceability
+ *   • Information Security Monitoring
+ *
+ * Security Objectives:
+ *   • Secure By Design
+ *   • Defence In Depth
+ *   • Least Privilege
+ *   • Deterministic Session Handling
+ *   • Identity First Security
+ *
+ * Status:
+ *   Production Active
  * =============================================================================
  */
 
+import type { Prisma } from "@prisma/client";
 
+/**
+ * =============================================================================
+ * Session State Registry
+ * =============================================================================
+ */
+
+export const SESSION_STATES = {
+  ACTIVE: "active",
+  IDLE: "idle",
+  VERIFICATION_PENDING: "verification_pending",
+  VERIFIED: "verified",
+  PAYMENT_PENDING: "payment_pending",
+  PAYMENT_COMPLETE: "payment_complete",
+  REVOKED: "revoked",
+  EXPIRED: "expired",
+} as const;
 
 export type SessionState =
-  | "active"
-  | "idle"
-  | "verification_pending"
-  | "verified"
-  | "payment_pending"
-  | "payment_complete"
-  | "revoked"
-  | "expired";
+  typeof SESSION_STATES[keyof typeof SESSION_STATES];
+
+/**
+ * =============================================================================
+ * Risk Classification Registry
+ * =============================================================================
+ */
+
+export const RISK_STATES = {
+  NORMAL: "normal",
+  ELEVATED: "elevated",
+  RESTRICTED: "restricted",
+  BLOCKED: "blocked",
+} as const;
+
+export type RiskState =
+  typeof RISK_STATES[keyof typeof RISK_STATES];
+
+/**
+ * =============================================================================
+ * Session Source Registry
+ * =============================================================================
+ */
+
+export const SESSION_SOURCES = {
+  FLOW_10: "flow-10",
+  MOBILE: "mobile",
+  MERCHANT: "merchant",
+  FOUNDER: "founder",
+  API: "api",
+} as const;
+
+export type SessionSource =
+  typeof SESSION_SOURCES[keyof typeof SESSION_SOURCES];
+
+/**
+ * =============================================================================
+ * Canonical Identity Session
+ * =============================================================================
+ */
 
 export interface IdentitySession {
   session_id: string;
@@ -44,52 +121,32 @@ export interface IdentitySession {
   role?: string | null;
 
   state: SessionState;
-  risk_state: string;
+  risk_state: RiskState;
 
   created_at: Date;
   expires_at: Date;
 
-  source: string;
+  source: SessionSource;
 
-  metadata?: Record<string, unknown> | null;
+  correlation_id?: string | null;
+
+  metadata?: Prisma.InputJsonValue | null;
 }
 
 /**
- * Flow‑10 Create Session
+ * =============================================================================
+ * Flow 10 Create Session Input
+ * =============================================================================
  */
-export interface CreateSessionRequest {
-  actor_id: string;
 
-  badge_id?: string;
-  device_id?: string;
-  merchant_id?: string;
+export interface CreateSessionInput {
+  sessionId: string;
+  actorId: string;
 
-  role?: string;
+  role: string | null;
 
-  source: string;
+  merchantId?: string | null;
 
-  metadata?: Record<string, unknown>;
-}
+  expiresAt: Date;
 
-/**
- * Flow‑10 Resolve Session
- */
-export interface ResolveSessionRequest {
-  session_id: string;
-}
-
-/**
- * Flow‑10 Revoke Session
- */
-export interface RevokeSessionRequest {
-  session_id: string;
-}
-
-/**
- * Standard service result
- */
-export interface SessionResult {
-  success: boolean;
-  session?: IdentitySession | null;
-  message?: string;
 }
