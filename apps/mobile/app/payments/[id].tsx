@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { getPaymentById, type PaymentRecord } from "../(dal)/payment";
+import { getPaymentById, type PaymentRecord } from "../../payment";
 
 export default function PaymentDetailScreen() {
   const params = useLocalSearchParams();

@@ -113,7 +113,7 @@ export default function PaymentScreen() {
 
       if (result.success) {
         const next: Href = {
-          pathname: "/payment-result",
+          pathname: "/payment-result" as never,
           params: {
             amount,
             merchantId,

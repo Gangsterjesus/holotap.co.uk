@@ -7,8 +7,8 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useRouter } from "expo-router";
-import { useIdentity } from "../(content)/IdentityContext";
-import { getPayments, type PaymentRecord } from "../(dal)/payment";
+import { useIdentity } from "../../identity/IdentityContext";
+import { getPayments, type PaymentRecord } from "../../payment";
 
 export default function PaymentsIndexScreen() {
   const router = useRouter();

@@ -22,8 +22,8 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-nativ
 import { useLocalSearchParams, router } from "expo-router";
 
 // DAL imports — group folders must be imported literally
-import type { PaymentRecord } from "../(dal)/payment";
-import { getPaymentById, updatePayment } from "../(dal)/payment";
+import type { PaymentRecord } from "../../payment";
+import { getPaymentById, updatePayment } from "../../payment";
 
 export default function EditPaymentScreen() {
   const { id } = useLocalSearchParams();
