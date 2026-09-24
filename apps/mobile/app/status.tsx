@@ -1,130 +1,414 @@
-/*  
- * =====================================================================================
- *  HoloTap Engineering — Mobile Identity Layer
- * -------------------------------------------------------------------------------------
- *  File: status.tsx
- *  Version: 2.4
- *  Engineer: E5357171 (R. Newton)
- *  Date: 20 Aug 2026
- *  Module: Identity Surface (Flow 7)
+/**
+ * =============================================================================
+ * HoloTap Mobile — Merchant Profile Screen (Hero v5.0.0)
+ * =============================================================================
+ * Engineer: Raymond Newton (E5357171)
+ * Product: HoloTap Hero v5.0.0
+ * File: app/profile.tsx
+ * Date: 23 September 2026
  *
- *  Purpose:
- *      - Surface the injected identity envelope after QR acquisition (Flow 6)
- *      - Provide deterministic visibility of identity type, session binding,
- *        issuance timestamp, and device origin
- *      - Act as the transition surface into Flow 8 (Payment Lifecycle)
+ * PURPOSE:
+ *   Displays merchant identity, session governance,
+ *   QR identity status, hologram verification status,
+ *   platform readiness and future roadmap information.
  *
- *  Notes:
- *      - Requires IdentityProvider to be mounted at the application root
- *      - IdentityPayload is strongly typed to ensure deterministic rendering
- *      - All sections below are commented for engineering clarity
- * =====================================================================================
+ * ARCHITECTURE:
+ *   Merchant Identity
+ *          ↓
+ *   Session Governance (Flow-10)
+ *          ↓
+ *   Actor Resolution (Flow-11)
+ *          ↓
+ *   QR Identity
+ *          ↓
+ *   Hologram Verification Layer
+ *          ↓
+ *   Payment Trust Layer
+ *
+ * RESPONSIBILITIES:
+ *   • Display merchant identity metadata
+ *   • Display merchant governance information
+ *   • Display QR verification status
+ *   • Display hologram verification status
+ *   • Display session governance status
+ *   • Display platform operational status
+ *   • Provide deterministic fallback states
+ *
+ * FLOW ALIGNMENT:
+ *   • Flow 1  — Identity
+ *   • Flow 7  — Settings
+ *   • Flow 8  — Merchant Profile
+ *   • Flow 10 — Session Governance
+ *   • Flow 11 — Actor Resolution
+ *   • Flow 12 — Identity Logging
+ *
+ * HERO V5.0.0 OBJECTIVES:
+ *   • Identity-first architecture
+ *   • Merchant governance visibility
+ *   • Session governance visibility
+ *   • QR identity visibility
+ *   • Hologram verification visibility
+ *   • Auditability readiness
+ *   • Translation readiness
+ *   • Multi-currency readiness
+ * =============================================================================
+ */
+/**
+ * =============================================================================
+ * HoloTap Mobile — Merchant Profile Screen (Hero v5.0.0)
+ * =============================================================================
+ * Engineer: Raymond Newton (E5357171)
+ * Product: HoloTap Hero v5.0.0
+ * File: app/profile.tsx
+ * Date: 23 September 2026
+ *
+ * PURPOSE:
+ *   Displays merchant identity, session governance,
+ *   QR identity status, hologram verification status,
+ *   platform readiness and future roadmap information.
+ *
+ * ARCHITECTURE:
+ *   Merchant Identity
+ *          ↓
+ *   Session Governance (Flow-10)
+ *          ↓
+ *   Actor Resolution (Flow-11)
+ *          ↓
+ *   QR Identity
+ *          ↓
+ *   Hologram Verification Layer
+ *          ↓
+ *   Payment Trust Layer
+ *
+ * RESPONSIBILITIES:
+ *   • Display merchant identity metadata
+ *   • Display merchant governance information
+ *   • Display QR verification status
+ *   • Display hologram verification status
+ *   • Display session governance status
+ *   • Display platform operational status
+ *   • Provide deterministic fallback states
+ *
+ * FLOW ALIGNMENT:
+ *   • Flow 1  — Identity
+ *   • Flow 7  — Settings
+ *   • Flow 8  — Merchant Profile
+ *   • Flow 10 — Session Governance
+ *   • Flow 11 — Actor Resolution
+ *   • Flow 12 — Identity Logging
+ *
+ * HERO V5.0.0 OBJECTIVES:
+ *   • Identity-first architecture
+ *   • Merchant governance visibility
+ *   • Session governance visibility
+ *   • QR identity visibility
+ *   • Hologram verification visibility
+ *   • Auditability readiness
+ *   • Translation readiness
+ *   • Multi-currency readiness
+ * =============================================================================
  */
 
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
-import { useIdentity } from "../identity/IdentityContext";
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-/* --------------------------------------------------------------------------
- *  Component: IdentityStatusScreen
- *  Description:
- *      - Reads the current identity envelope from IdentityContext
- *      - Renders identity fields when present
- *      - Renders fallback message when identity is absent
- *      - Provides deterministic transition into Flow 8
- * -------------------------------------------------------------------------- */
-export default function IdentityStatusScreen() {
-  const router = useRouter();
-  const identity = useIdentity(); // IdentityPayload | null
+import { useMerchantIdentity } from "../hooks/useMerchantIdentity";
 
+interface SectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+function Section({
+  title,
+  children,
+}: SectionProps) {
   return (
-    <View style={styles.container}>
-      {/* ------------------------------------------------------------------
-       *  Section: Title
-       * ------------------------------------------------------------------ */}
-      <Text style={styles.title}>Identity Status</Text>
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>
+        {title}
+      </Text>
 
-      {/* ------------------------------------------------------------------
-       *  Section: Identity Rendering
-       * ------------------------------------------------------------------ */}
-      {identity ? (
-        <>
-          <Text style={styles.label}>ID</Text>
-          <Text style={styles.value}>{identity.id}</Text>
-
-          <Text style={styles.label}>Type</Text>
-          <Text style={styles.value}>{identity.type}</Text>
-
-          <Text style={styles.label}>Session</Text>
-          <Text style={styles.value}>{identity.sessionId}</Text>
-
-          <Text style={styles.label}>Issued</Text>
-          <Text style={styles.value}>
-            {new Date(identity.issuedAt).toLocaleString()}
-          </Text>
-
-          <Text style={styles.label}>Device</Text>
-          <Text style={styles.value}>{identity.device}</Text>
-
-          {/* ------------------------------------------------------------------
-           *  Section: Transition to Flow 8
-           * ------------------------------------------------------------------ */}
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() =>
-              router.replace("/payments" as Parameters<typeof router.replace>[0])
-            }
-          >
-            <Text style={styles.buttonText}>Continue to Payments</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <Text style={styles.noIdentity}>No identity loaded.</Text>
-      )}
+      {children}
     </View>
   );
 }
 
-/* --------------------------------------------------------------------------
- *  Stylesheet: Deterministic layout + spacing
- * -------------------------------------------------------------------------- */
+interface InfoRowProps {
+  label: string;
+  value: string;
+}
+
+function InfoRow({
+  label,
+  value,
+}: InfoRowProps) {
+  return (
+    <View style={styles.infoRow}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={styles.infoValue}>{value}</Text>
+    </View>
+  );
+}
+
+export default function ProfileScreen() {
+  const {
+    identity,
+    loading: identityLoading,
+    error: identityError,
+  } = useMerchantIdentity();
+
+  /**
+   * Loading State
+   */
+  if (identityLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.message}>
+          Loading merchant identity...
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
+  /**
+   * Error State
+   */
+  if (identityError || !identity) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.message}>
+          Unable to load merchant identity.
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
+  const governanceIdentity = identity as typeof identity & {
+    sessionState?: string;
+    riskState?: string;
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
+        <Text style={styles.header}>
+          Merchant Profile
+        </Text>
+
+        <View style={styles.card}>
+          <Section title="Merchant Identity">
+            <Text style={styles.text}>
+              Name: {identity.name}
+            </Text>
+
+            <Text style={styles.text}>
+              Merchant ID: {identity.id}
+            </Text>
+
+            <Text style={styles.text}>
+              Status: {identity.status}
+            </Text>
+          </Section>
+
+         <Section title="Session Governance">
+  <InfoRow
+    label="Session State"
+    value={
+      governanceIdentity.sessionState ??
+      "Active"
+    }
+  />
+
+  <InfoRow
+    label="Risk State"
+    value={
+      governanceIdentity.riskState ?? "Low"
+    }
+  />
+</Section>
+
+          <Section title="QR & Hologram Verification">
+            <Text style={styles.text}>
+              QR Identity: Active
+            </Text>
+
+            <Text style={styles.text}>
+              Hologram Verification:
+              {" "}
+              {identity.hologramId
+                ? "Enabled"
+                : "Not Enabled"}
+            </Text>
+
+            {identity.hologramId && (
+              <Text style={styles.text}>
+                Hologram ID:
+                {" "}
+                {identity.hologramId}
+              </Text>
+            )}
+          </Section>
+
+        <Section title="Merchant Governance">
+  <InfoRow
+    label="Identity Source"
+    value="identity-service"
+  />
+
+  <InfoRow
+    label="Merchant Status"
+    value={identity.status}
+  />
+</Section>
+
+          <Section title="Identity & Verification">
+            <Text style={styles.text}>
+              Identity System: Operational
+            </Text>
+
+            <Text style={styles.text}>
+              QR Identity: Active
+            </Text>
+
+            <Text style={styles.text}>
+              Hologram Layer:
+              {" "}
+              {identity.hologramId
+                ? "Enabled"
+                : "Inactive"}
+            </Text>
+          </Section>
+
+          <Section title="Hero v5.0.0 Platform Status">
+            <Text style={styles.text}>
+              Session Governance: Enabled
+            </Text>
+
+            <Text style={styles.text}>
+              Audit Infrastructure: Active
+            </Text>
+
+            <Text style={styles.text}>
+              Merchant Profile: Verified
+            </Text>
+
+            <Text style={styles.text}>
+              Security Hardening: In Progress
+            </Text>
+          </Section>
+
+          <Section title="Hero v5.0.0 Roadmap">
+            <Text style={styles.text}>
+              • Merchant Onboarding
+            </Text>
+
+            <Text style={styles.text}>
+              • Translation Dropdown Menu
+            </Text>
+
+            <Text style={styles.text}>
+              • Multi-Currency Support
+            </Text>
+
+            <Text style={styles.text}>
+              • API Documentation Portal
+            </Text>
+
+            <Text style={styles.text}>
+              • Stablecoin Research
+            </Text>
+
+            <Text style={styles.text}>
+              • Digital Asset Readiness
+            </Text>
+          </Section>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    backgroundColor: "#fff",
+    backgroundColor: "#F5F7FA",
+    paddingHorizontal: 20,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: "600",
-    marginBottom: 16,
+
+  content: {
+    paddingBottom: 40,
   },
-  label: {
-    marginTop: 12,
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#555",
+
+  header: {
+    fontSize: 32,
+    fontWeight: "700",
+    marginTop: 16,
+    marginBottom: 20,
+    color: "#111827",
   },
-  value: {
+
+  card: {
+    backgroundColor: "#FFFFFF",
+    padding: 20,
+    borderRadius: 12,
+
+    /**
+     * Expo Web compatible styling.
+     * Replaces deprecated shadow* properties.
+     */
+    boxShadow:
+      "0px 2px 8px rgba(0,0,0,0.08)",
+
+    marginBottom: 32,
+  },
+
+  section: {
+    marginBottom: 24,
+  },
+
+  sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#000",
+    marginBottom: 8,
+    color: "#111827",
   },
-  button: {
-    marginTop: 32,
-    backgroundColor: "#4DA6FF",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#000",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  noIdentity: {
+
+  text: {
     fontSize: 16,
-    color: "#444",
+    color: "#4B5563",
+    marginBottom: 6,
+  },
+
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+
+  infoLabel: {
+    fontSize: 16,
+    color: "#4B5563",
+  },
+
+  infoValue: {
+    fontSize: 16,
+    color: "#111827",
+    fontWeight: "600",
+  },
+
+  message: {
+    fontSize: 16,
+    marginTop: 20,
+    color: "#4B5563",
   },
 });

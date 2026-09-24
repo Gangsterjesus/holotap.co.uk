@@ -1,141 +1,209 @@
-
-
 /**
  * =============================================================================
  * ENGINEERING HEADER — QR SCANNER SCREEN
  * =============================================================================
- * Author: Raymond Newton
- * Date: 29 June 2026
+ * Author: Raymond Newton (E5357171)
+ * Product: HoloTap Hero v5.0.0
  * File: scan-qr.tsx
+ * Date: 23 September 2026
  *
- * -----------------------------------------------------------------------------
- * PURPOSE
- * -----------------------------------------------------------------------------
- * This screen handles the consumer-facing QR scanning flow. It opens the device
- * camera, scans merchant QR codes, extracts the encoded session token, and sends
- * it to the backend for verification. Once validated, the screen navigates to
- * the Payment screen with the merchantId and sessionId required for payment.
+ * Purpose:
+ *   Consumer-facing QR scanning flow.
  *
- * -----------------------------------------------------------------------------
- * ARCHITECTURE NOTES
- * -----------------------------------------------------------------------------
- * - Uses Expo Camera (CameraView) for scanning QR codes.
- * - Uses Expo Router for navigation to the Payment screen.
- * - Uses useCameraPermissions() to request and manage camera access.
- * - Scanning is throttled using a `scanned` boolean to prevent duplicate scans.
- * - Backend endpoint `/api/qr/verify` validates the QR token and returns
- *   merchantId + sessionId.
- * - Navigation passes parameters via Expo Router query params.
+ * Responsibilities:
+ *   • Capture merchant QR codes
+ *   • Verify QR token with backend
+ *   • Validate backend response
+ *   • Prevent duplicate scans
+ *   • Navigate to payment flow
  *
- * -----------------------------------------------------------------------------
- * FLOW ALIGNMENT
- * -----------------------------------------------------------------------------
- * Flow 3: Merchant generates QR code
- *   - Merchant app produces a signed token encoded into a QR code.
- *
- * Flow 4: Consumer scans QR code
- *   - This screen opens the camera and reads the QR token.
- *
- * Flow 5: Session Verification
- *   - The scanned token is POSTed to `/api/qr/verify`.
- *   - Backend returns merchantId + sessionId.
- *
- * Flow 6: Payment Initialisation
- *   - Navigation to `/payment` occurs with validated parameters.
- *
- * -----------------------------------------------------------------------------
- * ENGINEERING NOTES
- * -----------------------------------------------------------------------------
- * - The `scanned` flag prevents multiple rapid scans from triggering duplicate
- *   backend requests or navigation events.
- * - Error handling is intentionally simple (alert-based) during development.
- * - The backend IP address is currently hardcoded for local testing; this will
- *   be replaced with environment configuration in production.
- * - The screen is designed to be lightweight and responsive, avoiding expensive
- *   re-renders and maintaining predictable state transitions.
- * - Camera permission flow is handled automatically on mount.
- *
- * -----------------------------------------------------------------------------
- * TESTING NOTES
- * -----------------------------------------------------------------------------
- * - Manual testing: verify scanning behaviour with valid and invalid QR codes.
- * - API testing: confirm backend returns correct merchantId/sessionId.
- * - Permission testing: confirm camera permission prompts appear correctly.
- * - Navigation testing: confirm router pushes to `/payment` with correct params.
- *
+ * Hero Objectives:
+ *   • Strict TypeScript compliance
+ *   • Runtime response validation
+ *   • Deterministic state transitions
+ *   • API safety
+ *   • QR verification hardening
  * =============================================================================
  */
 
-
-
-
-
-
-
-
-
-
-import { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import { CameraView, useCameraPermissions } from "expo-camera";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import {
+  CameraView,
+  useCameraPermissions,
+} from "expo-camera";
 import { useRouter } from "expo-router";
+
 import { API_URL } from "../src/config";
 
+interface QRVerifyRequest {
+  token: string;
+}
 
+interface QRVerifySuccessResponse {
+  merchantId: string;
+  sessionId: string;
+}
+
+interface QRVerifyErrorResponse {
+  message: string;
+}
+
+function isQRVerifySuccessResponse(
+  value: unknown,
+): value is QRVerifySuccessResponse {
+  if (
+    typeof value !== "object" ||
+    value === null
+  ) {
+    return false;
+  }
+
+  const candidate = value as Record<
+    string,
+    unknown
+  >;
+
+  return (
+    typeof candidate.merchantId === "string" &&
+    typeof candidate.sessionId === "string"
+  );
+}
+
+function getErrorMessage(
+  value: unknown,
+): string {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "message" in value &&
+    typeof (
+      value as QRVerifyErrorResponse
+    ).message === "string"
+  ) {
+    return (
+      value as QRVerifyErrorResponse
+    ).message;
+  }
+
+  return "Invalid QR code";
+}
 
 export default function ScanQR() {
   const router = useRouter();
-  const [permission, requestPermission] = useCameraPermissions();
-  const [scanned, setScanned] = useState(false);
 
+  const [
+    permission,
+    requestPermission,
+  ] = useCameraPermissions();
+
+  const [scanned, setScanned] =
+    useState<boolean>(false);
 
   useEffect(() => {
     if (!permission?.granted) {
-      requestPermission();
+      void requestPermission();
     }
-  }, [permission, requestPermission]);
+  }, [
+    permission,
+    requestPermission,
+  ]);
 
-  const handleScan = async (data: string) => {
-    if (scanned) return;
+  const handleScan = async (
+    data: string,
+  ): Promise<void> => {
+    if (scanned) {
+      return;
+    }
+
     setScanned(true);
 
     try {
-     const response = await fetch("http://192.168.1.205:3000/session/verify", {
+      const payload: QRVerifyRequest = {
+        token: data,
+      };
 
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: data }),
-      });
+      const response = await fetch(
+        `${API_URL}/session/verify`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
 
-      const result = await response.json();
+      const result: unknown =
+        await response.json();
 
       if (response.ok) {
-        // cast to any to satisfy expo-router route typing for dynamic routes
+        if (
+          !isQRVerifySuccessResponse(result)
+        ) {
+          throw new Error(
+            "QR verification response validation failed",
+          );
+        }
+
         router.push({
           pathname: "/payment",
           params: {
-            merchantId: result.merchantId,
-            sessionId: result.sessionId,
+            merchantId:
+              result.merchantId,
+            sessionId:
+              result.sessionId,
           },
-        } as any);
-      } else {
-        alert(result.message || "Invalid QR code");
-        setScanned(false);
+        } as never);
+
+        return;
       }
-    } catch {
-      alert("Network error");
+
+      Alert.alert(
+        "QR Verification Failed",
+        getErrorMessage(result),
+      );
+
+      setScanned(false);
+    } catch (error) {
+      console.error(
+        "QR verification error",
+        error,
+      );
+
+      Alert.alert(
+        "Network Error",
+        "Unable to verify QR code.",
+      );
+
       setScanned(false);
     }
   };
 
   if (!permission) {
-    return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
+    return (
+      <ActivityIndicator
+        size="large"
+        style={{
+          marginTop: 50,
+        }}
+      />
+    );
   }
 
   if (!permission.granted) {
     return (
       <View style={styles.center}>
-        <Text style={styles.text}>Camera permission is required</Text>
+        <Text style={styles.text}>
+          Camera permission is required
+        </Text>
       </View>
     );
   }
@@ -144,29 +212,47 @@ export default function ScanQR() {
     <View style={styles.container}>
       <CameraView
         style={styles.camera}
-        onBarcodeScanned={({ data }) => handleScan(data)}
+        onBarcodeScanned={({
+          data,
+        }) => {
+          void handleScan(data);
+        }}
       />
-      <Text style={styles.scanText}>Scan Merchant QR Code</Text>
+
+      <Text style={styles.scanText}>
+        Scan Merchant QR Code
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000" },
-  camera: { flex: 1 },
+  container: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+
+  camera: {
+    flex: 1,
+  },
+
   scanText: {
     position: "absolute",
     bottom: 40,
     width: "100%",
     textAlign: "center",
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "600",
   },
+
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  text: { fontSize: 16 },
+
+  text: {
+    fontSize: 16,
+  },
 });
