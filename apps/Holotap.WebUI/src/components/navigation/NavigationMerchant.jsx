@@ -3,11 +3,11 @@
  * HoloTap Engineering
  * Engineer ID: E5357171 Ray Newton: AKA GangsterJesus
  *
- * File: NavigationCreator.jsx
- * FilePath: apps/web/src/components/navigation/NavigationCreator.jsx
- * Layer: Web UI (Creator)
- * Component: NavigationCreator
- * Version: 5.0.0
+ * File: NavigationMerchant.jsx
+ * FilePath: apps/web/src/components/navigation/NavigationMerchant.jsx
+ * Layer: Web UI (Merchant)
+ * Component: NavigationMerchant
+ * Version: 5.1.0
  * ISO: 27001 Aligned
  * Copilot Engineering Statement:
  * ------------------------------------------------------------
@@ -23,15 +23,15 @@
  *
  * Purpose:
  * ------------------------------------------------------------
- * Provides creator navigation for scheduling,
+ * Provides merchant navigation for scheduling,
  * payments, identity services, Flow 6 operations,
- * and future creator workflows.
+ * and future merchant workflows.
  *
  * Responsibilities:
  * ------------------------------------------------------------
- * - Render creator navigation
+ * - Render merchant navigation
  * - Render Flow 6 identity navigation
- * - Support future creator workflows
+ * - Support future merchant workflows
  * - Maintain consistent navigation styling
  * - Provide deterministic rendering
  *
@@ -82,12 +82,12 @@ const ACTIVE_LINK_CLASS =
 const INACTIVE_LINK_CLASS =
   "text-white hover:text-holotap-accent transition";
 
-export default function NavigationCreator() {
+export default function NavigationMerchant() {
   const [open, setOpen] = useState(false);
 
   return (
     <nav
-      aria-label="Creator Navigation"
+      aria-label="Merchant Navigation"
       className="w-full bg-holotap-primary px-6 py-4 text-white shadow-lg"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between">

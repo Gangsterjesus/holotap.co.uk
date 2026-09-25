@@ -7,7 +7,7 @@
  * FilePath: apps/web/src/components/Navigation.jsx
  * Layer: Web UI
  * Component: Navigation
- * Version: 5.0.0
+ * Version: 5.1.0
  * ISO: 27001 Aligned
  * Copilot Engineering Statement:
  * ------------------------------------------------------------
@@ -30,7 +30,7 @@
  * Responsibilities:
  * ------------------------------------------------------------
  * - Load public navigation
- * - Load creator navigation
+ * - Load merchant navigation
  * - Load administrator navigation
  * - Support future role expansion
  * - Support route-level code splitting
@@ -54,8 +54,8 @@ const NavigationPublic = lazy(() =>
   import("./navigation/NavigationPublic.jsx")
 );
 
-const NavigationCreator = lazy(() =>
-  import("./navigation/NavigationCreator.jsx")
+const NavigationMerchant = lazy(() =>
+  import("./navigation/NavigationMerchant.jsx")
 );
 
 const NavigationAdmin = lazy(() =>
@@ -70,7 +70,7 @@ const NavigationAdmin = lazy(() =>
 
 const ROLE_NAVIGATION = {
   public: NavigationPublic,
-  creator: NavigationCreator,
+  merchant: NavigationMerchant,
   admin: NavigationAdmin,
 };
 
