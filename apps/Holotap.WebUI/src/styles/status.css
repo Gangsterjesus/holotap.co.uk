@@ -1,0 +1,72 @@
+/* ============================================================
+   HoloTap Web — Badge Status Styles (Flow 4)
+   File: src/styles/status.css
+   Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
+   Date: 26 July 2026
+   ------------------------------------------------------------
+   Tailwind‑aligned legacy stylesheet
+   - No @apply (folder not in PostCSS pipeline)
+   - Clean deterministic spacing + typography
+   - Colours aligned with Tailwind palette
+   - Class names preserved for compatibility
+   ============================================================ */
+
+/* Container */
+.status-container {
+  padding: 40px;                 /* Tailwind: p-10 */
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Title */
+.status-title {
+  font-size: 2rem;               /* Tailwind: text-3xl */
+  font-weight: 700;              /* Tailwind: font-bold */
+  margin-bottom: 10px;           /* Tailwind: mb-2 */
+  color: #111827;                /* Tailwind: gray-900 */
+}
+
+/* Subtitle */
+.status-subtitle {
+  font-size: 1.125rem;           /* Tailwind: text-lg */
+  color: #6b7280;                /* Tailwind: gray-500 */
+  margin-bottom: 30px;           /* Tailwind: mb-8 */
+}
+
+/* Error */
+.status-error {
+  color: #dc2626;                /* Tailwind: red-600 */
+  margin-bottom: 20px;           /* Tailwind: mb-5 */
+  font-weight: 600;
+}
+
+/* Card */
+.status-card {
+  padding: 20px;                 /* Tailwind: p-5 */
+  background-color: #f3f4f6;     /* Tailwind: gray-100 */
+  border-radius: 8px;            /* Tailwind: rounded-lg */
+  margin-bottom: 20px;           /* Tailwind: mb-5 */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* Actions */
+.status-actions {
+  display: flex;
+  gap: 20px;                     /* Tailwind: gap-5 */
+  margin-top: 30px;              /* Tailwind: mt-8 */
+}
+
+/* Button */
+.status-button {
+  padding: 14px 24px;            /* Tailwind: py-3.5 px-6 */
+  background-color: #111827;     /* Tailwind: gray-900 */
+  color: #fff;
+  border-radius: 6px;            /* Tailwind: rounded-lg */
+  font-weight: 700;              /* Tailwind: font-bold */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.status-button:hover {
+  background-color: #1f2937;     /* Tailwind: gray-800 */
+}

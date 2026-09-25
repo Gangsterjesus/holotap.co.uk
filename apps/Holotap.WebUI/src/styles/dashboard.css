@@ -1,0 +1,70 @@
+/* ============================================================
+   HoloTap Web — Dashboard Styles
+   File: src/styles/dashboard.css
+   Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
+   Date: 26 July 2026
+   ------------------------------------------------------------
+   Tailwind‑aligned legacy stylesheet
+   - No @apply (folder not in PostCSS pipeline)
+   - Clean deterministic spacing + typography
+   - Colours aligned with Tailwind palette
+   - Class names preserved for compatibility
+   ============================================================ */
+
+/* Container */
+.dashboard-container {
+  padding: 40px;               /* Tailwind: p-10 */
+}
+
+/* Title */
+.dashboard-title {
+  font-size: 2.25rem;          /* Tailwind: text-4xl */
+  font-weight: 700;            /* Tailwind: font-bold */
+  margin-bottom: 10px;         /* Tailwind: mb-2 */
+  color: #111827;              /* Tailwind: gray-900 */
+}
+
+/* Subtitle */
+.dashboard-subtitle {
+  font-size: 1.125rem;         /* Tailwind: text-lg */
+  color: #6b7280;              /* Tailwind: gray-500 */
+  margin-bottom: 30px;         /* Tailwind: mb-8 */
+}
+
+/* Metrics Row */
+.dashboard-metrics {
+  display: flex;
+  gap: 20px;                   /* Tailwind: gap-5 */
+  margin-bottom: 40px;         /* Tailwind: mb-10 */
+}
+
+/* Card */
+.dashboard-card {
+  flex: 1;
+  padding: 20px;               /* Tailwind: p-5 */
+  background-color: #f3f4f6;   /* Tailwind: gray-100 */
+  border-radius: 8px;          /* Tailwind: rounded-lg */
+  text-align: center;
+}
+
+/* Actions Row */
+.dashboard-actions {
+  display: flex;
+  gap: 20px;                   /* Tailwind: gap-5 */
+}
+
+/* Button */
+.dashboard-button {
+  padding: 14px 24px;          /* Tailwind: py-3 px-6 */
+  background-color: #111827;   /* Tailwind: gray-900 */
+  color: #fff;
+  border-radius: 6px;          /* Tailwind: rounded-lg */
+  text-decoration: none;
+  font-weight: 700;            /* Tailwind: font-bold */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.dashboard-button:hover {
+  background-color: #1f2937;   /* Tailwind: gray-800 */
+}

@@ -1,0 +1,107 @@
+/* ============================================================
+   HoloTap Web — Authentication: Verification Styles
+   File: src/pages/auth/VerifyAuth.css
+   Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
+   Date: 23 July 2026
+   ------------------------------------------------------------
+   Tailwind‑aligned legacy stylesheet
+   - No @apply (folder not in PostCSS pipeline)
+   - Clean deterministic spacing + typography
+   - Colours aligned with Tailwind palette
+   - Class names preserved for compatibility
+   ============================================================ */
+
+/* Container */
+.verify-container {
+  padding: 40px;                 /* Tailwind: p-10 */
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Title */
+.verify-title {
+  font-size: 2.25rem;            /* Tailwind: text-4xl */
+  font-weight: 700;              /* Tailwind: font-bold */
+  margin-bottom: 10px;           /* Tailwind: mb-2 */
+  color: #111827;                /* Tailwind: gray-900 */
+}
+
+/* Subtitle */
+.verify-subtitle {
+  font-size: 1.125rem;           /* Tailwind: text-lg */
+  color: #6b7280;                /* Tailwind: gray-500 */
+  margin-bottom: 30px;           /* Tailwind: mb-8 */
+}
+
+/* Section */
+.verify-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;                     /* Tailwind: gap-5 */
+  margin-bottom: 40px;           /* Tailwind: mb-10 */
+}
+
+/* Label */
+.verify-label {
+  font-weight: 700;              /* Tailwind: font-bold */
+  color: #374151;                /* Tailwind: gray-700 */
+}
+
+/* Input */
+.verify-input {
+  padding: 12px;                 /* Tailwind: p-3 */
+  font-size: 1rem;               /* Tailwind: text-base */
+  border-radius: 6px;            /* Tailwind: rounded-lg */
+  border: 1px solid #d1d5db;     /* Tailwind: gray-300 */
+  color: #111827;                /* Tailwind: gray-900 */
+}
+
+/* Primary Button */
+.verify-button {
+  padding: 14px;                 /* Tailwind: p-3.5 */
+  background-color: #111827;     /* Tailwind: gray-900 */
+  color: #fff;
+  border-radius: 6px;            /* Tailwind: rounded-lg */
+  font-size: 1rem;               /* Tailwind: text-base */
+  font-weight: 700;              /* Tailwind: font-bold */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.verify-button:hover {
+  background-color: #1f2937;     /* Tailwind: gray-800 */
+}
+
+/* Scan Section */
+.verify-scan-section {
+  text-align: center;
+  margin-top: 20px;              /* Tailwind: mt-5 */
+}
+
+.verify-scan-title {
+  font-size: 1.5rem;             /* Tailwind: text-2xl */
+  font-weight: 600;              /* Tailwind: font-semibold */
+  margin-bottom: 10px;           /* Tailwind: mb-2 */
+  color: #1f2937;                /* Tailwind: gray-800 */
+}
+
+.verify-scan-text {
+  font-size: 1rem;               /* Tailwind: text-base */
+  color: #6b7280;                /* Tailwind: gray-500 */
+  margin-bottom: 20px;           /* Tailwind: mb-5 */
+}
+
+/* Secondary Scan Button */
+.verify-scan-button {
+  padding: 12px 24px;            /* Tailwind: py-3 px-6 */
+  background-color: #e5e7eb;     /* Tailwind: gray-200 */
+  color: #111827;                /* Tailwind: gray-900 */
+  border-radius: 6px;            /* Tailwind: rounded-lg */
+  text-decoration: none;
+  font-weight: 700;              /* Tailwind: font-bold */
+  transition: background-color 0.2s ease;
+}
+
+.verify-scan-button:hover {
+  background-color: #d1d5db;     /* Tailwind: gray-300 */
+}

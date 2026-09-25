@@ -1,0 +1,290 @@
+/* ============================================================
+   HoloTap Engineering — Public Home Styles
+   File: src/styles/home.css
+   Engineer: Raymond Newton (E5357171)
+   Project: HoloTap Identity & QR Security Platform
+   Layer: web-ui
+   Revision: v5 — Landing Experience System
+   Date: 11 September 2026
+
+   ------------------------------------------------------------
+   Design Goals
+
+   • Premium first impression
+   • Identity-first branding
+   • Trust-oriented UI
+   • Responsive by default
+   • Tailwind v4 compatible
+   • No @apply directives
+   • Engineering-driven design language
+   ============================================================ */
+
+/* ============================================================
+   Container
+   ============================================================ */
+
+.home-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+/* ============================================================
+   Hero
+   ============================================================ */
+
+.home-title {
+  font-size: clamp(4rem, 8vw, 6rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin-bottom: 20px;
+
+  background: linear-gradient(
+    90deg,
+    var(--holotap-primary),
+    var(--holotap-secondary)
+  );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.home-tagline {
+  max-width: 850px;
+
+  margin:
+    0 auto
+    48px auto;
+
+  font-size: 1.45rem;
+  line-height: 1.7;
+
+  color: var(--holotap-muted);
+}
+
+/* ============================================================
+   Sections
+   ============================================================ */
+
+.home-section {
+  max-width: 850px;
+  margin: 0 auto 64px auto;
+}
+
+.home-description {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: var(--holotap-text);
+}
+
+/* ============================================================
+   Feature Grid
+   ============================================================ */
+
+.home-features {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(260px, 1fr)
+    );
+
+  gap: 32px;
+
+  margin:
+    64px 0;
+}
+
+/* ============================================================
+   Feature Card
+   ============================================================ */
+
+.feature-card {
+  padding: 32px;
+
+  background: white;
+
+  border:
+    1px solid
+    var(--holotap-border);
+
+  border-radius: 24px;
+
+  box-shadow:
+    0 20px 40px
+    rgba(15, 23, 42, 0.08);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+
+  box-shadow:
+    0 30px 60px
+    rgba(37, 99, 235, 0.15);
+}
+
+.feature-icon {
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+
+  color: var(--holotap-primary);
+}
+
+.feature-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+
+  margin-bottom: 12px;
+
+  color: var(--holotap-text);
+}
+
+.feature-text {
+  font-size: 1.05rem;
+  line-height: 1.7;
+
+  color: var(--holotap-muted);
+}
+
+/* ============================================================
+   CTA Buttons
+   ============================================================ */
+
+.home-actions {
+  display: flex;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 18px;
+
+  margin-top: 48px;
+}
+
+.btn-primary {
+  display: inline-block;
+
+  padding: 16px 32px;
+
+  border-radius: 14px;
+
+  text-decoration: none;
+
+  color: white;
+
+  font-weight: 700;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--holotap-primary),
+      var(--holotap-secondary)
+    );
+
+  box-shadow:
+    0 15px 40px
+    rgba(37, 99, 235, 0.30);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 20px 50px
+    rgba(37, 99, 235, 0.40);
+}
+
+.btn-secondary {
+  display: inline-block;
+
+  padding: 16px 32px;
+
+  border-radius: 14px;
+
+  text-decoration: none;
+
+  font-weight: 600;
+
+  color: var(--holotap-text);
+
+  background: white;
+
+  border:
+    1px solid
+    var(--holotap-border);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+
+  border-color:
+    var(--holotap-primary);
+}
+
+/* ============================================================
+   Trust Banner
+   ============================================================ */
+
+.home-trust {
+  display: flex;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 16px;
+
+  margin-top: 48px;
+}
+
+.home-trust-item {
+  padding: 12px 18px;
+
+  border-radius: 999px;
+
+  background: white;
+
+  border:
+    1px solid
+    var(--holotap-border);
+
+  font-weight: 600;
+
+  color:
+    var(--holotap-text);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .home-container {
+    padding: 48px 20px;
+  }
+
+  .home-tagline {
+    font-size: 1.15rem;
+  }
+
+  .home-description {
+    font-size: 1rem;
+  }
+}

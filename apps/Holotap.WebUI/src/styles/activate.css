@@ -1,0 +1,53 @@
+/* ============================================================
+   HoloTap Web — Activation Styles (Flow 1)
+   File: src/styles/activate.css
+   Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
+   Date: 26 July 2026
+   ------------------------------------------------------------
+   Tailwind‑aligned legacy stylesheet
+   - No @apply (folder not in PostCSS pipeline)
+   - Clean deterministic spacing + typography
+   - Colours aligned with Tailwind palette
+   ============================================================ */
+
+/* Container */
+.activate-container {
+  padding: 24px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* Title */
+.activate-title {
+  font-size: 1.5rem;        /* Tailwind: text-2xl */
+  font-weight: 600;         /* Tailwind: font-semibold */
+  margin-bottom: 16px;      /* Tailwind: mb-4 */
+  color: #111827;           /* Tailwind: gray-900 */
+}
+
+/* Input */
+.activate-input {
+  width: 100%;
+  padding: 12px;            /* Tailwind: p-3 */
+  border: 1px solid #d1d5db;/* Tailwind: gray-300 */
+  border-radius: 6px;       /* Tailwind: rounded-lg */
+  margin-bottom: 16px;      /* Tailwind: mb-4 */
+  font-size: 1rem;          /* Tailwind: text-base */
+}
+
+/* Button */
+.activate-button {
+  width: 100%;
+  padding: 12px;            /* Tailwind: py-3 */
+  background-color: #2563eb;/* Tailwind: blue-600 */
+  color: #fff;
+  border-radius: 6px;       /* Tailwind: rounded-lg */
+  font-size: 1rem;          /* Tailwind: text-base */
+  font-weight: 600;         /* Tailwind: font-semibold */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.activate-button:hover {
+  background-color: #1e4fc7; /* Tailwind: blue-700 */
+}

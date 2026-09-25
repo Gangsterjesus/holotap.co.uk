@@ -1,0 +1,28 @@
+/* ============================================================
+   HoloTap Web — QR Scan Styles
+   File: src/styles/scan.css
+   Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
+   Date: 26 July 2026
+   ------------------------------------------------------------
+   Tailwind‑aligned legacy stylesheet
+   - No @apply (folder not in PostCSS pipeline)
+   - Clean deterministic spacing + typography
+   - Colours aligned with Tailwind palette
+   - Class names preserved for compatibility
+   ============================================================ */
+
+/* Fullscreen Scanner Container */
+.scan-container {
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;        /* Tailwind: bg-black */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* QR Reader Box */
+.scan-reader {
+  width: 100%;
+  max-width: 500px;              /* Tailwind: max-w-lg */
+}

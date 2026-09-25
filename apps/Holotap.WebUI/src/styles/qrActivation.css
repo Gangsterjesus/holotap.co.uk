@@ -1,0 +1,92 @@
+/* ============================================================
+   HoloTap Web — QR Activation Styles
+   File: src/styles/qrActivation.css
+   Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
+   Date: 24 July 2026
+   ------------------------------------------------------------
+   Tailwind‑aligned legacy stylesheet
+   - No @apply (folder not in PostCSS pipeline)
+   - Clean deterministic spacing + typography
+   - Colours aligned with Tailwind palette
+   - Class names preserved for compatibility
+   ============================================================ */
+
+/* Layout */
+.qr-wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 2rem;                 /* Tailwind: p-8 */
+}
+
+.qr-content {
+  margin-top: 2rem;              /* Tailwind: mt-8 */
+  text-align: center;
+}
+
+/* Typography */
+.qr-title {
+  font-size: 2rem;               /* Tailwind: text-3xl */
+  font-weight: 700;              /* Tailwind: font-bold */
+  margin-bottom: 0.5rem;         /* Tailwind: mb-2 */
+  color: #111827;                /* Tailwind: gray-900 */
+}
+
+.qr-subtitle {
+  margin-bottom: 1rem;           /* Tailwind: mb-4 */
+  color: #374151;                /* Tailwind: gray-700 */
+}
+
+.qr-label {
+  margin-top: 1rem;              /* Tailwind: mt-4 */
+  font-weight: 600;              /* Tailwind: font-semibold */
+  color: #1f2937;                /* Tailwind: gray-800 */
+}
+
+.qr-token {
+  display: block;
+  margin-bottom: 1rem;           /* Tailwind: mb-4 */
+  font-family: monospace;
+  color: #111827;                /* Tailwind: gray-900 */
+}
+
+/* QR Code */
+.qr-code {
+  margin: 1.5rem 0;              /* Tailwind: my-6 */
+  display: flex;
+  justify-content: center;
+}
+
+/* Buttons */
+.qr-button {
+  padding: 10px 20px;            /* Tailwind: py-2.5 px-5 */
+  margin-top: 1rem;              /* Tailwind: mt-4 */
+  cursor: pointer;
+  background-color: #111827;     /* Tailwind: gray-900 */
+  color: #fff;
+  border-radius: 6px;            /* Tailwind: rounded-lg */
+  font-weight: 600;              /* Tailwind: font-semibold */
+  transition: background-color 0.2s ease;
+}
+
+.qr-button:hover {
+  background-color: #1f2937;     /* Tailwind: gray-800 */
+}
+
+/* States */
+.qr-loading {
+  color: #6b7280;                /* Tailwind: gray-500 */
+}
+
+.qr-error {
+  color: #dc2626;                /* Tailwind: red-600 */
+  font-weight: bold;
+}
+
+.qr-active {
+  color: #374151;                /* Tailwind: gray-700 */
+}
+
+.qr-expired {
+  color: #dc2626;                /* Tailwind: red-600 */
+  font-weight: bold;
+}
