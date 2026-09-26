@@ -42,7 +42,7 @@ export default function Home() {
 
 HERO
 
-Badge should be centered andremain visually centred on the web page.
+Live testing identified an alignment issue. The element remains off-centre and requires further UI refinement.
 
 Engineer: Raymond Newton (E5357171)
 

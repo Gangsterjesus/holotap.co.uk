@@ -1,42 +1,36 @@
-/* ============================================================
-   HoloTap — Engineering Build System
-   File: src/pages/public/Onboarding.jsx
-   Author: Raymond Newton
-   Project: HoloTap Identity & QR Security Platform
-   Layer: web-ui
-   Revision: v5 — Unified Identity Architecture
-   ------------------------------------------------------------
-   Notes:
-   - Deterministic architecture only
-   - Zero template styling, zero boilerplate
-   - Tailwind v4 CSS-first UI pipeline
-   - Web UI must remain modular and stateless
-   - Identity, QR, and organisation layers isolated
-   - Explicit state transitions; no hidden side-effects
-   ============================================================ */
-
-
-
+/**
+ * ============================================================
+ *  HoloTap — Public Onboarding Page
+ *  File: src/pages/public/Onboarding.jsx
+ *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
+ *  Layer: web-ui
+ *  Revision: v5 — Hero Build and Wiring
+ *  Date: 26 September 2026
+ *  © 2026 HoloTap Technologies Ltd. All rights reserved.
+ * ============================================================
+ *
+ *  Module Purpose:
+ *    Public onboarding entry point for the HoloTap platform.
+ *
+ *  Module Responsibilities:
+ *    - Present the responsive HoloTap onboarding hero
+ *    - Capture onboarding profile information
+ *    - Surface identity and QR trust capabilities
+ *    - Maintain deterministic onboarding presentation
+ * ============================================================
+ */
 
 
 import "../styles/onboarding.css";
-
-
 
 export default function Onboarding() {
   return (
     <div className="home-container">
 
+      {/* HERO */}
       <section className="text-center">
-
         <div className="flex justify-center mb-8">
-          <div className="flex justify-center mb-8">
-    <img
-      src="/icon.png"
-      alt="HoloTap Icon"
-      className="w-24 h-24"
-    />
-  </div>
+          /icon.png
         </div>
 
         <h2 className="home-title">
@@ -48,31 +42,18 @@ export default function Onboarding() {
           access to identity verification, QR trust
           services, and secure organisational workflows.
         </p>
-
       </section>
 
+      {/* TRUST */}
       <section className="home-trust">
-
-        <div className="home-trust-item">
-          Identity Creation
-        </div>
-
-        <div className="home-trust-item">
-          Verification Ready
-        </div>
-
-        <div className="home-trust-item">
-          QR Enabled
-        </div>
-
-        <div className="home-trust-item">
-          Trust Services
-        </div>
-
+        <div className="home-trust-item">Identity Creation</div>
+        <div className="home-trust-item">Verification Ready</div>
+        <div className="home-trust-item">QR Enabled</div>
+        <div className="home-trust-item">Trust Services</div>
       </section>
 
+      {/* REGISTRATION */}
       <section className="feature-card">
-
         <h3 className="feature-title">
           Onboarding Registration
         </h3>
@@ -138,30 +119,20 @@ export default function Onboarding() {
             </select>
           </div>
 
-       <div className="home-actions">
+          <div className="home-actions">
+            <button type="submit" className="btn-primary">
+              Continue
+            </button>
 
-  <button
-    type="submit"
-    className="btn-primary"
-  >
-    Continue
-  </button>
-
-  <button
-    type="button"
-    className="btn-secondary"
-  >
-    Cancel
-  </button>
-
-</div>
-
+            <button type="button" className="btn-secondary">
+              Cancel
+            </button>
+          </div>
         </form>
-
       </section>
 
+      {/* WHY HOLOTAP */}
       <section className="feature-card">
-
         <h3 className="feature-title">
           Why Join HoloTap
         </h3>
@@ -172,11 +143,10 @@ export default function Onboarding() {
           support QR-based workflows,
           and participate in the HoloTap ecosystem.
         </p>
-
       </section>
 
+      {/* PLATFORM STATUS */}
       <section className="feature-card">
-
         <h3 className="feature-title">
           Platform Status
         </h3>
@@ -192,11 +162,10 @@ export default function Onboarding() {
         <p className="feature-text">
           Trust Services: Active
         </p>
-
       </section>
 
+      {/* FINAL CTA */}
       <section className="home-section">
-
         <h2 className="feature-title">
           Ready To Continue?
         </h2>
@@ -206,7 +175,6 @@ export default function Onboarding() {
           begin using trusted HoloTap identity
           and verification services.
         </p>
-
       </section>
 
     </div>
