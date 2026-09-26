@@ -62,7 +62,7 @@ return (
   <ErrorBoundary>
     <Layout
       title="Activate HoloTap"
-      subtitle="Enter your activation code to begin"
+      value={code}
     >
       <PageHeader
         title="Activate HoloTap"
@@ -72,6 +72,7 @@ return (
 
       <div className="max-w-md mx-auto flex flex-col gap-6 mt-6">
         <Input
+          id="activation-code"
           label="Activation Code"
           placeholder="Enter activation code"
           value={code}
@@ -79,6 +80,7 @@ return (
             setCode(e.target.value)
           }
           error={null}
+          testId="activation-code-input"
         />
 
         <Button
