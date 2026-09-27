@@ -1,60 +1,46 @@
 /**
  * =============================================================================
- * HOLOTAP MOBILE — SETTLEMENT BATCH DETAIL SCREEN (batch-id.tsx)
+ * HOLOTAP ENGINEERING — HERO BUILD v5.0.0
+ * SETTLEMENT BATCH DETAIL SCREEN
  * =============================================================================
- * Engineer: Raymond Newton (E5357171)
- * Assistant: Copilot Engineering Assistant
- * Date: 12 August 2026
+ * Engineer: Raymond Newton
+ * Engineer ID: E5357171
+ * File: batch-id.tsx
+ * Updated: 27 September 2026
  * =============================================================================
- * Deterministic rendering of settlement batch payloads:
- * - Fetches batch metadata + transaction list
- * - Applies currency formatting rules (GBP, BTC, ETH, BRICS, CBDC)
- * - Handles loading, error, and null‑payload states
- * - Renders transaction list with stable keys (txId)
+ *
+ * PURPOSE:
+ * Provides deterministic rendering of a settlement batch and its associated
+ * transaction records.
+ *
+ * RESPONSIBILITIES:
+ * - Resolve the settlement batch identifier from the active route
+ * - Retrieve batch metadata and transaction records from the backend
+ * - Render deterministic loading, failure, and success states
+ * - Format supported settlement currencies consistently
+ * - Render transaction records using stable transaction identifiers
+ *
+ * HERO BUILD v5.0.0:
+ * - Removed conditional useCallback architecture
+ * - Maintains unconditional React Hook execution
+ * - Added explicit HTTP response validation
+ * - Added defensive response payload handling
+ * - Preserved settlement routing behavior
+ * - Preserved deterministic currency formatting
  * =============================================================================
  */
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import {
-  Text,
-  View,
   ActivityIndicator,
   FlatList,
   StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-/**
- * Inline deterministic styles
- */
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  loadingText: { marginTop: 12, textAlign: "center", color: "#333" },
-  errorHeader: { fontSize: 18, fontWeight: "600", color: "#c00" },
-  errorNote: { marginTop: 8, color: "#666" },
-  link: { marginTop: 16, color: "#0078FF" },
-  txCard: {
-    padding: 12,
-    marginBottom: 10, 
-    borderRadius: 8,
-    backgroundColor: "#f7f7f7",
-  },
-  txLabel: { fontSize: 12, color: "#666" },
-  txValue: { fontSize: 14, color: "#111", marginBottom: 6 },
-  statusSuccess: { color: "green" },
-  statusFailed: { color: "red" },
-  header: { fontSize: 22, fontWeight: "700", marginBottom: 12 },
-  card: { padding: 12, backgroundColor: "#fff", marginBottom: 12 },
-  label: { fontSize: 12, color: "#666" },
-  value: { fontSize: 14, color: "#111", marginBottom: 6 },
-  subHeader: { fontSize: 18, fontWeight: "600", marginVertical: 8 },
-  listContent: { paddingBottom: 40 },
-});
-
-/**
- * Types
- */
 interface RouteParams {
   batchId?: string;
 }
@@ -77,10 +63,12 @@ interface BatchPayload {
   items: BatchItem[];
 }
 
-/**
- * Currency formatting rules
- */
-const currencyMeta: Record<string, { symbol: string; decimals: number }> = {
+interface CurrencyMeta {
+  symbol: string;
+  decimals: number;
+}
+
+const currencyMeta: Record<string, CurrencyMeta> = {
   GBP: { symbol: "£", decimals: 2 },
   BTC: { symbol: "₿", decimals: 8 },
   ETH: { symbol: "Ξ", decimals: 8 },
@@ -89,16 +77,53 @@ const currencyMeta: Record<string, { symbol: string; decimals: number }> = {
 };
 
 function formatCurrency(amount?: string, currency?: string): string {
-  if (!amount || !currency) return "—";
+  if (!amount || !currency) {
+    return "—";
+  }
+
   const meta = currencyMeta[currency] ?? currencyMeta.GBP;
-  const numeric = Number(amount);
-  if (isNaN(numeric)) return `${meta.symbol}${amount}`;
-  return `${meta.symbol}${numeric.toFixed(meta.decimals)}`;
+  const numericAmount = Number(amount);
+
+  if (!Number.isFinite(numericAmount)) {
+    return `${meta.symbol}${amount}`;
+  }
+
+  return `${meta.symbol}${numericAmount.toFixed(meta.decimals)}`;
 }
 
 /**
- * Main Component
+ * HERO v5.0.0
+ *
+ * Plain render function intentionally exists outside the component.
+ * No React Hook or memoization is required for deterministic transaction
+ * rendering.
  */
+function renderTransaction({ item }: { item: BatchItem }) {
+  return (
+    <View style={styles.txCard}>
+      <Text style={styles.txLabel}>Transaction ID:</Text>
+      <Text style={styles.txValue}>{item.txId}</Text>
+
+      <Text style={styles.txLabel}>Amount:</Text>
+      <Text style={styles.txValue}>
+        {formatCurrency(item.amount, item.currency)}
+      </Text>
+
+      <Text style={styles.txLabel}>Status:</Text>
+      <Text
+        style={[
+          styles.txValue,
+          item.status === "success"
+            ? styles.statusSuccess
+            : styles.statusFailed,
+        ]}
+      >
+        {item.status}
+      </Text>
+    </View>
+  );
+}
+
 export default function BatchDetail() {
   const router = useRouter();
   const { batchId } = useLocalSearchParams() as RouteParams;
@@ -108,25 +133,50 @@ export default function BatchDetail() {
   const [batch, setBatch] = useState<BatchPayload | null>(null);
 
   useEffect(() => {
+    let active = true;
+
     async function loadBatch() {
       if (!batchId) {
-        setError(true);
-        setLoading(false);
+        if (active) {
+          setError(true);
+          setLoading(false);
+        }
         return;
       }
 
       try {
-        const res = await fetch(`https://api.holotap.co/batch/${batchId}`);
-        const json = await res.json();
-        setBatch(json);
+        const response = await fetch(
+          `https://api.holotap.co/batch/${encodeURIComponent(batchId)}`
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Settlement batch request failed: ${response.status}`
+          );
+        }
+
+        const payload = (await response.json()) as BatchPayload;
+
+        if (active) {
+          setBatch(payload);
+          setError(false);
+        }
       } catch {
-        setError(true);
+        if (active) {
+          setError(true);
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
-    loadBatch();
+    void loadBatch();
+
+    return () => {
+      active = false;
+    };
   }, [batchId]);
 
   if (loading) {
@@ -142,43 +192,20 @@ export default function BatchDetail() {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.errorHeader}>Unable to load batch</Text>
+
         <Text style={styles.errorNote}>
           Something went wrong while fetching batch data.
         </Text>
 
-        <Text style={styles.link} onPress={() => router.replace("/settlement")}>
+        <Text
+          style={styles.link}
+          onPress={() => router.replace("/settlement")}
+        >
           Return to Settlement Overview
         </Text>
       </SafeAreaView>
     );
   }
-
-  const renderItem = useCallback(
-    ({ item }: { item: BatchItem }) => (
-      <View style={styles.txCard}>
-        <Text style={styles.txLabel}>Transaction ID:</Text>
-        <Text style={styles.txValue}>{item.txId}</Text>
-
-        <Text style={styles.txLabel}>Amount:</Text>
-        <Text style={styles.txValue}>
-          {formatCurrency(item.amount, item.currency)}
-        </Text>
-
-        <Text style={styles.txLabel}>Status:</Text>
-        <Text
-          style={[
-            styles.txValue,
-            item.status === "success"
-              ? styles.statusSuccess
-              : styles.statusFailed,
-          ]}
-        >
-          {item.status}
-        </Text>
-      </View>
-    ),
-    []
-  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -208,13 +235,92 @@ export default function BatchDetail() {
       <FlatList
         data={batch.items}
         keyExtractor={(item) => item.txId}
-        renderItem={renderItem}
+        renderItem={renderTransaction}
         contentContainerStyle={styles.listContent}
       />
 
-      <Text style={styles.link} onPress={() => router.replace("/settlement")}>
+      <Text
+        style={styles.link}
+        onPress={() => router.replace("/settlement")}
+      >
         Return to Settlement Overview
       </Text>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#fff",
+  },
+  loadingText: {
+    marginTop: 12,
+    textAlign: "center",
+    color: "#333",
+  },
+  errorHeader: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#c00",
+  },
+  errorNote: {
+    marginTop: 8,
+    color: "#666",
+  },
+  link: {
+    marginTop: 16,
+    color: "#0078FF",
+  },
+  txCard: {
+    padding: 12,
+    marginBottom: 10,
+    borderRadius: 8,
+    backgroundColor: "#f7f7f7",
+  },
+  txLabel: {
+    fontSize: 12,
+    color: "#666",
+  },
+  txValue: {
+    fontSize: 14,
+    color: "#111",
+    marginBottom: 6,
+  },
+  statusSuccess: {
+    color: "green",
+  },
+  statusFailed: {
+    color: "red",
+  },
+  header: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+  card: {
+    padding: 12,
+    backgroundColor: "#fff",
+    marginBottom: 12,
+  },
+  label: {
+    fontSize: 12,
+    color: "#666",
+  },
+  value: {
+    fontSize: 14,
+    color: "#111",
+    marginBottom: 6,
+  },
+  subHeader: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginVertical: 8,
+  },
+  listContent: {
+    paddingBottom: 40,
+  },
+});
+
+

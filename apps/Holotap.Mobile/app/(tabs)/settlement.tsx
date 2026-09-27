@@ -1,27 +1,40 @@
 /**
  * =============================================================================
- * ENGINEERING HEADER — SETTLEMENT OVERVIEW (Flow 10)
+ * HOLOTAP ENGINEERING — HERO BUILD v5.0.0
+ * SETTLEMENT OVERVIEW — FLOW 10
  * =============================================================================
+ * Engineer ID: E5357171
  * Author: Raymond Newton
- * Date: 01 July 2026
  * File: settlement.tsx
  *
  * PURPOSE:
- * Provides the merchant with a multi‑currency settlement overview. Displays
- * totals per currency (GBP, BTC, ETH, BRICS, NFTs, CBDC) and lists settlement
- * batches returned by the backend. Each batch can be tapped to open a detailed
- * settlement breakdown (Flow 11).
+ * Provides the merchant settlement overview across supported currencies and
+ * exposes settlement batches for navigation into the Flow 11 breakdown.
  *
+ * HERO BUILD v5.0.0:
+ * - Preserves multi-currency settlement presentation.
+ * - Preserves Flow 10 -> Flow 11 batch navigation.
+ * - Adds deterministic loading and retry states.
+ * - Removes unused API_URL configuration import.
+ * - Normalises backend settlement payloads defensively.
+ * - Avoids synchronous state-changing invocation inside useEffect.
+ * - Improves FlatList performance and empty-state presentation.
  * =============================================================================
  */
 
-import { useEffect, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { apiGet } from "../../api/client";
 
-import { API_URL } from "../../src/config";
+import { apiGet } from "../../api/client";
 
 interface SettlementTotals {
   GBP?: string;
@@ -41,62 +54,114 @@ interface SettlementBatch {
   nftId?: string | null;
 }
 
-const currencyMeta: Record<string, { symbol: string; decimals: number }> = {
+interface SettlementResponse {
+  totals?: SettlementTotals;
+  batches?: SettlementBatch[];
+}
+
+const currencyMeta = {
   GBP: { symbol: "£", decimals: 2 },
   BTC: { symbol: "₿", decimals: 8 },
   ETH: { symbol: "Ξ", decimals: 8 },
   BRICS: { symbol: "Ƀ", decimals: 4 },
   NFT: { symbol: "NFT#", decimals: 0 },
   CBDC: { symbol: "¤", decimals: 2 },
-};
+} as const;
 
-function formatCurrency(amount: string | undefined, currency: string) {
+type CurrencyCode = keyof typeof currencyMeta;
+
+const supportedCurrencies = Object.keys(currencyMeta) as CurrencyCode[];
+
+function formatCurrency(
+  amount: string | undefined,
+  currency: string
+): string {
   if (!amount) return "—";
-  const meta = currencyMeta[currency] ?? currencyMeta.GBP;
-  const num = Number(amount);
-  if (isNaN(num)) return `${meta.symbol}${amount}`;
-  return `${meta.symbol}${num.toFixed(meta.decimals)}`;
+
+  const meta =
+    currencyMeta[currency as CurrencyCode] ?? currencyMeta.GBP;
+
+  const numericAmount = Number(amount);
+
+  if (Number.isNaN(numericAmount)) {
+    return `${meta.symbol}${amount}`;
+  }
+
+  return `${meta.symbol}${numericAmount.toFixed(meta.decimals)}`;
 }
 
 export default function SettlementScreen() {
   const router = useRouter();
+
   const [totals, setTotals] = useState<SettlementTotals>({});
   const [batches, setBatches] = useState<SettlementBatch[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadSettlement() {
+  const loadSettlement = useCallback(async () => {
     try {
-      const data = await apiGet("/settlement/overview");
-      setTotals(data.totals);
-      setBatches(data.batches);
+      setLoading(true);
+      setError(null);
+
+      const data =
+        (await apiGet("/settlement/overview")) as SettlementResponse;
+
+      setTotals(data?.totals ?? {});
+      setBatches(data?.batches ?? []);
     } catch {
       setError("Unable to load settlement data.");
+    } finally {
+      setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    loadSettlement();
   }, []);
 
-  function openBatch(batch: SettlementBatch) {
-    const next = {
-      pathname: "/settlement-batch",
-      params: {
-        batchId: batch.batchId,
-        currency: batch.currency,
-        total: batch.total,
-        timestamp: batch.timestamp,
-        txHash: batch.txHash ?? undefined,
-        nftId: batch.nftId ?? undefined,
-      },
-    } as any;
-    router.push(next);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void loadSettlement();
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [loadSettlement]);
+
+  const openBatch = useCallback(
+    (batch: SettlementBatch) => {
+      router.push({
+        pathname: "/settlement-batch",
+        params: {
+          batchId: batch.batchId,
+          currency: batch.currency,
+          total: batch.total,
+          timestamp: batch.timestamp,
+          txHash: batch.txHash ?? undefined,
+          nftId: batch.nftId ?? undefined,
+        },
+      } as never);
+    },
+    [router]
+  );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.center}>
+        <ActivityIndicator size="large" color="#0078FF" />
+        <Text style={styles.loadingText}>
+          Loading settlement overview…
+        </Text>
+      </SafeAreaView>
+    );
   }
 
   if (error) {
     return (
       <SafeAreaView style={styles.center}>
         <Text style={styles.error}>{error}</Text>
+
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => void loadSettlement()}
+        >
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     );
   }
@@ -108,11 +173,12 @@ export default function SettlementScreen() {
       <View style={styles.totalsCard}>
         <Text style={styles.sectionHeader}>Totals by Currency</Text>
 
-        {Object.keys(currencyMeta).map((currency) => (
+        {supportedCurrencies.map((currency) => (
           <View key={currency} style={styles.totalRow}>
             <Text style={styles.totalLabel}>{currency}</Text>
+
             <Text style={styles.totalValue}>
-              {formatCurrency(totals[currency as keyof SettlementTotals], currency)}
+              {formatCurrency(totals[currency], currency)}
             </Text>
           </View>
         ))}
@@ -123,29 +189,42 @@ export default function SettlementScreen() {
       <FlatList
         data={batches}
         keyExtractor={(item) => item.batchId}
+        contentContainerStyle={
+          batches.length === 0 ? styles.emptyList : undefined
+        }
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.batchCard} onPress={() => openBatch(item)}>
+          <TouchableOpacity
+            style={styles.batchCard}
+            activeOpacity={0.75}
+            onPress={() => openBatch(item)}
+          >
             <Text style={styles.batchCurrency}>{item.currency}</Text>
+
             <Text style={styles.batchAmount}>
               {formatCurrency(item.total, item.currency)}
             </Text>
+
             <Text style={styles.batchTime}>
               {new Date(item.timestamp).toLocaleString()}
             </Text>
 
-            {item.txHash && (
-              <Text style={styles.batchMeta}>Tx Hash: {item.txHash}</Text>
-            )}
+            {item.txHash ? (
+              <Text style={styles.batchMeta}>
+                Tx Hash: {item.txHash}
+              </Text>
+            ) : null}
 
-            {item.nftId && (
-              <Text style={styles.batchMeta}>NFT ID: {item.nftId}</Text>
-            )}
+            {item.nftId ? (
+              <Text style={styles.batchMeta}>
+                NFT ID: {item.nftId}
+              </Text>
+            ) : null}
           </TouchableOpacity>
         )}
         ListEmptyComponent={
-          <View style={styles.center}>
-            <Text style={styles.empty}>No settlement batches available.</Text>
-          </View>
+          <Text style={styles.empty}>
+            No settlement batches available.
+          </Text>
         }
       />
     </SafeAreaView>
@@ -155,74 +234,125 @@ export default function SettlementScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#fff",
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    backgroundColor: "#FFFFFF",
   },
+
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: 24,
+    backgroundColor: "#FFFFFF",
   },
+
   header: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "700",
+    color: "#111827",
     marginBottom: 20,
   },
+
   sectionHeader: {
     fontSize: 20,
     fontWeight: "600",
+    color: "#111827",
     marginVertical: 12,
   },
+
   totalsCard: {
-    backgroundColor: "#f5f5f5",
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: "#F5F7FA",
+    padding: 18,
+    borderRadius: 16,
     marginBottom: 20,
   },
+
   totalRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 6,
+    alignItems: "center",
+    paddingVertical: 7,
   },
+
   totalLabel: {
     fontSize: 16,
-    color: "#555",
+    color: "#4B5563",
   },
+
   totalValue: {
     fontSize: 18,
     fontWeight: "600",
+    color: "#111827",
   },
+
   batchCard: {
-    backgroundColor: "#f5f5f5",
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: "#F5F7FA",
+    padding: 18,
+    borderRadius: 16,
     marginBottom: 12,
   },
+
   batchCurrency: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "700",
+    color: "#111827",
   },
+
   batchAmount: {
-    fontSize: 16,
-    marginTop: 4,
+    fontSize: 18,
+    fontWeight: "600",
+    marginTop: 5,
+    color: "#0078FF",
   },
+
   batchTime: {
     fontSize: 14,
-    marginTop: 4,
-    color: "#555",
+    marginTop: 6,
+    color: "#4B5563",
   },
+
   batchMeta: {
     fontSize: 12,
-    marginTop: 4,
-    color: "#777",
+    marginTop: 5,
+    color: "#6B7280",
   },
+
+  loadingText: {
+    marginTop: 14,
+    fontSize: 16,
+    color: "#4B5563",
+  },
+
   error: {
     fontSize: 18,
     color: "#D32F2F",
     fontWeight: "600",
+    textAlign: "center",
   },
+
+  retryButton: {
+    marginTop: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: "#0078FF",
+  },
+
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  emptyList: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+
   empty: {
     fontSize: 16,
-    color: "#777",
+    color: "#6B7280",
+    textAlign: "center",
   },
 });

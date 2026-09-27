@@ -1,45 +1,29 @@
 /**
  * =============================================================================
- * HOLOTAP MOBILE — LIVE PAYMENTS LAYER v2 (Engineering Edition)
+ * HOLOTAP ENGINEERING — HERO BUILD v5.0.0
+ * LIVE PAYMENTS
  * =============================================================================
- * Engineer:      Raymond Newton — HoloTap Engineering Team
- * Assistant:     Copilot Engineering Assistant
- * File:          live-payments.tsx
- * Date:          28 July 2026
- * =============================================================================
+ * Engineer ID: E5357171
+ * File: live-payments.tsx
+ *
  * PURPOSE:
- * Provides the merchant with a backend‑driven, identity‑aware feed of
- * incoming payments. This screen polls the backend at a fixed interval
- * and exposes payment events in an unstyled engineering‑grade structure.
+ * Merchant live-payment feed with identity gating and deterministic
+ * five-second backend polling.
  *
- * PAYMENT FEED LIFECYCLE:
- *   1. Merchant identity must be verified
- *   2. Load live payment events from backend
- *   3. Poll feed every 5 seconds for updates
- *   4. Provide safe fallback states when identity or feed is unavailable
- *
- * VERSION NOTES:
- *   • v2: Rewritten for HoloTap engineering architecture
- *   • Identity‑aware payment feed
- *   • No styling, no Expo Router, no UI formatting
- *   • Pure logic, pure TypeScript
- *
- * FLOW ALIGNMENT:
- *   Flow 1 → Identity
- *   Flow 2 → QR Session
- *   Flow 3 → QR Generation
- *   Flow 4 → Live Payments (this screen)
+ * HERO v5.0.0:
+ * - React 19.2 Effect Event architecture
+ * - Hooks execute unconditionally at component top level
+ * - Identity-gated backend polling
+ * - Deterministic loading and error states
+ * - Polling cleanup on unmount
  * =============================================================================
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useEffectEvent, useState } from "react";
 import { SafeAreaView, Text, View } from "react-native";
 
 import { useMerchantIdentity } from "../../hooks/useMerchantIdentity";
 
-/**
- * Payment event payload returned by backend.
- */
 interface PaymentEvent {
   id: string;
   amount: number;
@@ -48,26 +32,68 @@ interface PaymentEvent {
   status: "completed" | "pending" | "failed";
 }
 
-/**
- * Main Live Payments screen.
- * Identity‑aware, backend‑driven, unstyled.
- */
 export default function LivePayments() {
-  // Identity subsystem
   const {
     identity,
     loading: identityLoading,
     error: identityError,
   } = useMerchantIdentity();
 
-  // Payment feed state
   const [events, setEvents] = useState<PaymentEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  /**
-   * Identity loading state
-   */
+  const loadPayments = useEffectEvent(async () => {
+    try {
+      setLoading(true);
+      setError(false);
+
+      const response = await fetch(
+        "https://api.holotap.co/merchant/payments/live"
+      );
+
+      if (!response.ok) {
+        throw new Error(`Payment feed request failed: ${response.status}`);
+      }
+
+      const payload = await response.json();
+
+      setEvents(
+        Array.isArray(payload.events)
+          ? (payload.events as PaymentEvent[])
+          : []
+      );
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  useEffect(() => {
+    if (
+      identityLoading ||
+      identityError ||
+      !identity ||
+      identity.status !== "verified"
+    ) {
+      return;
+    }
+
+    const initialLoad = setTimeout(() => {
+      void loadPayments();
+    }, 0);
+
+    const interval = setInterval(() => {
+      void loadPayments();
+    }, 5000);
+
+    return () => {
+      clearTimeout(initialLoad);
+      clearInterval(interval);
+    };
+  }, [identity, identityError, identityLoading]);
+
   if (identityLoading) {
     return (
       <SafeAreaView>
@@ -76,9 +102,6 @@ export default function LivePayments() {
     );
   }
 
-  /**
-   * Identity error state
-   */
   if (identityError || !identity) {
     return (
       <SafeAreaView>
@@ -87,9 +110,6 @@ export default function LivePayments() {
     );
   }
 
-  /**
-   * Identity guard — merchant must be verified
-   */
   if (identity.status !== "verified") {
     return (
       <SafeAreaView>
@@ -98,38 +118,6 @@ export default function LivePayments() {
     );
   }
 
-  /**
-   * Load payment feed from backend
-   */
-  async function loadPayments() {
-    try {
-      setLoading(true);
-      setError(false);
-
-      const res = await fetch("https://api.holotap.co/merchant/payments/live");
-      const json = await res.json();
-
-      setEvents(json.events ?? []);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  /**
-   * Initial load + polling
-   */
-  useEffect(() => {
-    loadPayments();
-
-    const interval = setInterval(loadPayments, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  /**
-   * Loading state
-   */
   if (loading) {
     return (
       <SafeAreaView>
@@ -138,9 +126,6 @@ export default function LivePayments() {
     );
   }
 
-  /**
-   * Error state
-   */
   if (error) {
     return (
       <SafeAreaView>
@@ -149,19 +134,20 @@ export default function LivePayments() {
     );
   }
 
-  /**
-   * Main unstyled payment feed
-   */
   return (
     <SafeAreaView>
       <View>
         <Text>Live Payments</Text>
 
-        {events.length === 0 && <Text>No recent payment activity.</Text>}
+        {events.length === 0 && (
+          <Text>No recent payment activity.</Text>
+        )}
 
         {events.map((event) => (
           <View key={event.id}>
-            <Text>Amount: {event.amount} {event.currency}</Text>
+            <Text>
+              Amount: {event.amount} {event.currency}
+            </Text>
             <Text>Status: {event.status}</Text>
             <Text>Time: {event.timestamp}</Text>
           </View>

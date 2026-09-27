@@ -12,8 +12,9 @@
   },
   "dependencies": {
     "@expo/vector-icons": "15.0.2",
+    "@react-navigation/bottom-tabs": "^7.19.2",
+    "@react-navigation/elements": "^2.9.43",
     "apisauce": "^3.2.2",
-    "build": "^0.1.4",
     "expo": "~57.0.24",
     "expo-camera": "~57.0.5",
     "expo-device": "~57.0.2",
@@ -38,12 +39,11 @@
     "tar": "^7.5.22"
   },
   "devDependencies": {
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
+    "@types/react": "~19.2.4",
+    "@types/react-dom": "~19.2.3",
     "babel-preset-expo": "~57.0.0",
-    "eslint": "8.56.0",
+    "eslint": "9.39.5",
     "eslint-config-expo": "~57.0.2",
-    "expo-cli": "^6.3.12",
     "typescript": "6.0.3"
   }
 }
