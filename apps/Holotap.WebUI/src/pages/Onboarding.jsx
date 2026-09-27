@@ -4,8 +4,8 @@
  *  File: src/pages/public/Onboarding.jsx
  *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
  *  Layer: web-ui
- *  Revision: v5 — Hero Build and Wiring
- *  Date: 26 September 2026
+ *  Revision: v5.1 — Isolated Onboarding Styling
+ *  Date: 27 September 2026
  *  © 2026 HoloTap Technologies Ltd. All rights reserved.
  * ============================================================
  *
@@ -13,62 +13,77 @@
  *    Public onboarding entry point for the HoloTap platform.
  *
  *  Module Responsibilities:
- *    - Present the responsive HoloTap onboarding hero
+ *    - Present the responsive HoloTap onboarding experience
  *    - Capture onboarding profile information
  *    - Surface identity and QR trust capabilities
- *    - Maintain deterministic onboarding presentation
+ *    - Maintain isolated onboarding presentation
  * ============================================================
  */
-
 
 import "../styles/onboarding.css";
 
 export default function Onboarding() {
   return (
-    <div className="home-container">
+    <div className="onboarding-container">
 
-      {/* HERO */}
-      <section className="text-center">
-        <div className="flex justify-center mb-8">
-          /icon.png
-        </div>
+      {/* ============================================================
+          HERO
+          ============================================================ */}
 
-        <h2 className="home-title">
+      <section className="onboarding-hero">
+        <h2 className="onboarding-title">
           Create Your Identity.
         </h2>
 
-        <p className="home-tagline">
+        <p className="onboarding-tagline">
           Create a trusted HoloTap profile and gain
           access to identity verification, QR trust
           services, and secure organisational workflows.
         </p>
       </section>
 
-      {/* TRUST */}
-      <section className="home-trust">
-        <div className="home-trust-item">Identity Creation</div>
-        <div className="home-trust-item">Verification Ready</div>
-        <div className="home-trust-item">QR Enabled</div>
-        <div className="home-trust-item">Trust Services</div>
+      {/* ============================================================
+          TRUST
+          ============================================================ */}
+
+      <section className="onboarding-trust">
+        <div className="onboarding-trust-item">
+          Identity Creation
+        </div>
+
+        <div className="onboarding-trust-item">
+          Verification Ready
+        </div>
+
+        <div className="onboarding-trust-item">
+          QR Enabled
+        </div>
+
+        <div className="onboarding-trust-item">
+          Trust Services
+        </div>
       </section>
 
-      {/* REGISTRATION */}
-      <section className="feature-card">
-        <h3 className="feature-title">
+      {/* ============================================================
+          REGISTRATION
+          ============================================================ */}
+
+      <section className="onboarding-card">
+        <h3 className="onboarding-card-title">
           Onboarding Registration
         </h3>
 
-        <p className="feature-text">
+        <p className="onboarding-card-text">
           Complete your profile and begin using
           HoloTap identity verification services.
         </p>
 
-        <form className="mt-6 flex flex-col gap-6">
+        <form className="onboarding-form">
 
-          <div className="flex flex-col">
+          <div className="onboarding-field">
             <label
               htmlFor="displayName"
-              className="font-semibold text-gray-700 mb-2"
+              className="onboarding-label"
             >
               Display Name
             </label>
@@ -78,14 +93,14 @@ export default function Onboarding() {
               name="displayName"
               type="text"
               placeholder="Your public name"
-              className="border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-holotap-accent"
+              className="onboarding-input"
             />
           </div>
 
-          <div className="flex flex-col">
+          <div className="onboarding-field">
             <label
               htmlFor="email"
-              className="font-semibold text-gray-700 mb-2"
+              className="onboarding-label"
             >
               Email Address
             </label>
@@ -95,14 +110,14 @@ export default function Onboarding() {
               name="email"
               type="email"
               placeholder="you@example.com"
-              className="border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-holotap-accent"
+              className="onboarding-input"
             />
           </div>
 
-          <div className="flex flex-col">
+          <div className="onboarding-field">
             <label
               htmlFor="profileType"
-              className="font-semibold text-gray-700 mb-2"
+              className="onboarding-label"
             >
               Profile Type
             </label>
@@ -110,34 +125,44 @@ export default function Onboarding() {
             <select
               id="profileType"
               name="profileType"
-              className="border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-holotap-accent"
+              className="onboarding-input"
             >
-              <option>Content Creator</option>
               <option>Merchant</option>
-              <option>Performer</option>
+              <option>Business</option>
+              <option>Organisation</option>
               <option>Private Operator</option>
             </select>
           </div>
 
-          <div className="home-actions">
-            <button type="submit" className="btn-primary">
+          <div className="onboarding-actions">
+            <button
+              type="submit"
+              className="onboarding-btn-primary"
+            >
               Continue
             </button>
 
-            <button type="button" className="btn-secondary">
+            <button
+              type="button"
+              className="onboarding-btn-secondary"
+            >
               Cancel
             </button>
           </div>
+
         </form>
       </section>
 
-      {/* WHY HOLOTAP */}
-      <section className="feature-card">
-        <h3 className="feature-title">
+      {/* ============================================================
+          WHY HOLOTAP
+          ============================================================ */}
+
+      <section className="onboarding-card">
+        <h3 className="onboarding-card-title">
           Why Join HoloTap
         </h3>
 
-        <p className="feature-text">
+        <p className="onboarding-card-text">
           Create a secure digital identity,
           verify trust, manage access,
           support QR-based workflows,
@@ -145,32 +170,38 @@ export default function Onboarding() {
         </p>
       </section>
 
-      {/* PLATFORM STATUS */}
-      <section className="feature-card">
-        <h3 className="feature-title">
+      {/* ============================================================
+          PLATFORM STATUS
+          ============================================================ */}
+
+      <section className="onboarding-card">
+        <h3 className="onboarding-card-title">
           Platform Status
         </h3>
 
-        <p className="feature-text">
+        <p className="onboarding-card-text">
           Identity Services: Operational
         </p>
 
-        <p className="feature-text">
+        <p className="onboarding-card-text">
           QR Infrastructure: Operational
         </p>
 
-        <p className="feature-text">
+        <p className="onboarding-card-text">
           Trust Services: Active
         </p>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="home-section">
-        <h2 className="feature-title">
+      {/* ============================================================
+          FINAL CTA
+          ============================================================ */}
+
+      <section className="onboarding-section">
+        <h2 className="onboarding-card-title">
           Ready To Continue?
         </h2>
 
-        <p className="home-description">
+        <p className="onboarding-description">
           Complete your onboarding profile and
           begin using trusted HoloTap identity
           and verification services.

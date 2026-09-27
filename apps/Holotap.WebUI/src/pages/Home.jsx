@@ -28,60 +28,62 @@ import { Link } from "react-router-dom";
 import Layout from "../components/Layout.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import "../styles/home.css";
+
 export default function Home() {
   return (
     <Layout>
       <div className="home-container">
-<PageHeader
-  title="HOLOTAP"
-  subtitle="Secure Digital Trust Infrastructure For Identity Verification, QR Security, Access Control And Trusted Organisations"
-  titleClassName="text-cyan-400 text-4xl font-bold"
-  subtitleClassName="text-slate-300 text-lg"
-/>
+        <PageHeader
+          title="HOLOTAP"
+          subtitle="Secure Digital Trust Infrastructure For Identity Verification, QR Security, Access Control And Trusted Organisations"
+          titleClassName="text-cyan-400 text-4xl font-bold"
+          subtitleClassName="text-slate-300 text-lg"
+        />
+
      {/* ============================================================
+    HERO
 
-HERO
+    Dedicated HoloTap logo asset.
+    Badge remains responsive and visually centred.
 
-Live testing identified an alignment issue. The element remains off-centre and requires further UI refinement.
+    Engineer: Raymond Newton (E5357171)
+    ============================================================ */}
 
-Engineer: Raymond Newton (E5357171)
+<section className="home-hero">
+<div className="home-logo-wrapper">
+  <img
+    src="/Holotap-Logo.png"
+    alt="HoloTap logo"
+  />
+</div>
+<h2 className="home-title">
+Secure Every Scan.
+</h2>
+  <p className="home-tagline">
+    Identity verification, QR security,
+    access control, and trusted digital
+    infrastructure for organisations,
+    venues, operators, and modern businesses.
+  </p>
 
-============================================================ */}
-<section className="text-center">
-  <div className="flex justify-center mb-8">
-    <img
-      src="/icon.png"
-      alt="HoloTap Icon"
-      className="w-24 h-24"
-    />
+  <div className="home-actions">
+    <Link
+      to="/onboarding"
+      className="btn-primary"
+    >
+      Get Started
+    </Link>
+
+    <Link
+      to="/verify"
+      className="btn-secondary"
+    >
+      Verify Badge
+    </Link>
   </div>
-          <h2 className="home-title">
-            Secure Every Scan.
-          </h2>
 
-          <p className="home-tagline">
-            Identity verification, QR security,
-            access control, and trusted digital
-            infrastructure for organisations,
-            venues, operators, and modern businesses.
-          </p>
+  </section>
 
-          <div className="home-actions">
-            <Link
-              to="/onboarding"
-              className="btn-primary"
-            >
-              Get Started
-            </Link>
-
-            <Link
-              to="/verify"
-              className="btn-secondary"
-            >
-              Verify Badge
-            </Link>
-          </div>
-        </section>
 
         {/* TRUST BAR */}
         <section className="home-trust">
@@ -105,7 +107,9 @@ Engineer: Raymond Newton (E5357171)
         {/* FEATURES */}
         <section className="home-features">
           <div className="feature-card">
-            <div className="feature-icon">🛡️</div>
+            <div className="feature-icon">
+              🛡️
+            </div>
 
             <h3 className="feature-title">
               Digital Identity
@@ -119,7 +123,9 @@ Engineer: Raymond Newton (E5357171)
           </div>
 
           <div className="feature-card">
-            <div className="feature-icon">📱</div>
+            <div className="feature-icon">
+              📱
+            </div>
 
             <h3 className="feature-title">
               QR Verification
@@ -133,7 +139,9 @@ Engineer: Raymond Newton (E5357171)
           </div>
 
           <div className="feature-card">
-            <div className="feature-icon">🔒</div>
+            <div className="feature-icon">
+              🔒
+            </div>
 
             <h3 className="feature-title">
               Access Control
@@ -168,18 +176,15 @@ Engineer: Raymond Newton (E5357171)
           </h3>
 
           <p className="feature-text">
-            Identity Verification Services:
-            Operational
+            Identity Verification Services: Operational
           </p>
 
           <p className="feature-text">
-            QR Infrastructure:
-            Operational
+            QR Infrastructure: Operational
           </p>
 
           <p className="feature-text">
-            Trust Services:
-            Active
+            Trust Services: Active
           </p>
         </section>
 

@@ -1,73 +1,297 @@
 /* ============================================================
-   HoloTap Web — Onboarding Styles
+   HoloTap Engineering — Public Onboarding Styles
    File: src/styles/onboarding.css
-   Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
-   Date: 26 July 2026
-   ------------------------------------------------------------
-   Tailwind‑aligned legacy stylesheet
-   - No @apply (folder not in PostCSS pipeline)
-   - Clean deterministic spacing + typography
-   - Colours aligned with Tailwind palette
-   - Class names preserved for compatibility
+   Engineer: Raymond Newton (E5357171)
+   Project: HoloTap Identity & QR Security Platform
+   Layer: web-ui
+   Revision: v5.1 — Isolated Onboarding Experience
+   Date: 27 September 2026
+
+   Design Goals:
+   • Isolate onboarding styles from Home
+   • Prevent global home-* class collisions
+   • Responsive deterministic layout
+   • No @apply directives
+   • Tailwind v4 compatible
    ============================================================ */
 
-/* Container */
+
+/* ============================================================
+   Container
+   ============================================================ */
+
 .onboarding-container {
-  padding: 40px;                 /* Tailwind: p-10 */
-  max-width: 600px;
+  width: 100%;
+  max-width: 900px;
   margin: 0 auto;
+  padding: 80px 24px;
+  box-sizing: border-box;
 }
 
-/* Title */
+
+/* ============================================================
+   Hero
+   ============================================================ */
+
+.onboarding-hero {
+  width: 100%;
+  margin: 0 auto 48px;
+  text-align: center;
+}
+
 .onboarding-title {
-  font-size: 2.25rem;            /* Tailwind: text-4xl */
-  font-weight: 700;              /* Tailwind: font-bold */
-  margin-bottom: 10px;           /* Tailwind: mb-2 */
-  color: #111827;                /* Tailwind: gray-900 */
+  margin: 0 0 20px;
+
+  font-size: clamp(3rem, 7vw, 5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+
+  color: #111827;
 }
 
-/* Subtitle */
-.onboarding-subtitle {
-  font-size: 1.125rem;           /* Tailwind: text-lg */
-  color: #6b7280;                /* Tailwind: gray-500 */
-  margin-bottom: 30px;           /* Tailwind: mb-8 */
+.onboarding-tagline {
+  max-width: 720px;
+  margin: 0 auto;
+
+  font-size: 1.25rem;
+  line-height: 1.7;
+
+  color: #6b7280;
 }
 
-/* Form Layout */
+
+/* ============================================================
+   Trust Bar
+   ============================================================ */
+
+.onboarding-trust {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 16px;
+  margin: 0 auto 48px;
+}
+
+.onboarding-trust-item {
+  padding: 12px 18px;
+
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+
+  font-weight: 600;
+  color: #111827;
+}
+
+
+/* ============================================================
+   Cards
+   ============================================================ */
+
+.onboarding-card {
+  margin-bottom: 32px;
+  padding: 32px;
+
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+
+  box-shadow:
+    0 20px 40px
+    rgba(15, 23, 42, 0.08);
+}
+
+.onboarding-card-title {
+  margin: 0 0 12px;
+
+  font-size: 1.4rem;
+  font-weight: 700;
+
+  color: #111827;
+}
+
+.onboarding-card-text {
+  margin: 0 0 16px;
+
+  font-size: 1.05rem;
+  line-height: 1.7;
+
+  color: #6b7280;
+}
+
+
+/* ============================================================
+   Form
+   ============================================================ */
+
 .onboarding-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;                     /* Tailwind: gap-5 */
+
+  gap: 24px;
+  margin-top: 32px;
 }
 
-/* Label */
+.onboarding-field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}
+
 .onboarding-label {
-  font-weight: 700;              /* Tailwind: font-bold */
-  color: #374151;                /* Tailwind: gray-700 */
+  font-weight: 600;
+  color: #374151;
 }
 
-/* Input */
 .onboarding-input {
-  padding: 12px;                 /* Tailwind: p-3 */
-  font-size: 1rem;               /* Tailwind: text-base */
-  border-radius: 6px;            /* Tailwind: rounded-lg */
-  border: 1px solid #d1d5db;     /* Tailwind: gray-300 */
-  color: #111827;                /* Tailwind: gray-900 */
+  width: 100%;
+  padding: 12px 14px;
+
+  box-sizing: border-box;
+
+  font: inherit;
+  color: #111827;
+
+  background: #ffffff;
+
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-/* Button */
-.onboarding-button {
-  padding: 14px;                 /* Tailwind: p-3.5 */
-  background-color: #111827;     /* Tailwind: gray-900 */
-  color: #fff;
-  border-radius: 6px;            /* Tailwind: rounded-lg */
-  font-size: 1rem;               /* Tailwind: text-base */
-  font-weight: 700;              /* Tailwind: font-bold */
+.onboarding-input:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(37, 99, 235, 0.15);
+}
+
+
+/* ============================================================
+   Actions
+   ============================================================ */
+
+.onboarding-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.onboarding-btn-primary,
+.onboarding-btn-secondary {
+  padding: 14px 28px;
+
+  border-radius: 12px;
+
+  font: inherit;
+  font-weight: 700;
+
   cursor: pointer;
-  margin-top: 10px;              /* Tailwind: mt-2 */
-  transition: background-color 0.2s ease;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
-.onboarding-button:hover {
-  background-color: #1f2937;     /* Tailwind: gray-800 */
+.onboarding-btn-primary {
+  color: #ffffff;
+
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #06b6d4
+  );
+
+  border: none;
+}
+
+.onboarding-btn-primary:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 30px
+    rgba(37, 99, 235, 0.25);
+}
+
+.onboarding-btn-secondary {
+  color: #111827;
+
+  background: #ffffff;
+
+  border: 1px solid #d1d5db;
+}
+
+.onboarding-btn-secondary:hover {
+  transform: translateY(-2px);
+  border-color: #2563eb;
+}
+
+
+/* ============================================================
+   Final Section
+   ============================================================ */
+
+.onboarding-section {
+  max-width: 720px;
+
+  margin:
+    64px auto
+    0;
+
+  text-align: center;
+}
+
+.onboarding-description {
+  font-size: 1.1rem;
+  line-height: 1.8;
+
+  color: #6b7280;
+}
+
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+  .onboarding-container {
+    padding: 48px 20px;
+  }
+
+  .onboarding-title {
+    font-size: clamp(2.75rem, 12vw, 4rem);
+  }
+
+  .onboarding-tagline {
+    font-size: 1.1rem;
+  }
+
+  .onboarding-card {
+    padding: 24px;
+  }
+
+  .onboarding-actions {
+    flex-direction: column;
+  }
+
+  .onboarding-btn-primary,
+  .onboarding-btn-secondary {
+    width: 100%;
+  }
 }
