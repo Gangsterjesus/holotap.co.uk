@@ -1,160 +1,251 @@
- /**
+/**
  * =============================================================================
- * HOLOTAP MOBILE — GENERATE QR SCREEN v2.4 (Engineering Edition)
+ * HOLOTAP MOBILE — MERCHANT QR GENERATION
  * =============================================================================
- * Engineer:      Raymond Newton (E5357171)
- * Assistant:     Copilot Engineering Assistant
- * File:          generate-qrc.tsx
- * Date:          17 August 2026
+ * File: apps/Holotap.Mobile/app/(tabs)/generate-qrc.tsx
+ * Engineers: Raymond Newton (E5357171)
+ *            Copilot Engineering Assistant
+ * Layer: Mobile / Merchant Payment Entry
+ * Revision: v5.0.0 — HERO QR Generation Build
+ * Date: 24 September 2026
+ * Copyright (c) 2026 HoloTap Technologies Ltd.
  * =============================================================================
- * PURPOSE:
- * Implements Flow 3 — Merchant QR Code Generation.
  *
- * This screen renders the active QR session token provided by the
- * identity‑aware QR session subsystem (useQrSession).
+ * Module Purpose
+ * Present the active merchant QR payment session for customer scanning.
  *
- * ARCHITECTURE:
- *   • Identity‑aware (useMerchantIdentity)
- *   • Session‑aware (useQrSession)
- *   • No styling (unstyled engineering edition)
- *   • No local session logic
- *   • No local expiry logic
- *   • No Expo-era helpers
- *
- * FLOW ALIGNMENT:
- *   Flow 1 → Identity
- *   Flow 2 → QR Session
- *   Flow 3 → QR Generation (this screen)
- *   Flow 4 → Consumer Scan
- *   Flow 5 → Backend Verification
- *   Flow 6 → Payment Initialisation
- *
- * =============================================================================
- */
-
-import React from "react";
-import { SafeAreaView, Text, View } from "react-native";
+ * Module Responsibilities
+ * - Validate merchant identity state.
+ * - Consume the active QR session subsystem.
+ * - Prevent QR presentation for unverified merchants.
+ * - Present the active session as a customer-scannable QR code.
+ * - Surface session expiry information.
+*/
+import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
 import { useMerchantIdentity } from "../../hooks/useMerchantIdentity";
 import { useQrSession } from "../../hooks/QRSessionLayer";
 
-/**
- * =============================================================================
- * Main Component — GenerateQRC (v3)
- * =============================================================================
- */
 export default function GenerateQRC() {
-  /**
-   * Identity subsystem
-   * Provides merchant verification status.
-   */
   const {
     identity,
     loading: identityLoading,
     error: identityError,
   } = useMerchantIdentity();
 
-  /**
-   * QR session subsystem
-   * Provides active QR session token + expiry metadata.
-   */
   const {
     session,
     loading: sessionLoading,
     error: sessionError,
   } = useQrSession();
 
-  /**
-   * ---------------------------------------------------------------------------
-   * Identity Loading State
-   * ---------------------------------------------------------------------------
-   */
   if (identityLoading) {
-    return (
-      <SafeAreaView>
-        <Text>Loading identity…</Text>
-      </SafeAreaView>
-    );
+    return <StatusScreen message="Loading merchant identity..." />;
   }
 
-  /**
-   * ---------------------------------------------------------------------------
-   * Identity Error State
-   * ---------------------------------------------------------------------------
-   */
   if (identityError || !identity) {
-    return (
-      <SafeAreaView>
-        <Text>Unable to load merchant identity.</Text>
-      </SafeAreaView>
-    );
+    return <StatusScreen message="Unable to load merchant identity." error />;
   }
 
-  /**
-   * ---------------------------------------------------------------------------
-   * Identity Guard — Merchant must be verified
-   * ---------------------------------------------------------------------------
-   */
   if (identity.status !== "verified") {
     return (
-      <SafeAreaView>
-        <Text>QR generation unavailable — merchant not verified.</Text>
-      </SafeAreaView>
+      <StatusScreen
+        message="QR payments are unavailable until the merchant is verified."
+        error
+      />
     );
   }
 
-  /**
-   * ---------------------------------------------------------------------------
-   * QR Session Loading State
-   * ---------------------------------------------------------------------------
-   */
   if (sessionLoading) {
-    return (
-      <SafeAreaView>
-        <Text>Generating secure QR session…</Text>
-      </SafeAreaView>
-    );
+    return <StatusScreen message="Generating secure payment QR..." />;
   }
 
-  /**
-   * ---------------------------------------------------------------------------
-   * QR Session Error State
-   * ---------------------------------------------------------------------------
-   */
   if (sessionError || !session) {
-    return (
-      <SafeAreaView>
-        <Text>Unable to generate QR session.</Text>
-      </SafeAreaView>
-    );
+    return <StatusScreen message="Unable to generate QR session." error />;
   }
 
-  /**
-   * ---------------------------------------------------------------------------
-   * No Active Session
-   * ---------------------------------------------------------------------------
-   */
   if (!session.active || !session.sessionId) {
-    return (
-      <SafeAreaView>
-        <Text>No active QR session.</Text>
-      </SafeAreaView>
-    );
+    return <StatusScreen message="No active QR payment session." />;
   }
 
-  /**
-   * ---------------------------------------------------------------------------
-   * Main QR Display (Unstyled)
-   * ---------------------------------------------------------------------------
-   */
   return (
-    <SafeAreaView>
-      <View>
-        <Text>Merchant QR Code</Text>
-        <QRCode value={session.sessionId} size={240} />
-        <Text>Expires: {session.expiresAt}</Text>
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.hero}>
+        <Text style={styles.eyebrow}>HOLOTAP</Text>
+        <Text style={styles.title}>Ready to Scan.</Text>
+
+        <Text style={styles.description}>
+          Ask the customer to scan this QR code to continue with their HoloTap
+          payment.
+        </Text>
+      </View>
+
+      <View style={styles.card}>
+        <View style={styles.statusRow}>
+          <View style={styles.statusDot} />
+          <Text style={styles.statusText}>Payment session active</Text>
+        </View>
+
+        <View style={styles.qrContainer}>
+          <QRCode
+            value={session.sessionId}
+            size={240}
+            backgroundColor="#FFFFFF"
+            color="#111827"
+          />
+        </View>
+
+        <Text style={styles.expiryLabel}>Session expires</Text>
+        <Text style={styles.expiryValue}>{session.expiresAt}</Text>
+      </View>
+
+      <Text style={styles.securityText}>
+        Secure HoloTap merchant payment session
+      </Text>
+    </SafeAreaView>
+  );
+}
+
+function StatusScreen({
+  message,
+  error = false,
+}: {
+  message: string;
+  error?: boolean;
+}) {
+  return (
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.statusCard}>
+        <Text style={styles.eyebrow}>HOLOTAP</Text>
+
+        <Text style={error ? styles.errorMessage : styles.statusMessage}>
+          {message}
+        </Text>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "#F8FAFC",
+    padding: 24,
+  },
+
+  hero: {
+    width: "100%",
+    maxWidth: 520,
+    alignSelf: "center",
+    marginBottom: 24,
+  },
+
+  eyebrow: {
+    color: "#6D28D9",
+    fontSize: 14,
+    fontWeight: "800",
+    letterSpacing: 1.5,
+    marginBottom: 8,
+  },
+
+  title: {
+    color: "#111827",
+    fontSize: 36,
+    fontWeight: "800",
+    marginBottom: 12,
+  },
+
+  description: {
+    color: "#4B5563",
+    fontSize: 17,
+    lineHeight: 25,
+  },
+
+  card: {
+    width: "100%",
+    maxWidth: 520,
+    alignSelf: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E5E7EB",
+    borderRadius: 20,
+    borderWidth: 1,
+    boxShadow: "0 6px 20px rgba(15, 23, 42, 0.08)",
+    padding: 28,
+  },
+
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#16A34A",
+    marginRight: 8,
+  },
+
+  statusText: {
+    color: "#166534",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+
+  qrContainer: {
+    backgroundColor: "#FFFFFF",
+    padding: 18,
+    borderColor: "#E5E7EB",
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 24,
+  },
+
+  expiryLabel: {
+    color: "#6B7280",
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+
+  expiryValue: {
+    color: "#111827",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
+  securityText: {
+    alignSelf: "center",
+    color: "#6B7280",
+    fontSize: 13,
+    marginTop: 18,
+  },
+
+  statusCard: {
+    width: "100%",
+    maxWidth: 520,
+    alignSelf: "center",
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E5E7EB",
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 24,
+  },
+
+  statusMessage: {
+    color: "#374151",
+    fontSize: 17,
+    lineHeight: 25,
+  },
+
+  errorMessage: {
+    color: "#B91C1C",
+    fontSize: 17,
+    fontWeight: "600",
+    lineHeight: 25,
+  },
+});

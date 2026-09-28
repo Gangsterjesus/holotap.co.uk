@@ -1,54 +1,55 @@
 /**
  * =============================================================================
- * HOLOTAP MOBILE — REFUND / VOID SCREEN (Flow 9)
+ * HOLOTAP MOBILE — REFUND / VOID
  * =============================================================================
- * Engineer: Raymond Newton — HoloTap Engineering Team
- * Assistant: Copilot Engineering Assistant
- * Date: 15 July 2026
- * File: refund.tsx
- * © 2026 HoloTap Technologies Ltd. All rights reserved.
+ * File: apps/Holotap.Mobile/app/(tabs)/refund.tsx
+ * Engineers: Raymond Newton (E5357171)
+ *            Copilot Engineering Assistant
+ * Layer: Mobile / Merchant Payments
+ * Revision: v5.0.0 - HERO Build
+ * Copyright (c) 2026 HoloTap Technologies Ltd.
+ * =============================================================================
  *
- * PURPOSE:
- * Provides a simple entry point for merchant refund/void operations. This screen
- * will evolve into a full operational workflow where merchants can select
- * eligible transactions and trigger backend refund or void actions.
+ * Module Purpose
+ * Provide the merchant-facing entry point for refund and void operations.
  *
- * ARCHITECTURE NOTES:
- * - Lives inside app/tabs/ as part of the merchant dashboard navigation.
- * - Will integrate with apiGet() and apiPost() for backend refund workflows.
- * - Uses SafeAreaView / React Native primitives for clean UI scaffolding.
- * - Designed to remain lightweight until backend refund endpoints are finalised.
- *
- * FLOW ALIGNMENT:
- * Flow 8 — Payment Result
- * Flow 9 — Refund / Void (this screen)
- * Flow 10 — Settlement & Analytics
- *
- * ENGINEERING NOTES:
- * - Import depth uses ../../ for api/ and src/ folders.
- * - Screen currently displays placeholder UI until refund logic is activated.
- * - Fully TypeScript‑compatible and TM470‑safe.
- *
- * TESTING NOTES:
- * - Confirm navigation into this screen from merchant dashboard.
- * - Validate placeholder UI renders correctly across iOS/Android/Web.
+ * Module Responsibilities
+ * - Present the Refund / Void HERO surface.
+ * - Reserve the screen for eligible transaction refund operations.
+ * - Avoid inactive backend dependencies until refund execution is wired.
  * =============================================================================
  */
 
-
-
-
-
-import { View, Text } from "react-native";
-
-import { apiGet, apiPost } from "../../api/client";
-import { API_URL } from "../../src/config";
+import { StyleSheet, Text, View } from "react-native";
 
 export default function RefundScreen() {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ fontSize: 24 }}>Refund / Void Screen</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Refund / Void</Text>
+
+      <Text style={styles.description}>
+        Select an eligible payment to begin a refund or void operation.
+      </Text>
     </View>
   );
 }
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+
+  description: {
+    fontSize: 16,
+    textAlign: "center",
+  },
+});

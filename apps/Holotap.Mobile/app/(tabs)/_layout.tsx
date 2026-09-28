@@ -1,10 +1,33 @@
 /**
  * =============================================================================
- *  HoloTap Mobile — Enterprise Tab Layout
+ * HOLOTAP MOBILE — ENTERPRISE TAB LAYOUT
+ * =============================================================================
+ * File: apps/Holotap.Mobile/app/(tabs)/_layout.tsx
+ * Engineers: Raymond Newton (E5357171)
+ *            Copilot Engineering Assistant
+ * Layer: Mobile / Merchant Navigation
+ * Revision: v2 - HERO Merchant Navigation
+ * Date: 24 September 2026
+ * Copyright (c) 2026 HoloTap Technologies Ltd.
+ * =============================================================================
+ *
+ * Module Purpose
+ * Provides the primary tab-based navigation shell for the HoloTap merchant
+ * mobile experience.
+ *
+ * Module Responsibilities
+ * - Expose the merchant dashboard.
+ * - Expose merchant QR-code payment generation.
+ * - Expose live payment activity.
+ * - Expose refund operations.
+ * - Expose settlement information.
+ * - Expose merchant application settings.
+ * - Apply theme-aware navigation presentation.
  * =============================================================================
  */
 
 import { Tabs } from "expo-router";
+
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -16,88 +39,55 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[scheme].tint,
         headerShown: false,
+        tabBarActiveTintColor: Colors[scheme].tint,
+        tabBarInactiveTintColor: Colors[scheme].tabIconDefault,
+        tabBarStyle: {
+          borderTopWidth: 1,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "600",
+        },
       }}
     >
-
-      {/* Dashboard */}
       <Tabs.Screen
         name="merchant-dashboard"
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="square.grid.2x2.fill" color={color} />
+            <IconSymbol
+              size={26}
+              name="square.grid.2x2.fill"
+              color={color}
+            />
           ),
         }}
       />
 
-      {/* QR Code */}
       <Tabs.Screen
         name="generate-qrc"
         options={{
           title: "QR Code",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="qrcode" color={color} />
+            <IconSymbol size={26} name="qrcode" color={color} />
           ),
         }}
       />
 
-      {/* Payments */}
-      <Tabs.Screen
-        name="live-payments"
-        options={{
-          title: "Payments",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="creditcard.fill" color={color} />
-          ),
-        }}
-      />
-
-      {/* Refunds */}
-      <Tabs.Screen
-        name="refund"
-        options={{
-          title: "Refunds",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="arrow.uturn.left.circle.fill" color={color} />
-          ),
-        }}
-      />
-
-      {/* Settlement */}
-      <Tabs.Screen
-        name="settlement"
-        options={{
-          title: "Settlement",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="banknote.fill" color={color} />
-          ),
-        }}
-      />
-
-      {/* Diagnostics */}
-      <Tabs.Screen
-        name="diagnostics"
-        options={{
-          title: "Diagnostics",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="wrench.fill" color={color} />
-          ),
-        }}
-      />
-
-      {/* Settings */}
       <Tabs.Screen
         name="settings"
         options={{
           title: "Settings",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="gearshape.fill" color={color} />
+            <IconSymbol
+              size={26}
+              name="gearshape.fill"
+              color={color}
+            />
           ),
         }}
       />
-
     </Tabs>
   );
 }

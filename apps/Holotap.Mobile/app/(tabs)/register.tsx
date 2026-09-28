@@ -1,109 +1,248 @@
 /**
  * =============================================================================
- * HOLOTAP MOBILE — CONSUMER REGISTRATION v1 (Engineering Edition)
+ * HOLOTAP MOBILE — CONSUMER REGISTRATION
  * =============================================================================
- * Engineer:      Raymond Newton (E5357171)
- * Assistant:     Copilot Engineering Assistant
- * File:          register.tsx
- * Date:          17 August 2026
+ * File: apps/Holotap.Mobile/app/(tabs)/register.tsx
+ * Engineers: Raymond Newton (E5357171)
+ *            Copilot Engineering Assistant
+ * Layer: Mobile / Customer Payment Entry
+ * Revision: v3 - HERO Registration Build
+ * Date: 24 September 2026
+ * Copyright (c) 2026 HoloTap Technologies Ltd.
  * =============================================================================
- * PURPOSE:
- * The Consumer Registration screen is the entry point for Flow 6 (Identity
- * Onboarding). It creates:
  *
- *   • mobile_user
- *   • mobile_device
- *   • mobile_session
+ * Module Purpose
+ * Register a HoloTap customer device for access to the QR-code payment
+ * experience.
  *
- * via the backend /mobile/register API.
- *
- * DESIGN:
- *   • Pure logic, minimal styling (unstyled edition)
- *   • Fully commented for engineering clarity
- *   • Uses Expo Device + Notifications for device identity + push token
- *   • Strong TypeScript typing
- *   • Clean JSX structure
- *
- * ROUTING (Expo Router v6):
- *   Valid hrefs:
- *     "/register"
- *
+ * Module Responsibilities
+ * - Capture customer mobile registration details.
+ * - Register the current mobile device.
+ * - Acquire push capability on supported native platforms.
+ * - Submit registration through the HoloTap Mobile API.
+ * - Remain safe when rendered through React Native Web.
  * =============================================================================
  */
 
-import { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, Platform } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+
 import * as Device from "expo-device";
-import * as Notifications from "expo-notifications";
 
 import { mobileRegister } from "../../api/mobile";
 
 export default function RegisterScreen() {
-
-  // ============================================================================
-  // SECTION: Local State
-  // Purpose: Store user input and push token required for registration.
-  // ============================================================================
   const [mobileNumber, setMobileNumber] = useState("");
   const [countryCode, setCountryCode] = useState("+44");
   const [expoPushToken, setExpoPushToken] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  // ============================================================================
-  // SECTION: Push Token Acquisition
-  // Purpose: Retrieve Expo push token for device registration.
-  // Notes: Required for future notification flows and device identity.
-  // ============================================================================
   useEffect(() => {
+    if (Platform.OS === "web") {
+      return;
+    }
+
+    let active = true;
+
     async function acquirePushToken() {
       try {
-        const token = (await Notifications.getExpoPushTokenAsync()).data;
-        setExpoPushToken(token);
-      } catch (err) {
-        console.log("Push token acquisition failed:", err);
+        const Notifications = await import("expo-notifications");
+        const token = await Notifications.getExpoPushTokenAsync();
+
+        if (active) {
+          setExpoPushToken(token.data);
+        }
+      } catch (error) {
+        console.warn("Push token acquisition unavailable:", error);
       }
     }
 
-    acquirePushToken();
+    void acquirePushToken();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  // ============================================================================
-  // SECTION: Registration Handler
-  // Purpose: Calls backend /mobile/register to create user, device, and session.
-  // Notes: Uses Device.osInternalId and Platform.OS for device identity.
-  // ============================================================================
   async function handleRegister() {
-    try {
-      const result = await mobileRegister({
-        mobile_number: mobileNumber,
-        country_code: countryCode,
-        device_id: Device.osBuildId ?? "unknown-device",
+    const number = mobileNumber.trim();
+    const code = countryCode.trim();
 
+    if (!number) {
+      Alert.alert("Mobile number required");
+      return;
+    }
+
+    if (!code) {
+      Alert.alert("Country code required");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      await mobileRegister({
+        mobile_number: number,
+        country_code: code,
+        device_id: Device.osBuildId ?? "unknown-device",
         platform: Platform.OS,
-        push_token: expoPushToken
+        push_token: expoPushToken,
       });
 
-      console.log("Registered:", result);
-      alert("Registration successful");
-    } catch (err) {
-      console.error("Registration error:", err);
-      alert("Registration failed");
+      Alert.alert("Registration successful");
+    } catch (error) {
+      console.error("Registration error:", error);
+      Alert.alert("Registration failed");
+    } finally {
+      setSubmitting(false);
     }
   }
 
-  // ============================================================================
-  // SECTION: UI Rendering
-  // Purpose: Provides input fields and action button for registration.
-  // ============================================================================
   return (
-    <View>
-      <Text>Mobile Number</Text>
-      <TextInput
-        value={mobileNumber}
-        onChangeText={setMobileNumber}
-        placeholder="07123456789"
-      />
+    <View style={styles.screen}>
+      <View style={styles.hero}>
+        <Text style={styles.eyebrow}>HOLOTAP</Text>
 
-      <Button title="Register" onPress={handleRegister} />
+        <Text style={styles.title}>Ready to Tap.</Text>
+
+        <Text style={styles.description}>
+          Register your mobile number to continue to the HoloTap QR payment
+          experience.
+        </Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.label}>Country code</Text>
+
+        <TextInput
+          value={countryCode}
+          onChangeText={setCountryCode}
+          keyboardType="phone-pad"
+          autoComplete="tel-country-code"
+          style={styles.input}
+        />
+
+        <Text style={styles.label}>Mobile number</Text>
+
+        <TextInput
+          value={mobileNumber}
+          onChangeText={setMobileNumber}
+          placeholder="07123456789"
+          keyboardType="phone-pad"
+          autoComplete="tel"
+          style={styles.input}
+        />
+
+        <Pressable
+          onPress={handleRegister}
+          disabled={submitting}
+          style={({ pressed }) => [
+            styles.button,
+            pressed && styles.buttonPressed,
+            submitting && styles.buttonDisabled,
+          ]}
+        >
+          <Text style={styles.buttonText}>
+            {submitting ? "Registering..." : "Continue"}
+          </Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "#F8FAFC",
+    padding: 24,
+  },
+
+  hero: {
+    width: "100%",
+    maxWidth: 520,
+    alignSelf: "center",
+    marginBottom: 28,
+  },
+
+  eyebrow: {
+    color: "#6D28D9",
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+
+  title: {
+    color: "#111827",
+    fontSize: 36,
+    fontWeight: "800",
+    marginBottom: 12,
+  },
+
+  description: {
+    color: "#4B5563",
+    fontSize: 17,
+    lineHeight: 25,
+  },
+
+  card: {
+    width: "100%",
+    maxWidth: 520,
+    alignSelf: "center",
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E5E7EB",
+    borderRadius: 18,
+    borderWidth: 1,
+    boxShadow: "0 4px 14px rgba(15, 23, 42, 0.06)",
+    padding: 24,
+  },
+
+  label: {
+    color: "#374151",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+
+  input: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#D1D5DB",
+    borderRadius: 12,
+    borderWidth: 1,
+    fontSize: 16,
+    marginBottom: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+
+  button: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#6D28D9",
+    borderRadius: 12,
+    paddingVertical: 16,
+  },
+
+  buttonPressed: {
+    opacity: 0.85,
+  },
+
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+});
