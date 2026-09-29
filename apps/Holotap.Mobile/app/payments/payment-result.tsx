@@ -1,44 +1,50 @@
 /**
  * =============================================================================
- * HOLOTAP MOBILE — PAYMENT RESULT SCREEN v2 (Engineering Edition)
+ * HOLOTAP MOBILE — PAYMENT RESULT
  * =============================================================================
- * Engineer:      Raymond Newton — HoloTap Engineering Team
- * Assistant:     Copilot Engineering Assistant
- * File:          app/payment-result.tsx
- * Date:          28 July 2026
+ * File: apps/Holotap.Mobile/app/payment-result.tsx
+ * Engineers: Raymond Newton (E5357171)
+ *            Copilot Engineering Assistant
+ * Layer: Mobile / Payment Experience
+ * Revision: v5.0.0 - HERO Build
+ * Date: 24 September 2026
+ * Copyright (c) 2026 HoloTap Technologies Ltd.
  * =============================================================================
- * PURPOSE:
- * Displays the final payment outcome with multi‑currency support and optional
- * blockchain metadata. This screen is identity‑aware, session‑aware, and part
- * of the core fintech flow.
  *
- * PAYMENT RESULT LIFECYCLE:
- *   1. Receive payment metadata via route params
- *   2. Format currency using scalable metadata
- *   3. Display merchant + session + blockchain fields
- *   4. Provide safe fallback states when params are missing
+ * Module Purpose
+ * Presents the final payment outcome for the HoloTap mobile payment flow.
  *
- * VERSION NOTES:
- *   • v2: Rewritten for HoloTap engineering architecture
- *   • Removed Animated.Text (invalid JSX component)
- *   • Pure logic, pure TypeScript, unstyled
- *   • Identity‑aware and session‑aware
+ * Module Responsibilities
+ * - Consume payment metadata supplied through route parameters.
+ * - Format supported currency values.
+ * - Present merchant and session information.
+ * - Present optional transaction and receipt metadata.
+ * - Provide safe fallback values when payment metadata is unavailable.
  *
- * FLOW ALIGNMENT:
- *   Flow 6 → Payment Initialisation
- *   Flow 7 → Payment Submission
- *   Flow 8 → Payment Result (this screen)
+ * Architecture Boundary
+ * This screen presents payment-result information only.
+ * Authoritative payment state remains server-owned.
  * =============================================================================
  */
 
-import React from "react";
-import { SafeAreaView, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
+import { SafeAreaView, Text, View } from "react-native";
 
-/**
- * Currency metadata for scalable multi‑currency formatting.
- */
-const currencyMeta: Record<string, { symbol: string; decimals: number }> = {
+type CurrencyMetadata = {
+  symbol: string;
+  decimals: number;
+};
+
+type PaymentResultParams = {
+  amount?: string;
+  currency?: string;
+  merchantId?: string;
+  sessionId?: string;
+  txHash?: string;
+  nftId?: string;
+};
+
+const currencyMeta: Record<string, CurrencyMetadata> = {
   GBP: { symbol: "£", decimals: 2 },
   BTC: { symbol: "₿", decimals: 8 },
   ETH: { symbol: "Ξ", decimals: 8 },
@@ -47,22 +53,21 @@ const currencyMeta: Record<string, { symbol: string; decimals: number }> = {
   CBDC: { symbol: "¤", decimals: 2 },
 };
 
-/**
- * Currency formatter (safe fallback).
- */
 function formatCurrency(amount?: string, currency?: string): string {
-  if (!amount || !currency) return "—";
+  if (!amount || !currency) {
+    return "—";
+  }
 
   const meta = currencyMeta[currency] ?? currencyMeta.GBP;
   const numeric = Number(amount);
 
-  if (isNaN(numeric)) return `${meta.symbol}${amount}`;
+  if (!Number.isFinite(numeric)) {
+    return `${meta.symbol}${amount}`;
+  }
+
   return `${meta.symbol}${numeric.toFixed(meta.decimals)}`;
 }
 
-/**
- * Main Payment Result Screen (unstyled)
- */
 export default function PaymentResultScreen() {
   const {
     amount,
@@ -71,14 +76,7 @@ export default function PaymentResultScreen() {
     sessionId,
     txHash,
     nftId,
-  } = useLocalSearchParams<{
-    amount?: string;
-    currency?: string;
-    merchantId?: string;
-    sessionId?: string;
-    txHash?: string;
-    nftId?: string;
-  }>();
+  } = useLocalSearchParams<PaymentResultParams>();
 
   const formattedAmount = formatCurrency(amount, currency);
 
@@ -93,19 +91,19 @@ export default function PaymentResultScreen() {
         <Text>Merchant ID: {merchantId ?? "—"}</Text>
         <Text>Session ID: {sessionId ?? "—"}</Text>
 
-        {txHash && (
+        {txHash ? (
           <View>
             <Text>Blockchain Tx Hash:</Text>
             <Text>{txHash}</Text>
           </View>
-        )}
+        ) : null}
 
-        {nftId && (
+        {nftId ? (
           <View>
             <Text>NFT Receipt ID:</Text>
             <Text>{nftId}</Text>
           </View>
-        )}
+        ) : null}
       </View>
     </SafeAreaView>
   );

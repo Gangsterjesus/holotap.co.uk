@@ -37,7 +37,7 @@ import {
 
 import * as Device from "expo-device";
 
-import { mobileRegister } from "../../api/mobile";
+import { mobileRegister } from "../api/mobile";
 
 export default function RegisterScreen() {
   const [mobileNumber, setMobileNumber] = useState("");
