@@ -1,26 +1,33 @@
 /**
  * =============================================================================
- * HOLOTAP MOBILE — CONSUMER REGISTRATION
+ * HOLOTAP MOBILE - CONSUMER REGISTRATION
  * =============================================================================
- * File: apps/Holotap.Mobile/app/(tabs)/register.tsx
+ * File: apps/Holotap.Mobile/app/register.tsx
  * Engineers: Raymond Newton (E5357171)
  *            Copilot Engineering Assistant
- * Layer: Mobile / Customer Payment Entry
- * Revision: v3 - HERO Registration Build
- * Date: 24 September 2026
+ * Layer: Mobile / Registration Security Boundary
+ * Revision: v5.0.0 - HERO Build
+ * Date: 29 September 2026
  * Copyright (c) 2026 HoloTap Technologies Ltd.
  * =============================================================================
  *
  * Module Purpose
- * Register a HoloTap customer device for access to the QR-code payment
- * experience.
+ * Provide the public registration entry point for HoloTap Mobile before
+ * access to protected application features is permitted.
  *
  * Module Responsibilities
  * - Capture customer mobile registration details.
- * - Register the current mobile device.
+ * - Validate required registration input.
+ * - Register the current device through the HoloTap Mobile API.
  * - Acquire push capability on supported native platforms.
- * - Submit registration through the HoloTap Mobile API.
+ * - Prevent progression when registration fails.
  * - Remain safe when rendered through React Native Web.
+ *
+ * Architecture Boundary
+ * Registration validation and identity authority remain server-owned.
+ * Successful API completion does not independently create an authenticated
+ * client session. Protected navigation remains controlled by the root
+ * application security layer.
  * =============================================================================
  */
 
@@ -73,16 +80,20 @@ export default function RegisterScreen() {
   }, []);
 
   async function handleRegister() {
-    const number = mobileNumber.trim();
-    const code = countryCode.trim();
-
-    if (!number) {
-      Alert.alert("Mobile number required");
+    if (submitting) {
       return;
     }
 
+    const number = mobileNumber.trim();
+    const code = countryCode.trim();
+
     if (!code) {
       Alert.alert("Country code required");
+      return;
+    }
+
+    if (!number) {
+      Alert.alert("Mobile number required");
       return;
     }
 
@@ -94,13 +105,23 @@ export default function RegisterScreen() {
         country_code: code,
         device_id: Device.osBuildId ?? "unknown-device",
         platform: Platform.OS,
-        push_token: expoPushToken,
+        push_token: expoPushToken || undefined,
       });
 
+      /*
+       * Registration has been accepted by the API.
+       *
+       * Do not navigate into the protected application here until the
+       * registration response has been connected to the root application
+       * registration/session authority.
+       */
       Alert.alert("Registration successful");
     } catch (error) {
       console.error("Registration error:", error);
-      Alert.alert("Registration failed");
+      Alert.alert(
+        "Registration failed",
+        "Your details could not be confirmed. Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -127,6 +148,7 @@ export default function RegisterScreen() {
           onChangeText={setCountryCode}
           keyboardType="phone-pad"
           autoComplete="tel-country-code"
+          editable={!submitting}
           style={styles.input}
         />
 
@@ -138,6 +160,7 @@ export default function RegisterScreen() {
           placeholder="07123456789"
           keyboardType="phone-pad"
           autoComplete="tel"
+          editable={!submitting}
           style={styles.input}
         />
 
@@ -146,7 +169,7 @@ export default function RegisterScreen() {
           disabled={submitting}
           style={({ pressed }) => [
             styles.button,
-            pressed && styles.buttonPressed,
+            pressed && !submitting && styles.buttonPressed,
             submitting && styles.buttonDisabled,
           ]}
         >

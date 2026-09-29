@@ -1,99 +1,58 @@
 /**
  * =============================================================================
- * HOLOTAP MOBILE - MERCHANT TAB LAYOUT
+ * HOLOTAP MOBILE - ROOT APPLICATION GATEKEEPER
  * =============================================================================
- * File: apps/Holotap.Mobile/app/(tabs)/_layout.tsx
+ * File: apps/Holotap.Mobile/app/_layout.tsx
  * Engineers: Raymond Newton (E5357171)
  *            Copilot Engineering Assistant
- * Layer: Mobile / Protected Merchant Navigation
+ * Layer: Mobile / Root Registration Security
  * Revision: v5.0.0 - HERO Build
- * Date: 24 September 2026
+ * Date: 29 September 2026
  * Copyright (c) 2026 HoloTap Technologies Ltd.
  * =============================================================================
  *
  * Module Purpose
- * Provide the protected tab-navigation shell for the authenticated HoloTap
- * merchant experience.
+ * Provide the root navigation security boundary for HoloTap Mobile.
  *
  * Module Responsibilities
- * - Present merchant dashboard navigation.
- * - Present QR-code payment generation.
- * - Present merchant settings.
- * - Apply theme-aware navigation presentation.
+ * - Expose registration before application access is authorised.
+ * - Prevent access to HoloTap application routes while unregistered.
+ * - Provide the root navigation boundary for future confirmed sessions.
  *
  * Architecture Boundary
- * This layout does not establish registration or authentication.
- * Access to this route group must be authorised by the root application
- * protection layer before the merchant navigation becomes available.
+ * Registration and identity authority remain server-owned.
+ * This layout must not grant protected application access until confirmed
+ * registration state is available.
  * =============================================================================
  */
 
-import { Tabs } from "expo-router";
+import { Stack } from "expo-router";
 
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const scheme = colorScheme === "dark" ? "dark" : "light";
+export default function RootLayout() {
+  /**
+   * SECURITY DEFA*LT
+   *
+   * Application access is*denied until register.tsx complete* registration
+   * and confirmed r*gistration state is wired into thi* guard.
+   */
+  const isRegistered: boolean = false;
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: Colors[scheme].tint,
-        tabBarInactiveTintColor: Colors[scheme].tabIconDefault,
-        tabBarStyle: {
-          borderTopWidth: 1,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "600",
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="merchant-dashboard"
-        options={{
-          title: "Dashboard",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol
-              size={26}
-              name="square.grid.2x2.fill"
-              color={color}
-            />
-          ),
-        }}
-      />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={!isRegistered}>
+        <Stack.Screen name="register" />
+      </Stack.Protected>
 
-      <Tabs.Screen
-        name="generate-qrc"
-        options={{
-          title: "QR Code",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol
-              size={26}
-              name="qrcode"
-              color={color}
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "Settings",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol
-              size={26}
-              name="gearshape.fill"
-              color={color}
-            />
-          ),
-        }}
-      />
-    </Tabs>
+      <Stack.Protected guard={isRegistered}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="profile" />
+        <Stack.Screen name="scan-merchant" />
+        <Stack.Screen name="scan-qrc" />
+        <Stack.Screen name="status" />
+        <Stack.Screen name="payments" />
+        <Stack.Screen name="(qr)" />
+        <Stack.Screen name="(batch)" />
+      </Stack.Protected>
+    </Stack>
   );
 }
