@@ -1,5 +1,5 @@
 // api/client.ts
-const API_BASE = "http://192.168.1.235:4000/api"; // your backend
+const API_BASE = "http://192.168.1.173:4000/api";
 
 export async function apiPost(path: string, body: any) {
   const res = await fetch(`${API_BASE}${path}`, {
