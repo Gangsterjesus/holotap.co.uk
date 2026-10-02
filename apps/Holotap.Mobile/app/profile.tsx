@@ -1,35 +1,34 @@
-/**
- * =============================================================================
- * HOLOTAP MOBILE - MERCHANT PROFILE
- * =============================================================================
- * File: apps/Holotap.Mobile/app/profile.tsx
- * Engineers: Raymond Newton (E5357171)
- *            Copilot Engineering Assistant
- * Layer: Mobile / Merchant Identity
- * Revision: v5.0.0 - HERO Build
- * Date: 24 September 2026
- * Copyright (c) 2026 HoloTap Technologies Ltd.
- * =============================================================================
+/*
+ * =====================================================================================
+ *  HoloTap Engineering - Merchant Profile
+ * -------------------------------------------------------------------------------------
+ *  File: apps/Holotap.Mobile/app/profile.tsx
+ *  Engineers:
+ *      Raymond Newton (E5357171)
+ *      Copilot Engineering Assistant
+ *  Layer: Mobile / Merchant / Profile
+ *  Revision: v5.0.0
+ *  Date: 02 Oct 2026
+ *  Copyright (c) 2026 HoloTap Technologies Ltd.
+ * -------------------------------------------------------------------------------------
+ *  Module Purpose:
+ *      Present the active merchant profile used by the HoloTap HERO experience.
  *
- * Module Purpose
- * Present merchant identity and platform availability information supplied
- * through the HoloTap identity subsystem.
+ *  Module Responsibilities:
+ *      - Load the active merchant identity
+ *      - Present merchant name, identifier and status
+ *      - Preserve existing merchant identity metadata
+ *      - Surface HoloTap service availability
+ *      - Provide deterministic loading and failure states
  *
- * Module Responsibilities
- * - Load the active merchant identity.
- * - Present merchant identity information.
- * - Present available hologram metadata.
- * - Surface identity service availability to the merchant or user.
- * - Surface loading and deterministic failure states.
- *
- * Architecture Boundary
- * This screen consumes and presents merchant identity information.
- * Authoritative merchant, identity, governance and risk state remains
- * server-owned.
- * =============================================================================
+ *  Architecture Boundary:
+ *      This screen consumes and presents merchant identity information.
+ *      Authoritative merchant and identity state remains server-owned.
+ * =====================================================================================
  */
 
 import type { ReactNode } from "react";
+
 import {
   ActivityIndicator,
   ScrollView,
@@ -37,9 +36,16 @@ import {
   Text,
   View,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useMerchantIdentity } from "../hooks/useMerchantIdentity";
+
+/*
+ * =====================================================================================
+ *  Section
+ * =====================================================================================
+ */
 
 interface SectionProps {
   title: string;
@@ -49,11 +55,20 @@ interface SectionProps {
 function Section({ title, children }: SectionProps) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text style={styles.sectionTitle}>
+        {title}
+      </Text>
+
       {children}
     </View>
   );
 }
+
+/*
+ * =====================================================================================
+ *  Merchant Profile Screen
+ * =====================================================================================
+ */
 
 export default function ProfileScreen() {
   const {
@@ -62,32 +77,47 @@ export default function ProfileScreen() {
     error: identityError,
   } = useMerchantIdentity();
 
+  /*
+   * ---------------------------------------------------------------------------
+   * Loading State
+   * ---------------------------------------------------------------------------
+   */
+
   if (identityLoading) {
     return (
       <SafeAreaView style={styles.center}>
-        <ActivityIndicator size="large" color="#6D28D9" />
+        <ActivityIndicator
+          size="large"
+          color="#6D28D9"
+        />
 
         <Text style={styles.message}>
-          Loading merchant identity...
+          Loading merchant profile...
         </Text>
       </SafeAreaView>
     );
   }
+
+  /*
+   * ---------------------------------------------------------------------------
+   * Failure State
+   * ---------------------------------------------------------------------------
+   */
 
   if (identityError || !identity) {
     return (
       <SafeAreaView style={styles.center}>
         <View style={styles.servicePanel}>
           <Text style={styles.serviceUnavailable}>
-            HoloTap service unavailable
+            Merchant profile unavailable
           </Text>
 
           <Text style={styles.message}>
-            Merchant identity cannot currently be verified.
+            HoloTap cannot currently verify this merchant.
           </Text>
 
           <Text style={styles.serviceMessage}>
-            The HoloTap server or identity service could not be reached.
+            The HoloTap service could not be reached.
             Please try again when the service becomes available.
           </Text>
         </View>
@@ -95,56 +125,98 @@ export default function ProfileScreen() {
     );
   }
 
+  /*
+   * ---------------------------------------------------------------------------
+   * HERO Merchant Profile
+   * ---------------------------------------------------------------------------
+   */
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.eyebrow}>HOLOTAP</Text>
-        <Text style={styles.header}>Merchant Profile</Text>
+        <Text style={styles.eyebrow}>
+          HOLOTAP
+        </Text>
+
+        <Text style={styles.header}>
+          Merchant Profile
+        </Text>
+
+        <Text style={styles.subtitle}>
+          Merchant information used by your HoloTap account.
+        </Text>
 
         <View style={styles.card}>
-          <Section title="Merchant Identity">
-            <Text style={styles.label}>Name</Text>
+          <Section title="Merchant">
+            <Text style={styles.label}>
+              Name
+            </Text>
+
             <Text style={styles.value}>
               {identity.name}
             </Text>
 
-            <Text style={styles.label}>Merchant ID</Text>
-            <Text style={styles.value}>
+            <Text style={styles.label}>
+              Merchant ID
+            </Text>
+
+            <Text
+              style={styles.value}
+              selectable
+            >
               {identity.id}
             </Text>
 
-            <Text style={styles.label}>Status</Text>
+            <Text style={styles.label}>
+              Status
+            </Text>
+
+            <View style={styles.statusRow}>
+              <View style={styles.statusIndicator} />
+
+              <Text style={styles.statusText}>
+                {identity.status}
+              </Text>
+            </View>
+          </Section>
+
+          <Section title="Merchant Account">
+            <Text style={styles.label}>
+              Role
+            </Text>
+
             <Text style={styles.value}>
-              {identity.status}
+              Merchant
+            </Text>
+
+            <Text style={styles.label}>
+              Identity Source
+            </Text>
+
+            <Text style={styles.value}>
+              HoloTap
             </Text>
           </Section>
 
-          <Section title="Merchant Governance">
-            <Text style={styles.label}>Role</Text>
-            <Text style={styles.value}>Merchant</Text>
-
-            <Text style={styles.label}>Identity Source</Text>
-            <Text style={styles.value}>
-              HoloTap identity service
+          <Section title="HoloTap Identity">
+            <Text style={styles.label}>
+              Hologram ID
             </Text>
-          </Section>
 
-          <Section title="Hologram Information">
-            <Text style={styles.label}>Hologram ID</Text>
             <Text style={styles.value}>
               {identity.hologramId ?? "Not assigned"}
             </Text>
           </Section>
 
-          <Section title="Platform Status">
+          <Section title="Service Status">
             <View style={styles.statusRow}>
               <View style={styles.statusIndicator} />
 
               <Text style={styles.statusText}>
-                HoloTap identity service available
+                HoloTap service available
               </Text>
             </View>
           </Section>
@@ -153,6 +225,12 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 }
+
+/*
+ * =====================================================================================
+ *  Styles
+ * =====================================================================================
+ */
 
 const styles = StyleSheet.create({
   container: {
@@ -186,6 +264,13 @@ const styles = StyleSheet.create({
     color: "#111827",
     fontSize: 30,
     fontWeight: "800",
+  },
+
+  subtitle: {
+    color: "#6B7280",
+    fontSize: 15,
+    lineHeight: 21,
+    marginTop: 6,
     marginBottom: 20,
   },
 
@@ -220,6 +305,26 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 6,
+  },
+
+  statusIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#16A34A",
+    marginRight: 10,
+  },
+
+  statusText: {
+    color: "#166534",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
   message: {
     color: "#6B7280",
     fontSize: 15,
@@ -249,24 +354,5 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     marginTop: 12,
     textAlign: "center",
-  },
-
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  statusIndicator: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#16A34A",
-    marginRight: 10,
-  },
-
-  statusText: {
-    color: "#166534",
-    fontSize: 15,
-    fontWeight: "700",
   },
 });

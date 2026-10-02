@@ -1,35 +1,41 @@
-/**
- * =============================================================================
- * ENGINEERING HEADER — QR SCANNER SCREEN
- * =============================================================================
- * Author: Raymond Newton (E5357171)
- * Product: HoloTap Hero v5.0.0
- * File: scan-qr.tsx
- * Date: 23 September 2026
+/*
+ * =====================================================================================
+ *  HoloTap Engineering - HERO QR Scanner
+ * -------------------------------------------------------------------------------------
+ *  File: apps/Holotap.Mobile/app/scan-qr.tsx
+ *  Engineers:
+ *      Raymond Newton (E5357171)
+ *      Copilot Engineering Assistant
+ *  Layer: Mobile / Customer / QR Payment
+ *  Revision: v5.0.0
+ *  Date: 02 Oct 2026
+ *  Copyright (c) 2026 HoloTap Technologies Ltd.
+ * -------------------------------------------------------------------------------------
+ *  Module Purpose:
+ *      Provide the customer-facing QR scanning entry point for the HoloTap
+ *      HERO payment experience.
  *
- * Purpose:
- *   Consumer-facing QR scanning flow.
+ *  Module Responsibilities:
+ *      - Request and validate camera permission
+ *      - Restrict scanning to QR codes
+ *      - Prevent duplicate scan processing
+ *      - Submit scanned QR tokens to the server for verification
+ *      - Validate the server verification response at runtime
+ *      - Surface deterministic verification and network failures
+ *      - Navigate into the existing payment surface
  *
- * Responsibilities:
- *   • Capture merchant QR codes
- *   • Verify QR token with backend
- *   • Validate backend response
- *   • Prevent duplicate scans
- *   • Navigate to payment flow
- *
- * Hero Objectives:
- *   • Strict TypeScript compliance
- *   • Runtime response validation
- *   • Deterministic state transitions
- *   • API safety
- *   • QR verification hardening
- * =============================================================================
+ *  Architecture Boundary:
+ *      QR verification and authoritative payment state remain server-owned.
+ *      The mobile client captures the QR token, validates the response shape
+ *      and presents the resulting payment journey.
+ * =====================================================================================
  */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -41,6 +47,12 @@ import {
 import { useRouter } from "expo-router";
 
 import { API_URL } from "../src/config";
+
+/*
+ * =====================================================================================
+ *  Verification Contracts
+ * =====================================================================================
+ */
 
 interface QRVerifyRequest {
   token: string;
@@ -55,8 +67,14 @@ interface QRVerifyErrorResponse {
   message: string;
 }
 
+/*
+ * ---------------------------------------------------------------------------
+ * Runtime Response Validation
+ * ---------------------------------------------------------------------------
+ */
+
 function isQRVerifySuccessResponse(
-  value: unknown,
+  value: unknown
 ): value is QRVerifySuccessResponse {
   if (
     typeof value !== "object" ||
@@ -65,35 +83,44 @@ function isQRVerifySuccessResponse(
     return false;
   }
 
-  const candidate = value as Record<
-    string,
-    unknown
-  >;
+  const candidate =
+    value as Record<string, unknown>;
 
   return (
     typeof candidate.merchantId === "string" &&
-    typeof candidate.sessionId === "string"
+    candidate.merchantId.length > 0 &&
+    typeof candidate.sessionId === "string" &&
+    candidate.sessionId.length > 0
   );
 }
 
 function getErrorMessage(
-  value: unknown,
+  value: unknown
 ): string {
   if (
     typeof value === "object" &&
     value !== null &&
-    "message" in value &&
-    typeof (
-      value as QRVerifyErrorResponse
-    ).message === "string"
+    "message" in value
   ) {
-    return (
-      value as QRVerifyErrorResponse
-    ).message;
+    const message =
+      (value as QRVerifyErrorResponse).message;
+
+    if (
+      typeof message === "string" &&
+      message.length > 0
+    ) {
+      return message;
+    }
   }
 
-  return "Invalid QR code";
+  return "Invalid QR code.";
 }
+
+/*
+ * =====================================================================================
+ *  Component: ScanQR
+ * =====================================================================================
+ */
 
 export default function ScanQR() {
   const router = useRouter();
@@ -104,21 +131,18 @@ export default function ScanQR() {
   ] = useCameraPermissions();
 
   const [scanned, setScanned] =
-    useState<boolean>(false);
+    useState(false);
 
-  useEffect(() => {
-    if (!permission?.granted) {
-      void requestPermission();
-    }
-  }, [
-    permission,
-    requestPermission,
-  ]);
+  /*
+   * ---------------------------------------------------------------------------
+   * QR Scan Handler
+   * ---------------------------------------------------------------------------
+   */
 
   const handleScan = async (
-    data: string,
+    data: string
   ): Promise<void> => {
-    if (scanned) {
+    if (scanned || !data.trim()) {
       return;
     }
 
@@ -134,69 +158,84 @@ export default function ScanQR() {
         {
           method: "POST",
           headers: {
-            "Content-Type":
-              "application/json",
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       const result: unknown =
         await response.json();
 
-      if (response.ok) {
-        if (
-          !isQRVerifySuccessResponse(result)
-        ) {
-          throw new Error(
-            "QR verification response validation failed",
-          );
-        }
+      if (!response.ok) {
+        Alert.alert(
+          "QR Verification Failed",
+          getErrorMessage(result)
+        );
 
-        router.push({
-          pathname: "/payment",
-          params: {
-            merchantId:
-              result.merchantId,
-            sessionId:
-              result.sessionId,
-          },
-        } as never);
-
+        setScanned(false);
         return;
       }
 
-      Alert.alert(
-        "QR Verification Failed",
-        getErrorMessage(result),
-      );
+      if (!isQRVerifySuccessResponse(result)) {
+        Alert.alert(
+          "QR Verification Failed",
+          "Invalid verification response."
+        );
 
-      setScanned(false);
-    } catch (error) {
-      console.error(
-        "QR verification error",
-        error,
-      );
+        setScanned(false);
+        return;
+      }
 
+      /*
+       * -----------------------------------------------------------------------
+       * HERO Payment Transition
+       * -----------------------------------------------------------------------
+       */
+
+      router.push({
+        pathname: "/payments",
+        params: {
+          merchantId: result.merchantId,
+          sessionId: result.sessionId,
+        },
+      });
+    } catch {
       Alert.alert(
-        "Network Error",
-        "Unable to verify QR code.",
+        "Unable to Verify",
+        "Please try again."
       );
 
       setScanned(false);
     }
   };
 
+  /*
+   * ---------------------------------------------------------------------------
+   * Camera Permission Resolution
+   * ---------------------------------------------------------------------------
+   */
+
   if (!permission) {
     return (
-      <ActivityIndicator
-        size="large"
-        style={{
-          marginTop: 50,
-        }}
-      />
+      <View style={styles.center}>
+        <ActivityIndicator
+          size="large"
+          color="#6D28D9"
+        />
+
+        <Text style={styles.text}>
+          Preparing camera...
+        </Text>
+      </View>
     );
   }
+
+  /*
+   * ---------------------------------------------------------------------------
+   * Camera Permission Required
+   * ---------------------------------------------------------------------------
+   */
 
   if (!permission.granted) {
     return (
@@ -204,32 +243,62 @@ export default function ScanQR() {
         <Text style={styles.text}>
           Camera permission is required
         </Text>
+
+        <Pressable
+          style={styles.button}
+          onPress={() => {
+            void requestPermission();
+          }}
+        >
+          <Text style={styles.buttonText}>
+            Allow Camera
+          </Text>
+        </Pressable>
       </View>
     );
   }
+
+  /*
+   * ---------------------------------------------------------------------------
+   * HERO QR Scanner
+   * ---------------------------------------------------------------------------
+   */
 
   return (
     <View style={styles.container}>
       <CameraView
         style={styles.camera}
-        onBarcodeScanned={({
-          data,
-        }) => {
-          void handleScan(data);
+        barcodeScannerSettings={{
+          barcodeTypes: ["qr"],
         }}
+        onBarcodeScanned={
+          scanned
+            ? undefined
+            : ({ data }) => {
+                void handleScan(data);
+              }
+        }
       />
 
       <Text style={styles.scanText}>
-        Scan Merchant QR Code
+        {scanned
+          ? "Verifying HoloTap QR..."
+          : "Scan Merchant QR Code"}
       </Text>
     </View>
   );
 }
 
+/*
+ * =====================================================================================
+ *  Styles
+ * =====================================================================================
+ */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: "#000000",
   },
 
   camera: {
@@ -250,9 +319,25 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: 24,
   },
 
   text: {
     fontSize: 16,
+    textAlign: "center",
+  },
+
+  button: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    backgroundColor: "#000000",
+  },
+
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
