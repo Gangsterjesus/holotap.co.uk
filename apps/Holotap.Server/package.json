@@ -2,11 +2,11 @@
   "name": "holotap-api",
   "version": "1.0.0",
   "main": "dist/server.js",
-  "scripts": {
-    "dev": "ts-node-dev --respawn src/server.ts",
-    "build": "tsc -p ./tsconfig.json",
-    "start": "node dist/server.js"
-  },
+"scripts": {
+  "dev": "tsx watch src/server.ts",
+  "build": "tsc -p ./tsconfig.json",
+  "start": "node dist/server.js"
+},
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "cors": "^2.8.5",
@@ -20,7 +20,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.25",
     "@types/node": "^26.1.1",
-    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.0.0"
   }
 }
