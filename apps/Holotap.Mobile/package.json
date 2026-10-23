@@ -8,7 +8,6 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-   
     "lint": "expo lint"
   },
   "expo": {
@@ -23,7 +22,7 @@
     "@react-navigation/bottom-tabs": "^7.19.2",
     "@react-navigation/elements": "^2.9.43",
     "apisauce": "^3.2.2",
-    "expo": "~57.0.25",
+    "expo": "~57.0.27",
     "expo-camera": "~57.0.5",
     "expo-constants": "~57.0.19",
     "expo-device": "~57.0.2",
