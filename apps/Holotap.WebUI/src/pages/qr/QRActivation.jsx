@@ -1,158 +1,213 @@
 /**
  * ============================================================
- *  HoloTap — QR Activation Screen (Merchant)
- *  File: src/pages/merchant/QRActivation.jsx
- *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
- *  Layer: web-ui
- *  Revision: v2 — Unified Web & Mobile Architecture
- *  Date: 03 August 2026
- *  © 2026 HoloTap Technologies Ltd. All rights reserved.
+ * HoloTap HERO v5.0.0 — Identity Verification QR
+ * ============================================================
+ * File: src/pages/qr/qr.tsx
+ * Engineers: Raymond Newton (E5357171),
+ *            Copilot Engineering Assistant
+ * Layer: HERO WebUI
+ * Revision: v5.0.0
+ * Date: 28 October 2026
+ *
+ * © 2026 HoloTap Technologies Ltd.
+ * All Rights Reserved.
  * ============================================================
  *
- *  Purpose:
- *    Merchant-facing screen for generating secure QR payment sessions.
- *    Calls /session/create on HoloTapServer and renders QR code,
- *    session token, and live expiry countdown.
+ * MODULE PURPOSE
+ * ------------------------------------------------------------
+ * Generates a signed Flow‑6 identity QR challenge used within
+ * the HERO payment journey.
  *
- *  Responsibilities:
- *    - Generate QR session
- *    - Display QR code + token
- *    - Show countdown timer
- *    - Provide regeneration flow
+ * MODULE RESPONSIBILITIES
+ * ------------------------------------------------------------
+ * • Request identity QR session
+ * • Display generated QR image
+ * • Display payment metadata
+ * • Display expiry metadata
+ * • Support secure regeneration
+ * • Handle loading and API errors
  * ============================================================
  */
 
-import { useState, useEffect } from "react";
-import QRCode from "react-qrcode-svg";
-import Layout from "../../../components/Layout.jsx";
-import PageHeader from "../../../components/PageHeader.jsx";
-import DashboardCard from "../../../components/DashboardCard.jsx";
+import React, { useEffect, useState } from "react";
+import { generateQR } from "../../lib/api";
 
-/* ============================
-   PAGE
-   ============================ */
+export default function QRPage() {
+  const [qr, setQr] = useState<string | null>(null);
+  const [payload, setPayload] = useState<string | null>(null);
+  const [paymentId, setPaymentId] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
 
-export default function QRActivation() {
   const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState(null);
-  const [expires, setExpires] = useState(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
-  async function generateQR() {
+  const fetchQR = async () => {
     try {
       setLoading(true);
       setError(null);
-      setToken(null);
 
-      const response = await fetch("http://192.168.1.205:3001/session/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ merchantId: "MERCHANT_123" })
-      });
+      const response = await generateQR();
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to generate QR session");
+      if (!response?.qr) {
+        throw new Error("QR image was not returned");
       }
 
-      setToken(data.token);
-      setExpires(data.expiresIn ?? 30);
+      setQr(response.qr);
+      setPayload(response?.payload ?? null);
+
+      setPaymentId(response?.paymentId ?? null);
+
+      const expiry =
+        response?.expiresAt &&
+        !Number.isNaN(new Date(response.expiresAt).getTime())
+          ? response.expiresAt
+          : null;
+
+      setExpiresAt(expiry);
     } catch (err) {
-      setError(err.message);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to generate QR code"
+      );
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  /* ============================
-     Countdown Timer
-     ============================ */
   useEffect(() => {
-    if (!token || !expires) return;
+    void fetchQR();
+  }, []);
 
-    const interval = setInterval(() => {
-      setExpires((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  const formattedExpiry = (() => {
+    if (!expiresAt) {
+      return null;
+    }
 
-    return () => clearInterval(interval);
-  }, [token, expires]);
+    const date = new Date(expiresAt);
+
+    if (Number.isNaN(date.getTime())) {
+      return "Invalid expiry date";
+    }
+
+    return date.toLocaleString();
+  })();
 
   return (
-    <Layout>
-      <PageHeader
-        title="QR Activation"
-        subtitle="Generate a QR code to start a secure payment session"
-      />
+    <div className="max-w-4xl mx-auto p-8">
+      <h1 className="text-3xl font-bold mb-2">
+        HoloTap Identity Verification
+      </h1>
 
-      {/* Loading */}
+      <p className="text-gray-600 mb-8">
+        Flow‑6 signed identity challenge for HERO verification.
+      </p>
+
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {loading
+          ? "Generating QR code"
+          : error
+            ? `Error: ${error}`
+            : qr
+              ? "QR code generated successfully"
+              : "Ready to generate QR code"}
+      </div>
+
       {loading && (
-        <DashboardCard title="Generating QR…">
-          <p className="text-gray-600">Please wait…</p>
-        </DashboardCard>
-      )}
-
-      {/* Error */}
-      {error && (
-        <DashboardCard title="Error Generating QR">
-          <p className="text-red-600">{error}</p>
-        </DashboardCard>
-      )}
-
-      {/* Generate Button */}
-      {!token && !loading && (
-        <button
-          onClick={generateQR}
-          className="px-5 py-3 bg-black text-white rounded-lg font-medium mt-4"
+        <div
+          role="status"
+          aria-live="polite"
+          className="p-4 border rounded-lg bg-gray-50"
         >
-          Generate QR
-        </button>
+          Generating QR...
+        </div>
       )}
 
-      {/* QR Content */}
-      {token && (
-        <DashboardCard title="QR Session">
-          <div className="flex flex-col items-center gap-4">
+      {error && (
+        <div
+          role="alert"
+          className="p-4 border rounded-lg bg-red-50 text-red-700"
+        >
+          {error}
+        </div>
+      )}
 
-            <QRCode value={token} size={220} />
+      {!loading && qr && (
+        <div className="border rounded-xl p-8 bg-white shadow-sm">
+          <div className="flex flex-col items-center">
+            <img
+              src={`data:image/png;base64,${qr}`}
+              alt="HoloTap Identity QR"
+              className="w-60 h-60"
+            />
 
-            <p className="text-gray-700 font-medium">Session Token:</p>
-            <code className="bg-gray-100 px-3 py-1 rounded text-sm">
-              {token}
-            </code>
-
-            <p
-              className={
-                expires > 0
-                  ? "text-green-600 font-semibold"
-                  : "text-red-600 font-semibold"
+            <button
+              type="button"
+              disabled={loading}
+              aria-disabled={loading}
+              aria-label={
+                loading
+                  ? "Generating QR code"
+                  : "Generate a new identity QR code"
               }
+              onClick={fetchQR}
+              className="
+                mt-6
+                px-4
+                py-2
+                rounded-lg
+                bg-black
+                text-white
+                disabled:opacity-50
+                disabled:cursor-not-allowed
+              "
             >
-              {expires > 0
-                ? `Expires in: ${expires}s`
-                : "QR expired — generate a new one"}
-            </p>
+              {loading ? "Generating..." : "Regenerate QR"}
+            </button>
 
-            {expires === 0 && (
-              <button
-                onClick={() => {
-                  setToken(null);
-                  setExpires(null);
-                }}
-                className="px-5 py-3 bg-black text-white rounded-lg font-medium"
-              >
-                Generate Another
-              </button>
+            {(paymentId || expiresAt) && (
+              <div className="mt-6 w-full max-w-lg">
+                <div className="bg-gray-50 border rounded-lg p-4">
+                  {paymentId && (
+                    <div className="mb-2">
+                      <span className="font-semibold">
+                        Payment ID:
+                      </span>{" "}
+                      <code>{paymentId}</code>
+                    </div>
+                  )}
+
+                  {formattedExpiry && (
+                    <div>
+                      <span className="font-semibold">
+                        Expires:
+                      </span>{" "}
+                      {formattedExpiry}
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
-        </DashboardCard>
+
+          {payload && (
+            <div className="mt-8">
+              <h2 className="text-lg font-semibold mb-3">
+                Signed Payload
+              </h2>
+
+              <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-auto whitespace-pre-wrap break-all">
+                {payload}
+              </pre>
+            </div>
+          )}
+        </div>
       )}
-    </Layout>
+    </div>
   );
 }

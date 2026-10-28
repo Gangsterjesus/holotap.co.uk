@@ -1,165 +1,123 @@
 /**
  * ============================================================
- *  File: qr.tsx
- *  Project: HoloTap Web (Flow 6 — Identity QR Layer)
- *  Engineer: Raymond Newton (E5357171)
- *  Co‑Engineer: Copilot Engineering Assistant
- *  Date: 09 August 2026
+ * HoloTap HERO v5.0.0 — Identity Verification QR
+ * ============================================================
+ * File: src/pages/qr/qr.tsx
+ * Engineers: Raymond Newton (E5357171),
+ *            Copilot Engineering Assistant
+ * Layer: HERO WebUI
+ * Revision: v5.0.0
+ * Date: 28 October 2026
  *
- *  Description:
- *    Generates and displays a cryptographically signed QR‑code
- *    identity token for HoloTap. Calls backend /qr endpoint,
- *    receives base64 PNG + signed payload, and renders both.
+ * © 2026 HoloTap Technologies Ltd.
+ * All Rights Reserved.
+ * ============================================================
  *
- *  Notes:
- *    - Part of Flow 6 (Identity Layer)
- *    - Payload includes nonce, expiry, signature
- *    - Regeneration rotates nonce + signature
- *    - ErrorBoundary protects render‑level failures
- *    - Local error state protects API‑level failures
+ * MODULE PURPOSE
+ * ------------------------------------------------------------
+ * Generates a signed Flow‑6 identity QR challenge used within
+ * the HERO payment journey.
+ *
+ * MODULE RESPONSIBILITIES
+ * ------------------------------------------------------------
+ * • Request identity QR session
+ * • Display generated QR image
+ * • Display verification metadata
+ * • Support secure regeneration
+ * • Handle loading and API errors
  * ============================================================
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { generateQR } from "../../lib/api";
-import { ErrorBoundary } from "../../components/ErrorBoundary";
 
-/**
- * ============================================================
- *  Component: QRPage
- *  Purpose:
- *    - Fetch QR identity token from backend
- *    - Display QR image + signed payload
- *    - Allow regeneration (nonce rotation)
- *    - Handle loading + error states
- * ============================================================
- */
+/* ============================================================
+ * COMPONENT
+ * ============================================================ */
+
 export default function QRPage() {
-  // Base64 PNG returned from backend
   const [qr, setQr] = useState<string | null>(null);
-
-  // Signed identity payload (nonce, exp, sig)
   const [payload, setPayload] = useState<string | null>(null);
-
-  // Loading state for API calls
   const [loading, setLoading] = useState(false);
-
-  // Error message for API failures
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * ------------------------------------------------------------
-   * Function: fetchQR
-   * Purpose:
-   *   Calls backend POST /qr
-   *   Receives { qr, payload }
-   *   Updates UI state
-   *   Handles errors gracefully
-   * ------------------------------------------------------------
-   */
   const fetchQR = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const res = await generateQR();
+      const response = await generateQR();
 
-      setQr(res.qr);
-      setPayload(res.payload);
-    } catch (err: any) {
-      setError(err?.message || "Failed to generate QR code");
+      setQr(response?.qr ?? null);
+      setPayload(response?.payload ?? null);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to generate QR code"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * ------------------------------------------------------------
-   * Effect: Auto-generate QR on first page load
-   * ------------------------------------------------------------
-   */
   useEffect(() => {
     fetchQR();
   }, []);
 
-  /**
-   * ------------------------------------------------------------
-   * Render:
-   *   - ErrorBoundary wraps entire page
-   *   - Loading state
-   *   - Error message
-   *   - QR image (base64 PNG)
-   *   - Regenerate button
-   *   - Signed payload block
-   * ------------------------------------------------------------
-   */
   return (
-  <ErrorBoundary>
-  <div style={{ padding: 32 }}>
-    {/* Page Title */}
-    <h1 style={{ fontSize: 28, fontWeight: "bold", marginBottom: 16 }}>
-      HoloTap Identity QR
-    </h1>
+    <div className="max-w-4xl mx-auto p-8">
+      <h1 className="text-3xl font-bold mb-2">
+        HoloTap Identity Verification
+      </h1>
 
-    {/* Loading Indicator */}
-    {loading && (
-      <div style={{ fontSize: 18, marginTop: 16 }}>
-        Generating QR…
-      </div>
-    )}
+      <p className="text-gray-600 mb-8">
+        Flow‑6 signed identity challenge for HERO verification.
+      </p>
 
-    {/* Error Message */}
-    {error && (
-      <div style={{ color: "red", marginTop: 16 }}>
-        {error}
-      </div>
-    )}
-
-    {/* QR Image */}
-    {qr && (
-      <div
-        style={{
-          marginTop: 24,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <img
-          src={`data:image/png;base64,${qr}`}
-          alt="HoloTap QR Code"
-          style={{ width: 240, height: 240 }}
-        />
-
-        {/* Regenerate Button */}
-        <button style={{ marginTop: 24 }} onClick={fetchQR}>
-          Regenerate QR
-        </button>
-      </div>
-    )}
-
-    {/* Signed Payload Display */}
-    {payload && (
-      <div style={{ marginTop: 32 }}>
-        <div style={{ fontSize: 20, fontWeight: "bold" }}>
-          Signed Payload
+      {loading && (
+        <div className="p-4 border rounded-lg bg-gray-50">
+          Generating QR...
         </div>
+      )}
 
-        <pre
-          style={{
-            marginTop: 12,
-            fontFamily: "monospace",
-            backgroundColor: "#f5f5f5",
-            padding: 12,
-            borderRadius: 8,
-            wordBreak: "break-all",
-          }}
-        >
-          {payload}
-        </pre>
-      </div>
-    )}
-  </div>
-  </ErrorBoundary>
+      {error && (
+        <div className="p-4 border rounded-lg bg-red-50 text-red-700">
+          {error}
+        </div>
+      )}
+
+      {!loading && qr && (
+        <div className="border rounded-xl p-8 bg-white shadow-sm">
+          <div className="flex flex-col items-center">
+            <img
+              src={`data:image/png;base64,${qr}`}
+              alt="HoloTap Identity QR"
+              className="w-60 h-60"
+            />
+
+            <button
+              type="button"
+              onClick={fetchQR}
+              className="mt-6 px-4 py-2 rounded-lg bg-black text-white"
+            >
+              Regenerate QR
+            </button>
+          </div>
+
+          {payload && (
+            <div className="mt-8">
+              <h2 className="text-lg font-semibold mb-3">
+                Signed Payload
+              </h2>
+
+              <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-auto whitespace-pre-wrap break-all">
+                {payload}
+              </pre>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

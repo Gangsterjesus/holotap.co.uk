@@ -1,22 +1,30 @@
 /**
  * ============================================================
- *  HoloTap — Payments Feed (Merchant)
- *  File: src/pages/merchant/PaymentsFeed.jsx
- *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
- *  Layer: web-ui
- *  Revision: v2 — Unified Web & Mobile Architecture
- *  Date: 03 August 2026
- *  © 2026 HoloTap Technologies Ltd. All rights reserved.
+ * HoloTap HERO v5.0.0 — Merchant Payments Feed
+ * ============================================================
+ * File: src/pages/merchant/PaymentsFeed.jsx
+ * Engineers: Raymond Newton (E5357171),
+ *            Copilot Engineering Assistant
+ * Layer: HERO WebUI
+ * Revision: v5.0.0
+ * Date: 28 October 2026
+ *
+ * © 2026 HoloTap Technologies Ltd.
+ * All Rights Reserved.
  * ============================================================
  *
- *  Purpose:
- *    Displays recent merchant payments, including amount, status,
- *    reference, and timestamp. Supports merchant‑level inspection.
+ * MODULE PURPOSE
+ * ------------------------------------------------------------
+ * Displays merchant payment activity for the HERO payment flow.
  *
- *  Responsibilities:
- *    - Fetch payment records from the merchant API
- *    - Surface payment metadata
- *    - Provide clean, deterministic v2 UI
+ * MODULE RESPONSIBILITIES
+ * ------------------------------------------------------------
+ * • Retrieve payment records
+ * • Display payment metadata
+ * • Display payment status
+ * • Display payment identifiers
+ * • Surface loading and error states
+ * • Support manual refresh
  * ============================================================
  */
 
@@ -25,9 +33,13 @@ import Layout from "../../../components/Layout.jsx";
 import PageHeader from "../../../components/PageHeader.jsx";
 import DashboardCard from "../../../components/DashboardCard.jsx";
 
-/* ============================
-   PAGE
-   ============================ */
+const STATUS_CLASSES = {
+  PENDING: "text-yellow-600",
+  AUTHORISED: "text-blue-600",
+  SETTLED: "text-green-600",
+  FAILED: "text-red-600",
+  REFUNDED: "text-purple-600",
+};
 
 export default function PaymentsFeed() {
   const [payments, setPayments] = useState([]);
@@ -36,74 +48,165 @@ export default function PaymentsFeed() {
 
   async function loadPayments() {
     try {
-      const response = await fetch("http://192.168.1.205:3001/payments/list");
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(
+        "http://192.168.1.205:3001/payments/list"
+      );
+
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to load payments");
+        throw new Error(
+          data?.message || "Failed to load payments"
+        );
       }
 
-      setPayments(data.payments || []);
+      setPayments(
+        Array.isArray(data?.payments)
+          ? data.payments
+          : []
+      );
     } catch (err) {
-      setError(err.message);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load payments"
+      );
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadPayments();
+    void loadPayments();
   }, []);
 
   return (
     <Layout>
       <PageHeader
         title="Payments Feed"
-        subtitle="Recent merchant payment activity"
+        subtitle="Recent HERO payment activity"
       />
 
-      {/* Loading */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {loading
+          ? "Loading payments"
+          : error
+            ? `Error loading payments: ${error}`
+            : `${payments.length} payments loaded`}
+      </div>
+
+      <div className="mb-4">
+        <button
+          type="button"
+          disabled={loading}
+          onClick={loadPayments}
+          aria-disabled={loading}
+          className="
+            px-4
+            py-2
+            rounded-lg
+            bg-black
+            text-white
+            disabled:opacity-50
+            disabled:cursor-not-allowed
+          "
+        >
+          {loading ? "Refreshing..." : "Refresh"}
+        </button>
+      </div>
+
       {loading && (
-        <DashboardCard title="Loading Payments…">
-          <p className="text-gray-600">Fetching payment records…</p>
+        <DashboardCard title="Loading Payments">
+          <div role="status" aria-live="polite">
+            Fetching payment records...
+          </div>
         </DashboardCard>
       )}
 
-      {/* Error */}
       {error && (
         <DashboardCard title="Error Loading Payments">
-          <p className="text-red-600">{error}</p>
+          <div role="alert" className="text-red-600">
+            {error}
+          </div>
         </DashboardCard>
       )}
 
-      {/* Empty */}
       {!loading && !error && payments.length === 0 && (
         <DashboardCard title="No Payments Found">
-          <p className="text-gray-600">No recent payment records available.</p>
+          <p className="text-gray-600">
+            No recent payment records available.
+          </p>
         </DashboardCard>
       )}
 
-      {/* Payments List */}
       {!loading && !error && payments.length > 0 && (
         <div className="mt-6 flex flex-col gap-4">
-          {payments.map((payment) => (
-            <div
-              key={payment.id}
-              className="border rounded-lg p-4 shadow-sm bg-white"
-            >
-              <div className="flex justify-between mb-2">
-                <span className="font-semibold text-lg">
-                  £{payment.amount}
-                </span>
-                <span className="text-sm text-gray-700">{payment.status}</span>
-              </div>
+          {payments.map((payment) => {
+            const statusClass =
+              STATUS_CLASSES[payment.status] ??
+              "text-gray-600";
 
-              <div className="flex flex-col text-gray-700 text-sm">
-                <span>Ref: {payment.reference}</span>
-                <span>{payment.timestamp}</span>
+            const timestamp =
+              payment.timestamp &&
+              !Number.isNaN(
+                new Date(payment.timestamp).getTime()
+              )
+                ? new Date(
+                    payment.timestamp
+                  ).toLocaleString()
+                : "Unknown timestamp";
+
+            return (
+              <div
+                key={payment.paymentId || payment.id}
+                className="
+                  border
+                  rounded-lg
+                  p-4
+                  shadow-sm
+                  bg-white
+                "
+              >
+                <div className="flex justify-between mb-2">
+                  <span className="font-semibold text-lg">
+                    £{payment.amount}
+                  </span>
+
+                  <span
+                    className={`text-sm font-medium ${statusClass}`}
+                  >
+                    {payment.status}
+                  </span>
+                </div>
+
+                <div className="flex flex-col text-sm text-gray-700 gap-1">
+                  <span>
+                    Payment ID:{" "}
+                    {payment.paymentId ??
+                      payment.reference ??
+                      "Unknown"}
+                  </span>
+
+                  <span>
+                    Merchant:{" "}
+                    {payment.merchantId ?? "Unknown"}
+                  </span>
+
+                  <span>
+                    Timestamp: {timestamp}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </Layout>

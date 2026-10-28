@@ -1,23 +1,31 @@
 /**
  * ============================================================
- *  HoloTap — QR Activation Result Screen (Merchant)
- *  File: src/pages/merchant/QRActivationResult.jsx
- *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
- *  Layer: web-ui
- *  Revision: v2 — Unified Web & Mobile Architecture
- *  Date: 03 August 2026
- *  © 2026 HoloTap Technologies Ltd. All rights reserved.
+ * HoloTap HERO v5.0.0 — QR Activation Result
+ * ============================================================
+ * File: src/pages/qr/QRActivationResult.jsx
+ * Engineers: Raymond Newton (E5357171),
+ *            Copilot Engineering Assistant
+ * Layer: HERO WebUI
+ * Revision: v5.0.0
+ * Date: 28 October 2026
+ *
+ * © 2026 HoloTap Technologies Ltd.
+ * All Rights Reserved.
  * ============================================================
  *
- *  Purpose:
- *    Displays the result of a QR activation event.
- *    Shows success, failure, or pending states.
- *    Provides navigation back to QR Activation or Dashboard.
+ * MODULE PURPOSE
+ * ------------------------------------------------------------
+ * Display the outcome of a Flow‑6 identity activation
+ * and associated HERO payment session.
  *
- *  Responsibilities:
- *    - Fetch activation result
- *    - Display status + message
- *    - Provide navigation actions
+ * MODULE RESPONSIBILITIES
+ * ------------------------------------------------------------
+ * • Retrieve activation result
+ * • Display verification status
+ * • Display payment metadata
+ * • Display expiry information
+ * • Provide navigation actions
+ * • Handle loading and failure states
  * ============================================================
  */
 
@@ -26,65 +34,147 @@ import Layout from "../../../components/Layout.jsx";
 import PageHeader from "../../../components/PageHeader.jsx";
 import DashboardCard from "../../../components/DashboardCard.jsx";
 
-/* ============================
-   PAGE
-   ============================ */
-
 export default function QRActivationResult() {
-  const [status, setStatus] = useState(null);
+  const [status, setStatus] = useState("pending");
   const [message, setMessage] = useState("");
+  const [paymentId, setPaymentId] = useState(null);
+  const [expiresAt, setExpiresAt] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchResult() {
       try {
-        const response = await fetch("http://192.168.1.205:3001/session/result");
+        const response = await fetch("/session/result");
         const data = await response.json();
 
-        setStatus(data.status);
-        setMessage(data.message);
+        setStatus(data?.status ?? "pending");
+        setMessage(data?.message ?? "");
+
+        setPaymentId(data?.paymentId ?? null);
+
+        const expiry =
+          data?.expiresAt &&
+          !Number.isNaN(new Date(data.expiresAt).getTime())
+            ? data.expiresAt
+            : null;
+
+        setExpiresAt(expiry);
       } catch {
         setStatus("error");
-        setMessage("Unable to retrieve activation result.");
+        setMessage(
+          "Unable to retrieve activation result."
+        );
+      } finally {
+        setLoading(false);
       }
     }
 
-    fetchResult();
+    void fetchResult();
   }, []);
+
+  const formattedExpiry = (() => {
+    if (!expiresAt) {
+      return null;
+    }
+
+    const date = new Date(expiresAt);
+
+    if (Number.isNaN(date.getTime())) {
+      return "Invalid expiry date";
+    }
+
+    return date.toLocaleString();
+  })();
 
   return (
     <Layout>
       <PageHeader
         title="Activation Result"
-        subtitle="Status of your QR payment session"
+        subtitle="Status of your HERO payment session"
       />
 
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {loading
+          ? "Loading activation result"
+          : `Activation status ${status}`}
+      </div>
+
       <DashboardCard title="QR Activation Status">
-        {/* Success */}
-        {status === "success" && (
-          <p className="text-green-600 font-medium">{message}</p>
+        {loading && (
+          <p className="text-gray-600">
+            Loading activation result...
+          </p>
         )}
 
-        {/* Error */}
-        {status === "error" && (
-          <p className="text-red-600 font-medium">{message}</p>
+        {!loading && status === "success" && (
+          <p
+            role="status"
+            className="text-green-600 font-medium"
+          >
+            {message}
+          </p>
         )}
 
-        {/* Pending */}
-        {status === "pending" && (
-          <p className="text-gray-700 font-medium">Waiting for activation…</p>
+        {!loading && status === "error" && (
+          <p
+            role="alert"
+            className="text-red-600 font-medium"
+          >
+            {message}
+          </p>
         )}
 
-        {/* Actions */}
+        {!loading && status === "pending" && (
+          <p className="text-gray-700 font-medium">
+            Waiting for activation...
+          </p>
+        )}
+
+        {(paymentId || formattedExpiry) && (
+          <div className="mt-6 bg-gray-50 border rounded-lg p-4">
+            {paymentId && (
+              <div className="mb-2">
+                <span className="font-semibold">
+                  Payment ID:
+                </span>{" "}
+                <code>{paymentId}</code>
+              </div>
+            )}
+
+            {formattedExpiry && (
+              <div>
+                <span className="font-semibold">
+                  Expires:
+                </span>{" "}
+                {formattedExpiry}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="mt-6 flex gap-4 flex-wrap">
           <button
-            onClick={() => (window.location.href = "/qr/activate")}
+            type="button"
+            onClick={() =>
+              (window.location.href =
+                "/qr/activate")
+            }
             className="px-5 py-3 bg-black text-white rounded-lg font-medium"
           >
             Generate New QR
           </button>
 
           <button
-            onClick={() => (window.location.href = "/dashboard")}
+            type="button"
+            onClick={() =>
+              (window.location.href =
+                "/dashboard")
+            }
             className="px-5 py-3 bg-gray-200 text-black rounded-lg font-medium"
           >
             Back to Dashboard

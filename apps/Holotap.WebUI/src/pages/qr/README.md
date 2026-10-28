@@ -1,247 +1,278 @@
-# HoloTap — Flow‑6 Identity Layer
+# Version: v5.0.0 — HERO Payment Flow
 
-Version: v2 — Unified Architecture
-Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
-Module: Flow‑6 Identity (QR Security Layer)
+ Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
+ Module: Flow‑6 Identity Verification & QR Security Layer
 
 1. Purpose
-Flow‑6 is the cryptographic identity layer used across HoloTap’s merchant ecosystem. It provides:
+
+Flow‑6 is the identity verification and QR security layer used throughout the HoloTap HERO platform.
+
+Flow‑6 provides:
 
 Signed QR payloads
-
-Merchant hologram identity binding
-
-Session‑bound nonce + expiry
-
-Deterministic verification
-
-Developer tools for debugging identity flows
+Payment-bound identity verification
+Session-bound nonce and expiry controls
+Deterministic verification responses
+Secure QR transport for customer journeys
+Developer tools for verification and diagnostics
+PaymentId binding for HERO payment execution
 
 Used by:
 
 Merchant dashboards
-
-QR fleet management
-
 Payment activation flows
-
+Customer verification journeys
+QR management tools
 Identity verification surfaces
-
-TM470 documentation
-
-1. File & Folder Structure
-Flow‑6 identity files live in two main areas.
-
-A) Identity Security Engine (logic)
-Code
+TM470 security documentation
+2. File & Folder Structure
+A) Identity Security Engine
+Plain Text
 apps/web/src/utils/security/
-    qrPayload.ts      # builder + encoder + decoder
-    qrVerify.ts       # signature + expiry + hologram validation
-    verify.tsx        # optional helper UI
-B) Identity UI Surfaces (pages)
-Code
+
+qrPayload.ts # Payload builder + encoder + decoder
+qrVerify.ts # Signature + expiry + payment validation
+verify.tsx # Optional helper utilities
+B) Identity UI Surfaces
+Plain Text
 apps/web/src/pages/qr/
-    qr.tsx            # QR generator
-    payload.tsx       # Signed Payload Viewer
-    verify.tsx        # Identity Verification Surface
-    README.md         # ← this file
-C) Dashboard Integration (enterprise identity)
-Code
+
+qr.tsx # Identity QR generator
+payload.tsx # Payload inspection tool
+verify.tsx # Verification surface
+README.md # This document
+C) Dashboard Integration
+Plain Text
 apps/web/src/pages/dashboard/identity/
-    index.tsx         # Organisation Identity + Flow‑6 Tools Panel
+
+index.tsx # Identity administration tools
 3. Core Components
 3.1 qrPayload.ts — Payload Builder
+
 Responsibilities:
 
 Construct canonical payload
-
-Generate session nonce
-
-Apply TTL (default: 300 seconds)
-
-Sign payload (HMAC‑SHA256)
-
-Encode JSON → base64
-
-Decode base64 → JSON
+Generate secure nonce
+Apply session TTL
+Create cryptographic signature
+Encode payload for QR transport
+Decode payload from QR transport
 
 Exports:
 
-ts
+TypeScript
 buildSignedQrPayload()
 encodeQrPayload()
 decodeQrPayload()
 signPayload()
 3.2 qrVerify.ts — Verification Engine
+
 Responsibilities:
 
-Recompute signature
-
-Validate expiry
-
-Validate required fields
-
-Validate hologram binding
-
-Return deterministic result codes
+Verify payload signature
+Verify expiry time
+Verify required fields
+Verify payment binding
+Verify merchant ownership
+Return deterministic verification codes
 
 Result codes:
 
-Code
+Plain Text
 OK
 INVALID_SIGNATURE
 EXPIRED
 MISSING_FIELDS
-INVALID_HOLOGRAM
+INVALID_PAYMENT
+INVALID_MERCHANT
 INTERNAL_ERROR
+
 Exports:
 
-ts
+TypeScript
 verifyQrPayload()
-3.3 payload.tsx — Signed Payload Viewer
-Developer tool for:
+3.3 payload.tsx — Payload Viewer
 
-Decoding base64 payload
+Developer utility for:
 
-Pretty‑printing JSON
-
-Highlighting signature
-
-Showing expiry timestamp
-
-Debugging QR payloads
-
+Decoding payloads
+Inspecting QR contents
+Viewing signed metadata
+Viewing expiry values
+Troubleshooting verification issues
 3.4 verify.tsx — Identity Verification Surface
-Developer tool for:
 
-Running full verification
+Developer utility for:
 
-Showing VALID / INVALID
+Full payload verification
+VALID / INVALID verification status
+Verification code display
+Payload inspection
+Signature inspection
+Expiry validation
+3.5 dashboard/identity/index.tsx
 
-Showing verification code
-
-Showing decoded payload
-
-Showing signature + expiry
-
-3.5 dashboard/identity/index.tsx — Enterprise Identity Module
 Provides:
 
-Organisation identity management
+Organisation identity settings
+Merchant identity information
+Verification tools
+Flow‑6 administration panel
 
-Branding + hologram style
+Links to:
 
-Merchant identity fields
-
-Contact details
-
-Flow‑6 Tools Panel linking to:
-
+Plain Text
 /qr/qr
-
 /qr/payload
-
 /qr/verify
-
-1. Identity Payload Structure
-Canonical payload:
-
-json
+4. HERO Canonical Payload Structure
+Canonical Payload
+JSON
 {
-  "merchantId": "string",
-  "sessionNonce": "string",
-  "hologramId": "string",
-  "amountMinorUnits": 1234,
-  "currency": "GBP",
-  "expiresAt": 1723200000,
-  "callbackUrl": "<https://example.com/callback>",
-  "signature": "hex-string"
+"version": "5.0.0",
+"paymentId": "PAY_123456",
+"merchantId": "MERCHANT_123",
+"sessionNonce": "random-secure-nonce",
+"issuedAt": 1723200000,
+"expiresAt": 1723200300,
+"signature": "hex-string"
 }
-Rules:
-
+Rules
+paymentId must reference a valid payment record
+merchantId must reference the owning merchant
 sessionNonce must be cryptographically random
-
-expiresAt must be a unix timestamp (seconds)
-
-signature is HMAC‑SHA256 over the payload without signature
-
-merchantId + hologramId form the hologram binding pair
-
-1. Identity Flow Overview
-Build Payload  
+issuedAt must be a Unix timestamp
+expiresAt must be a Unix timestamp
+signature must be HMAC-SHA256 over the payload excluding the signature field
+Backend payment records remain the authoritative source of payment information
+5. Identity Verification Flow
+Build Payload
+Plain Text
 buildSignedQrPayload()
 
-Encode for QR  
+↓
+
+Encode For QR
+Plain Text
 encodeQrPayload()
 
-Scan QR  
-Extract base64 string
+↓
 
-Decode Payload  
+Present QR
+Plain Text
+Merchant displays QR
+
+↓
+
+Scan QR
+Plain Text
+Customer scans code
+
+↓
+
+Decode Payload
+Plain Text
 decodeQrPayload()
 
-Verify Payload  
+↓
+
+Verify Payload
+Plain Text
 verifyQrPayload()
 
-Show Result
+↓
 
-VALID / INVALID
+Load Payment
+Plain Text
+paymentId -> Payment Record
 
-Signature match
+↓
 
-Expiry status
+Continue HERO Flow
+Plain Text
+Identity Verification
+↓
+Customer Review
+↓
+Payment Execution
+↓
+Payment Result
+6. HERO Security Controls
 
-Hologram binding status
+Implemented Controls:
 
-1. Common Pitfalls
-❌ Wrong import paths
-Correct location for Flow‑6 logic:
+HMAC-SHA256 payload signing
+Payment-bound QR sessions
+Session expiry enforcement
+Merchant verification
+Nonce rotation
+Deterministic verification responses
 
-Code
-utils/security/
-❌ Missing decodeQrPayload import
-Correct import:
+Recommended Future Controls:
 
-ts
-import { decodeQrPayload } from "../../utils/security/qrPayload";
-❌ Forgetting TTL expiry
-Default TTL is 300 seconds.
+Replay attack detection
+Nonce reuse prevention
+Enhanced audit logging
+Ed25519 signatures
+Identity analytics
+7. Common Pitfalls
+Incorrect Import Location
 
-❌ Forgetting dashboard integration
-Dashboard identity must link to:
+Use:
 
+TypeScript
+import {
+decodeQrPayload
+} from "../../utils/security/qrPayload";
+Missing Payment Binding
+
+Every QR payload must include:
+
+JSON
+{
+"paymentId": "..."
+}
+
+Flow‑6 in HERO is payment-bound.
+
+Missing Expiry Validation
+
+Always validate:
+
+TypeScript
+expiresAt
+
+before allowing continuation.
+
+Dashboard Integration Missing
+
+Identity dashboard should provide links to:
+
+Plain Text
 /qr/qr
-
 /qr/payload
-
 /qr/verify
 
-7.Future Extensions
-HologramRegistry.ts
-
+1. Future HERO Enhancements
+Plain Text
+Replay protection
+Settlement verification hooks
+Merchant verification analytics
+Payment journey telemetry
+Enhanced audit events
 Ed25519 signing
+Hardware-backed key storage
+2. TM470 Documentation Notes
 
-Identity analytics
-
-Nonce replay protection
-
-Merchant identity audit logs
-
-8.TM470 Documentation Notes
-Flow‑6 identity is ideal for TM470:
+Flow‑6 remains a strong TM470 security component because it demonstrates:
 
 Cryptographic signing
-
+QR-based transport
 Identity verification
+Session management
+Expiry enforcement
+Secure payment binding
+Verification workflows
+Security-focused architecture
 
-QR transport
-
-Merchant identity binding
-
-Enterprise dashboard integration
-
-Security architecture diagrams
-
-Deterministic verification codes
-
-End of README
+End of README — HERO v5.0.0
