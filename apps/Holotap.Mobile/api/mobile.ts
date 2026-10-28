@@ -28,15 +28,21 @@
 import { apiPost } from "./client";
 
 export interface MobileRegistrationPayload {
-  mobile_number: string;
-  country_code: string;
-  device_id: string;
-  platform: string;
-  push_token?: string;
+  [key: string]: unknown;
+}
+
+export interface MobileRegistrationResponse {
+  success: boolean;
+  message?: string;
+  sessionId?: string;
+  actorId?: string;
 }
 
 export async function mobileRegister(
   payload: MobileRegistrationPayload,
-) {
-  return apiPost("/mobile/register", payload);
+): Promise<MobileRegistrationResponse> {
+  return apiPost<MobileRegistrationResponse>(
+    "/mobile/register",
+    payload,
+  );
 }
