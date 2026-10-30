@@ -4,17 +4,8 @@
    Engineer: Raymond Newton (E5357171)
    Project: HoloTap Identity & QR Security Platform
    Layer: web-ui
-   Revision: v5.1 — Isolated Onboarding Experience
-   Date: 27 September 2026
-
-   Design Goals:
-   • Isolate onboarding styles from Home
-   • Prevent global home-* class collisions
-   • Responsive deterministic layout
-   • No @apply directives
-   • Tailwind v4 compatible
+   Revision: HERO v5.0.0
    ============================================================ */
-
 
 /* ============================================================
    Container
@@ -22,12 +13,11 @@
 
 .onboarding-container {
   width: 100%;
-  max-width: 900px;
+  max-width: 850px;
   margin: 0 auto;
-  padding: 80px 24px;
+  padding: 64px 24px;
   box-sizing: border-box;
 }
-
 
 /* ============================================================
    Hero
@@ -35,31 +25,30 @@
 
 .onboarding-hero {
   width: 100%;
-  margin: 0 auto 48px;
   text-align: center;
+  margin: 0 auto 40px;
 }
 
 .onboarding-title {
-  margin: 0 0 20px;
+  margin: 0 0 16px;
 
-  font-size: clamp(3rem, 7vw, 5rem);
+  font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.04em;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
 
-  color: #111827;
+  color: var(--holotap-text);
 }
 
 .onboarding-tagline {
-  max-width: 720px;
+  max-width: 680px;
   margin: 0 auto;
 
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   line-height: 1.7;
 
-  color: #6b7280;
+  color: var(--holotap-muted);
 }
-
 
 /* ============================================================
    Trust Bar
@@ -71,37 +60,36 @@
   align-items: center;
   flex-wrap: wrap;
 
-  gap: 16px;
-  margin: 0 auto 48px;
+  gap: 14px;
+  margin: 0 auto 40px;
 }
 
 .onboarding-trust-item {
-  padding: 12px 18px;
+  padding: 10px 16px;
 
   background: #ffffff;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--holotap-border);
   border-radius: 999px;
 
+  font-size: 0.95rem;
   font-weight: 600;
-  color: #111827;
-}
 
+  color: var(--holotap-text);
+}
 
 /* ============================================================
    Cards
    ============================================================ */
 
 .onboarding-card {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   padding: 32px;
 
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--holotap-surface);
+  border: 1px solid var(--holotap-border);
   border-radius: 24px;
 
-  box-shadow:
-    0 20px 40px
-    rgba(15, 23, 42, 0.08);
+  box-shadow: var(--holotap-shadow);
 }
 
 .onboarding-card-title {
@@ -110,18 +98,15 @@
   font-size: 1.4rem;
   font-weight: 700;
 
-  color: #111827;
+  color: var(--holotap-text);
 }
 
 .onboarding-card-text {
-  margin: 0 0 16px;
+  margin: 0 0 20px;
 
-  font-size: 1.05rem;
   line-height: 1.7;
-
-  color: #6b7280;
+  color: var(--holotap-muted);
 }
-
 
 /* ============================================================
    Form
@@ -130,37 +115,35 @@
 .onboarding-form {
   display: flex;
   flex-direction: column;
-
   gap: 24px;
-  margin-top: 32px;
+
+  margin-top: 24px;
 }
 
 .onboarding-field {
   display: flex;
   flex-direction: column;
-
   gap: 8px;
 }
 
 .onboarding-label {
   font-weight: 600;
-  color: #374151;
+  color: var(--holotap-text);
 }
 
 .onboarding-input {
   width: 100%;
   padding: 12px 14px;
 
-  box-sizing: border-box;
-
   font: inherit;
-  color: #111827;
+  color: var(--holotap-text);
 
   background: #ffffff;
 
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--holotap-border);
   border-radius: 10px;
 
+  box-sizing: border-box;
   outline: none;
 
   transition:
@@ -169,13 +152,11 @@
 }
 
 .onboarding-input:focus {
-  border-color: #2563eb;
+  border-color: var(--holotap-primary);
 
   box-shadow:
-    0 0 0 3px
-    rgba(37, 99, 235, 0.15);
+    0 0 0 3px rgba(37, 99, 235, 0.15);
 }
-
 
 /* ============================================================
    Actions
@@ -185,101 +166,94 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
+  gap: 16px;
 
-  gap: 18px;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .onboarding-btn-primary,
 .onboarding-btn-secondary {
+  min-width: 120px;
   padding: 14px 28px;
-
-  border-radius: 12px;
 
   font: inherit;
   font-weight: 700;
+
+  border-radius: 12px;
 
   cursor: pointer;
 
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
-    border-color 0.2s ease;
+    opacity 0.2s ease;
 }
 
 .onboarding-btn-primary {
+  border: none;
+
   color: #ffffff;
 
   background: linear-gradient(
     135deg,
-    #2563eb,
-    #06b6d4
+    var(--holotap-primary),
+    var(--holotap-secondary)
   );
-
-  border: none;
 }
 
 .onboarding-btn-primary:hover {
   transform: translateY(-2px);
 
   box-shadow:
-    0 12px 30px
-    rgba(37, 99, 235, 0.25);
+    0 12px 30px rgba(37, 99, 235, 0.25);
 }
 
 .onboarding-btn-secondary {
-  color: #111827;
+  color: var(--holotap-text);
 
   background: #ffffff;
 
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--holotap-border);
 }
 
 .onboarding-btn-secondary:hover {
   transform: translateY(-2px);
-  border-color: #2563eb;
+  border-color: var(--holotap-primary);
 }
-
 
 /* ============================================================
    Final Section
    ============================================================ */
 
 .onboarding-section {
-  max-width: 720px;
-
-  margin:
-    64px auto
-    0;
+  max-width: 700px;
+  margin: 56px auto 0;
 
   text-align: center;
 }
 
 .onboarding-description {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   line-height: 1.8;
 
-  color: #6b7280;
+  color: var(--holotap-muted);
 }
 
-
 /* ============================================================
-   Responsive
+   Mobile
    ============================================================ */
 
 @media (max-width: 768px) {
-
   .onboarding-container {
-    padding: 48px 20px;
+    padding: 40px 20px;
   }
 
   .onboarding-title {
-    font-size: clamp(2.75rem, 12vw, 4rem);
+    font-size: clamp(2rem, 10vw, 3rem);
   }
 
   .onboarding-tagline {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .onboarding-card {

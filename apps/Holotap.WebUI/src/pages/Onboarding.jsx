@@ -153,61 +153,6 @@ export default function Onboarding() {
         </form>
       </section>
 
-      {/* ============================================================
-          WHY HOLOTAP
-          ============================================================ */}
-
-      <section className="onboarding-card">
-        <h3 className="onboarding-card-title">
-          Why Join HoloTap
-        </h3>
-
-        <p className="onboarding-card-text">
-          Create a secure digital identity,
-          verify trust, manage access,
-          support QR-based workflows,
-          and participate in the HoloTap ecosystem.
-        </p>
-      </section>
-
-      {/* ============================================================
-          PLATFORM STATUS
-          ============================================================ */}
-
-      <section className="onboarding-card">
-        <h3 className="onboarding-card-title">
-          Platform Status
-        </h3>
-
-        <p className="onboarding-card-text">
-          Identity Services: Operational
-        </p>
-
-        <p className="onboarding-card-text">
-          QR Infrastructure: Operational
-        </p>
-
-        <p className="onboarding-card-text">
-          Trust Services: Active
-        </p>
-      </section>
-
-      {/* ============================================================
-          FINAL CTA
-          ============================================================ */}
-
-      <section className="onboarding-section">
-        <h2 className="onboarding-card-title">
-          Ready To Continue?
-        </h2>
-
-        <p className="onboarding-description">
-          Complete your onboarding profile and
-          begin using trusted HoloTap identity
-          and verification services.
-        </p>
-      </section>
-
     </div>
   );
 }

@@ -1,46 +1,60 @@
 /**
  * ============================================================
- *  HoloTap — Engineering Build System
+ *  HoloTap — HERO Build
+ * ============================================================
  *  File: src/MainRouter.jsx
- *  Engineers: Raymond Newton (E5357171), Copilot Engineering Assistant
- *  Layer: web-ui
- *  Revision: v2.1 — Async-Split Router Refactor
- *  Date: 04 August 2026
+ *  Engineers:
+ *    - Raymond Newton (E5357171)
+ *    - Copilot Engineering Assistant
+ *  Layer: WebUI
+ *  Revision: HERO v5.0.0
+ *  Date: 30 October 2026
  *  © 2026 HoloTap Technologies Ltd. All rights reserved.
  * ============================================================
  *
- *  Purpose:
- *  Implements the global routing layer for the HoloTap web
- *  application. This version introduces full async-splitting of
- *  all page surfaces to reduce initial bundle size and improve
- *  deterministic load performance across public, creator, admin,
- *  and merchant workspaces.
+ *  Module Purpose:
+ *  Defines the primary routing architecture for the HoloTap
+ *  HERO WebUI, providing lazy-loaded route boundaries across
+ *  customer, merchant, registry, identity, organisation,
+ *  administration, and payment workflows.
  *
- *  Refactor Summary (v2.1):
- *  - Converted all synchronous page imports to lazy-loaded
- *    async boundaries using React.lazy()
- *  - Reduced main bundle size by isolating heavy surfaces
- *    (admin, merchant, QR flows, auth flows)
- *  - Navigation system updated to async role-based loader
- *  - Ensures deterministic routing with zero hidden side-effects
- *  - Preserves Tailwind v4 CSS-first architecture
- *
- *  Responsibilities:
- *  - Define global routing structure
- *  - Async-load all page modules on demand
- *  - Maintain stateless, modular, deterministic UI flows
- *  - Enforce isolation between identity, QR, and organisation layers
+ *  Module Responsibilities:
+ *  - Define global application routes
+ *  - Support HERO payment execution flows
+ *  - Support merchant dashboard workflows
+ *  - Support registry and identity services
+ *  - Support administration workspaces
+ *  - Maintain deterministic route isolation
+ *  - Minimise bundle size through route splitting
  * ============================================================
  */
 
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
+
 import Navigation from "./components/Navigation.jsx";
 
-/* ============================
-   LAZY-LOADED PAGES
-   ============================ */
+/* ============================================================
+   PUBLIC
+   ============================================================ */
+
+const Home = lazy(() => import("./pages/Home.jsx"));
+const Onboarding = lazy(() => import("./pages/Onboarding.jsx"));
+const Verify = lazy(() => import("./pages/Verify.jsx"));
+
+/* ============================================================
+   AUTHENTICATION
+   ============================================================ */
+
+const Login = lazy(() => import("./pages/auth/Login.jsx"));
+const MagicLink = lazy(() => import("./pages/auth/MagicLink.jsx"));
+const Passkey = lazy(() => import("./pages/auth/Passkey.jsx"));
+const VerifyAuth = lazy(() => import("./pages/auth/VerifyAuth.jsx"));
+
+/* ============================================================
+   FLOW-9 REGISTRY
+   ============================================================ */
+
 const RegistryOverview = lazy(() =>
   import("./pages/registry/index.jsx")
 );
@@ -56,47 +70,86 @@ const RegistryStatus = lazy(() =>
 const RegistryResult = lazy(() =>
   import("./pages/registry/result.jsx")
 );
-const UnderConstruction = lazy(() => import("./pages/UnderConstruction.jsx"));
 
-/* PUBLIC */
-const Home = lazy(() => import("./pages/Home.jsx"));
-const Onboarding = lazy(() => import("./pages/Onboarding.jsx"));
-const Verify = lazy(() => import("./pages/Verify.jsx"));
+/* ============================================================
+   MERCHANT
+   ============================================================ */
 
-/* AUTH */
-const Login = lazy(() => import("./pages/auth/Login.jsx"));
-const MagicLink = lazy(() => import("./pages/auth/MagicLink.jsx"));
-const Passkey = lazy(() => import("./pages/auth/Passkey.jsx"));
-const VerifyAuth = lazy(() => import("./pages/auth/VerifyAuth.jsx"));
+const MerchantDashboard = lazy(() =>
+  import("./pages/merchant/MerchantDashboard.jsx")
+);
 
-/* ADMIN WORKSPACE */
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard.jsx"));
-const AdminMerchants = lazy(() => import("./pages/admin/Merchants.jsx"));
-const AdminLogs = lazy(() => import("./pages/admin/Logs.jsx"));
-const AdminSystemStatus = lazy(() => import("./pages/admin/SystemStatus.jsx"));
-const AdminOrganisations = lazy(() => import("./pages/admin/Organisations.jsx"));
-const AdminUsers = lazy(() => import("./pages/admin/Users.jsx"));
+/* ============================================================
+   ADMIN
+   ============================================================ */
 
-/* MERCHANT WORKSPACE */
-const MerchantHome = lazy(() => import("./pages/merchant/MerchantDashboard.jsx"));
+const AdminDashboard = lazy(() =>
+  import("./pages/admin/AdminDashboard.jsx")
+);
 
-/* QR FLOWS (.tsx) */
-const Activate = lazy(() => import("./pages/activate.tsx"));
-const Scan = lazy(() => import("./pages/scan.tsx"));
+const AdminMerchants = lazy(() =>
+  import("./pages/admin/Merchants.jsx")
+);
 
-/* PAYMENT RESULT */
-const PaymentResult = lazy(() => import("./pages/payments.jsx"));
+const AdminLogs = lazy(() =>
+  import("./pages/admin/Logs.jsx")
+);
 
-/* COMMUNICATION LAYER */
-const Updater = lazy(() => import("./pages/Updater.jsx"));
-const Enquiries = lazy(() => import("./pages/admin/Enquiries.jsx"));
-const AdminContact = lazy(() => import("./pages/Admin.jsx"));
-const Support = lazy(() => import("./pages/Support.jsx"));
-const Dev = lazy(() => import("./pages/Dev.jsx"));
+const AdminSystemStatus = lazy(() =>
+  import("./pages/admin/SystemStatus.jsx")
+);
 
-/* ============================
+const AdminOrganisations = lazy(() =>
+  import("./pages/admin/Organisations.jsx")
+);
+
+const AdminUsers = lazy(() =>
+  import("./pages/admin/Users.jsx")
+);
+
+const Enquiries = lazy(() =>
+  import("./pages/admin/Enquiries.jsx")
+);
+
+/* ============================================================
+   HERO PAYMENT + QR FLOWS
+   ============================================================ */
+
+const Activate = lazy(() =>
+  import("./pages/activate.tsx")
+);
+
+const Scan = lazy(() =>
+  import("./pages/scan.tsx")
+);
+
+const PaymentResult = lazy(() =>
+  import("./pages/payments.jsx")
+);
+
+/* ============================================================
+   COMMUNICATION
+   ============================================================ */
+
+const Updater = lazy(() =>
+  import("./pages/Updater.jsx")
+);
+
+const AdminContact = lazy(() =>
+  import("./pages/Admin.jsx")
+);
+
+const Support = lazy(() =>
+  import("./pages/Support.jsx")
+);
+
+const Dev = lazy(() =>
+  import("./pages/Dev.jsx")
+);
+
+/* ============================================================
    ROUTER
-   ============================ */
+   ============================================================ */
 
 export default function MainRouter() {
   return (
@@ -105,61 +158,78 @@ export default function MainRouter() {
 
       <Suspense fallback={<div />}>
         <Routes>
-{/* FLOW-9 REGISTRY */}
 
-<Route
-  path="/registry"
-  element={<RegistryOverview />}
-/>
-
-<Route
-  path="/registry/bind"
-  element={<RegistryBind />}
-/>
-
-<Route
-  path="/registry/status"
-  element={<RegistryStatus />}
-/>
-
-<Route
-  path="/registry/result"
-  element={<RegistryResult />}
-/>
           {/* PUBLIC */}
+
           <Route path="/" element={<Home />} />
-          <Route path="/" element={<UnderConstruction />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/verify" element={<Verify />} />
 
           {/* AUTH */}
+
           <Route path="/login" element={<Login />} />
           <Route path="/magic" element={<MagicLink />} />
           <Route path="/passkey" element={<Passkey />} />
           <Route path="/auth/verify" element={<VerifyAuth />} />
 
-          {/* ADMIN WORKSPACE */}
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/merchants" element={<AdminMerchants />} />
-          <Route path="/admin/logs" element={<AdminLogs />} />
-          <Route path="/admin/system" element={<AdminSystemStatus />} />
-          <Route path="/admin/orgs" element={<AdminOrganisations />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
+          {/* FLOW-9 REGISTRY */}
 
-          {/* MERCHANT WORKSPACE */}
-          <Route path="/merchant" element={<MerchantHome />} />
+          <Route path="/registry" element={<RegistryOverview />} />
+          <Route path="/registry/bind" element={<RegistryBind />} />
+          <Route path="/registry/status" element={<RegistryStatus />} />
+          <Route path="/registry/result" element={<RegistryResult />} />
 
-          {/* QR FLOWS */}
+          {/* MERCHANT */}
+
+          <Route
+            path="/merchant"
+            element={<MerchantDashboard />}
+          />
+
+          {/* HERO QR FLOWS */}
+
           <Route path="/activate" element={<Activate />} />
           <Route path="/scan" element={<Scan />} />
 
-          {/* PAYMENT RESULT */}
-          <Route path="/payment/result" element={<PaymentResult />} />
+          {/* PAYMENT */}
 
-          {/* COMMUNICATION LAYER */}
+          <Route
+            path="/payment/result"
+            element={<PaymentResult />}
+          />
+
+          {/* ADMIN */}
+
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route
+            path="/admin/merchants"
+            element={<AdminMerchants />}
+          />
+          <Route
+            path="/admin/logs"
+            element={<AdminLogs />}
+          />
+          <Route
+            path="/admin/system"
+            element={<AdminSystemStatus />}
+          />
+          <Route
+            path="/admin/orgs"
+            element={<AdminOrganisations />}
+          />
+          <Route
+            path="/admin/users"
+            element={<AdminUsers />}
+          />
+
+          {/* COMMUNICATION */}
+
           <Route path="/updater" element={<Updater />} />
           <Route path="/enquiries" element={<Enquiries />} />
-          <Route path="/admin-contact" element={<AdminContact />} />
+          <Route
+            path="/admin-contact"
+            element={<AdminContact />}
+          />
           <Route path="/support" element={<Support />} />
           <Route path="/dev" element={<Dev />} />
 
