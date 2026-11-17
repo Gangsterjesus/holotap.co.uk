@@ -1,39 +1,43 @@
-/**
- * =============================================================================
- * HOLOTAP MOBILE - CONSUMER REGISTRATION
- * =============================================================================
- * File: apps/Holotap.Mobile/app/register.tsx
- * Engineers: Raymond Newton (E5357171)
- *            Copilot Engineering Assistant
- * Layer: Mobile / Registration Security Boundary
- * Revision: v5.0.0 - HERO Build
- * Date: 29 September 2026
- * Copyright (c) 2026 HoloTap Technologies Ltd.
- * =============================================================================
- *
- * Module Purpose
- * Provide the public registration entry point for HoloTap Mobile before
- * access to protected application features is permitted.
- *
- * Module Responsibilities
- * - Capture customer mobile registration details.
- * - Validate required registration input.
- * - Register the current device through the HoloTap Mobile API.
- * - Acquire push capability on supported native platforms.
- * - Prevent progression when registration fails.
- * - Remain safe when rendered through React Native Web.
- *
- * Architecture Boundary
- * Registration validation and identity authority remain server-owned.
- * Successful API completion does not independently create an authenticated
- * client session. Protected navigation remains controlled by the root
- * application security layer.
- * =============================================================================
- */
+/* ============================================================================
+   HoloTap Mobile Platform
+   File: app/register.tsx
+
+   Engineers:
+   - Raymond Newton (E5357171)
+   - Copilot Engineering Assistant
+
+   Layer: Identity & Registration Layer
+
+   Revision: v5.1.0
+   Date: 17 November 2026
+
+   Copyright (c) 2026 HoloTap.
+   All Rights Reserved.
+
+   ----------------------------------------------------------------------------
+
+   Module Purpose
+
+   Captures consumer registration details prior to entering the protected
+   HoloTap payment experience.
+
+   ----------------------------------------------------------------------------
+
+   Module Responsibilities
+
+   - Capture country code.
+   - Capture mobile number.
+   - Acquire push token on native platforms.
+   - Register consumer device.
+   - Display HoloTap branding.
+   - Prevent duplicate submissions.
+
+   ============================================================================ */
 
 import { useEffect, useState } from "react";
 import {
   Alert,
+  Image,
   Platform,
   Pressable,
   StyleSheet,
@@ -62,13 +66,18 @@ export default function RegisterScreen() {
     async function acquirePushToken() {
       try {
         const Notifications = await import("expo-notifications");
-        const token = await Notifications.getExpoPushTokenAsync();
+
+        const token =
+          await Notifications.getExpoPushTokenAsync();
 
         if (active) {
           setExpoPushToken(token.data);
         }
       } catch (error) {
-        console.warn("Push token acquisition unavailable:", error);
+        console.warn(
+          "Push token acquisition unavailable:",
+          error,
+        );
       }
     }
 
@@ -88,12 +97,18 @@ export default function RegisterScreen() {
     const code = countryCode.trim();
 
     if (!code) {
-      Alert.alert("Country code required");
+      Alert.alert(
+        "Country Code Required",
+        "Please enter your country code.",
+      );
       return;
     }
 
     if (!number) {
-      Alert.alert("Mobile number required");
+      Alert.alert(
+        "Mobile Number Required",
+        "Please enter your mobile number.",
+      );
       return;
     }
 
@@ -103,24 +118,25 @@ export default function RegisterScreen() {
       await mobileRegister({
         mobile_number: number,
         country_code: code,
-        device_id: Device.osBuildId ?? "unknown-device",
+        device_id:
+          Device.osBuildId ?? "unknown-device",
         platform: Platform.OS,
         push_token: expoPushToken || undefined,
       });
 
-      /*
-       * Registration has been accepted by the API.
-       *
-       * Do not navigate into the protected application here until the
-       * registration response has been connected to the root application
-       * registration/session authority.
-       */
-      Alert.alert("Registration successful");
-    } catch (error) {
-      console.error("Registration error:", error);
       Alert.alert(
-        "Registration failed",
-        "Your details could not be confirmed. Please try again.",
+        "Registration Successful",
+        "Your device has been registered.",
+      );
+    } catch (error) {
+      console.error(
+        "Consumer registration failed:",
+        error,
+      );
+
+      Alert.alert(
+        "Registration Failed",
+        "Your details could not be verified. Please try again.",
       );
     } finally {
       setSubmitting(false);
@@ -129,19 +145,39 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.screen}>
-      <View style={styles.hero}>
-        <Text style={styles.eyebrow}>HOLOTAP</Text>
+      {/* -------------------------------------------------------------------
+         HoloTap Hero Area
+         ------------------------------------------------------------------- */}
 
-        <Text style={styles.title}>Ready to Tap.</Text>
+      <View style={styles.hero}>
+        <Image
+          source={require("../assets/images/Holotap-2026.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+
+        <Text style={styles.eyebrow}>
+          HOLOTAP
+        </Text>
+
+        <Text style={styles.title}>
+          Ready to Tap.
+        </Text>
 
         <Text style={styles.description}>
-          Register your mobile number to continue to the HoloTap QR payment
-          experience.
+          Register your mobile number to continue
+          to the HoloTap QR payment experience.
         </Text>
       </View>
 
+      {/* -------------------------------------------------------------------
+         Registration Card
+         ------------------------------------------------------------------- */}
+
       <View style={styles.card}>
-        <Text style={styles.label}>Country code</Text>
+        <Text style={styles.label}>
+          Country Code
+        </Text>
 
         <TextInput
           value={countryCode}
@@ -152,7 +188,9 @@ export default function RegisterScreen() {
           style={styles.input}
         />
 
-        <Text style={styles.label}>Mobile number</Text>
+        <Text style={styles.label}>
+          Mobile Number
+        </Text>
 
         <TextInput
           value={mobileNumber}
@@ -169,12 +207,17 @@ export default function RegisterScreen() {
           disabled={submitting}
           style={({ pressed }) => [
             styles.button,
-            pressed && !submitting && styles.buttonPressed,
-            submitting && styles.buttonDisabled,
+            pressed &&
+              !submitting &&
+              styles.buttonPressed,
+            submitting &&
+              styles.buttonDisabled,
           ]}
         >
           <Text style={styles.buttonText}>
-            {submitting ? "Registering..." : "Continue"}
+            {submitting
+              ? "Registering..."
+              : "Continue"}
           </Text>
         </Pressable>
       </View>
@@ -195,6 +238,13 @@ const styles = StyleSheet.create({
     maxWidth: 520,
     alignSelf: "center",
     marginBottom: 28,
+    alignItems: "center",
+  },
+
+  logo: {
+    width: 220,
+    height: 220,
+    marginBottom: 12,
   },
 
   eyebrow: {
@@ -209,12 +259,14 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: "800",
     marginBottom: 12,
+    textAlign: "center",
   },
 
   description: {
     color: "#4B5563",
     fontSize: 17,
     lineHeight: 25,
+    textAlign: "center",
   },
 
   card: {
@@ -223,9 +275,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     backgroundColor: "#FFFFFF",
     borderColor: "#E5E7EB",
-    borderRadius: 18,
     borderWidth: 1,
-    boxShadow: "0 4px 14px rgba(15, 23, 42, 0.06)",
+    borderRadius: 18,
     padding: 24,
   },
 
@@ -239,8 +290,8 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#FFFFFF",
     borderColor: "#D1D5DB",
-    borderRadius: 12,
     borderWidth: 1,
+    borderRadius: 12,
     fontSize: 16,
     marginBottom: 20,
     paddingHorizontal: 16,
@@ -256,7 +307,7 @@ const styles = StyleSheet.create({
   },
 
   buttonPressed: {
-    opacity: 0.85,
+    opacity: 0.9,
   },
 
   buttonDisabled: {

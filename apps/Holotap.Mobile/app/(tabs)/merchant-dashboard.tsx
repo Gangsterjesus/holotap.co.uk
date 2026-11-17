@@ -1,41 +1,39 @@
-/**
- * =============================================================================
- * HOLOTAP MOBILE — MERCHANT DASHBOARD v2 (Engineering Edition)
- * =============================================================================
- * Engineer:      Raymond Newton (E5357171)
- * Assistant:     Copilot Engineering Assistant
- * File:          merchant-dashboard.tsx
- * Date:          28 July 2026
- * =============================================================================
- * PURPOSE:
- * The Merchant Dashboard is the central operational surface for merchants using
- * HoloTap Mobile. It provides:
- *
- *   • Live revenue + settlement metrics
- *   • Recent payment/refund/settlement activity
- *   • Identity‑aware QR session visibility
- *   • Navigation to core merchant flows
- *
- * DESIGN:
- *   • Pure logic, zero styling (unstyled edition)
- *   • Fully commented for engineering clarity
- *   • Identity‑aware QR session logic
- *   • Strong TypeScript typing
- *   • Clean JSX structure
- *
- * ROUTING (Expo Router v6):
- *   Valid hrefs:
- *     "/generate-qrc"
- *     "/live-payments"
- *     "/refund"
- *     "/settlement"
- *     "/settings"
- *     "/merchant-dashboard"
- *
- * =============================================================================
- */
+/* ============================================================================
+   HoloTap Mobile Platform
+   File: app/(tabs)/merchant-dashboard.tsx
 
+   Engineers:
+   - Raymond Newton (E5357171)
+   - Copilot Engineering Assistant
 
+   Layer: Merchant Experience Layer
+
+   Revision: v5.1.0
+   Date: 17 November 2026
+
+   Copyright (c) 2026 HoloTap.
+   All Rights Reserved.
+
+   ----------------------------------------------------------------------------
+
+   Module Purpose
+
+   Provides the primary merchant dashboard experience, displaying merchant
+   performance metrics, QR-session status, operational shortcuts and recent
+   payment activity.
+
+   ----------------------------------------------------------------------------
+
+   Module Responsibilities
+
+   - Display merchant revenue metrics.
+   - Display settlement information.
+   - Surface QR session state.
+   - Provide navigation to merchant workflows.
+   - Display recent payment activity.
+   - Integrate merchant identity verification state.
+
+   ============================================================================ */
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -46,14 +44,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-import { useQrSession } from "../../hooks/QRSessionLayer";
 import { Href, Link } from "expo-router";
+import { useQrSession } from "../../hooks/QRSessionLayer";
 
-/* =============================================================================
- * Backend Payload Types
- * =============================================================================
- */
 interface MerchantSummary {
   todayTotal: string;
   weekTotal: string;
@@ -70,22 +63,24 @@ interface ActivityItemPayload {
   timestamp: string;
 }
 
-/* =============================================================================
- * MetricCard (unstyled)
- * =============================================================================
- */
-const MetricCard = ({ label, value }: { label: string; value: string | number }) => (
+const MetricCard = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) => (
   <View>
     <Text>{label}</Text>
     <Text>{value}</Text>
   </View>
 );
 
-/* =============================================================================
- * ActivityItem (unstyled)
- * =============================================================================
- */
-const ActivityItem = ({ item }: { item: ActivityItemPayload }) => (
+const ActivityItem = ({
+  item,
+}: {
+  item: ActivityItemPayload;
+}) => (
   <View>
     <Text>{item.type.toUpperCase()}</Text>
     <Text>
@@ -95,10 +90,6 @@ const ActivityItem = ({ item }: { item: ActivityItemPayload }) => (
   </View>
 );
 
-/* =============================================================================
- * DashboardCard (unstyled)
- * =============================================================================
- */
 const DashboardCard = ({
   title,
   href,
@@ -113,10 +104,6 @@ const DashboardCard = ({
   </Link>
 );
 
-/* =============================================================================
- * Main Merchant Dashboard
- * =============================================================================
- */
 export default function MerchantDashboard() {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<MerchantSummary | null>(null);
@@ -150,17 +137,15 @@ export default function MerchantDashboard() {
     loadDashboard();
   }, []);
 
-  // Loading state (dashboard + QR)
   if (loading || qrLoading) {
     return (
       <SafeAreaView>
         <ActivityIndicator size="large" />
-        <Text>Loading dashboard…</Text>
+        <Text>Loading dashboard...</Text>
       </SafeAreaView>
     );
   }
 
-  // Error state
   if (error || !summary) {
     return (
       <SafeAreaView>
@@ -170,64 +155,95 @@ export default function MerchantDashboard() {
     );
   }
 
-  // Success state
   return (
     <SafeAreaView>
-      {/* Logo */}
-      <Image source={require("../../assets/icon.png")} />
+      <Image
+        source={require("../../assets/images/Holotap-2026.png")}
+        resizeMode="contain"
+        style={{
+          width: 160,
+          height: 160,
+          alignSelf: "center",
+          marginBottom: 20,
+        }}
+      />
 
-      {/* Header */}
       <Text>Merchant Dashboard</Text>
       <Text>Live business performance</Text>
 
-      {/* Metrics */}
       <View>
-        <MetricCard label="Today" value={`£${summary.todayTotal}`} />
-        <MetricCard label="This Week" value={`£${summary.weekTotal}`} />
+        <MetricCard
+          label="Today"
+          value={`£${summary.todayTotal}`}
+        />
+        <MetricCard
+          label="This Week"
+          value={`£${summary.weekTotal}`}
+        />
       </View>
 
       <View>
-        <MetricCard label="Pending Settlements" value={summary.pendingSettlements} />
-        <MetricCard label="Completed" value={summary.completedSettlements} />
+        <MetricCard
+          label="Pending Settlements"
+          value={summary.pendingSettlements}
+        />
+        <MetricCard
+          label="Completed"
+          value={summary.completedSettlements}
+        />
       </View>
 
-      {/* Identity‑Aware QR Session */}
       {qrError || !qrSession || !qrSession.active ? (
         <View>
           <Text>
             {identity && identity.status !== "verified"
-              ? "QR unavailable — merchant not verified"
+              ? "QR unavailable - merchant not verified"
               : "No Active QR Session"}
           </Text>
         </View>
       ) : (
         <View>
-          {qrSession && (
-            <>
-              <Text>Active QR Session</Text>
-              <Text>Session ID: {qrSession.sessionId}</Text>
-              <Text>Expires: {qrSession.expiresAt}</Text>
-            </>
-          )}
+          <Text>Active QR Session</Text>
+          <Text>Session ID: {qrSession.sessionId}</Text>
+          <Text>Expires: {qrSession.expiresAt}</Text>
         </View>
       )}
 
-      {/* Navigation */}
       <View>
-        <DashboardCard title="Show My QR Code" href="/generate-qrc" />
-        <DashboardCard title="Live Payments" href="/live-payments" />
-        <DashboardCard title="Refund / Void" href="/refund" />
-        <DashboardCard title="Settlement" href="/settlement" />
-        <DashboardCard title="Settings" href="/settings" />
+        <DashboardCard
+          title="Show My QR Code"
+          href="/generate-qrc"
+        />
+
+        <DashboardCard
+          title="Live Payments"
+          href="/live-payments"
+        />
+
+        <DashboardCard
+          title="Refund / Void"
+          href="/refund"
+        />
+
+        <DashboardCard
+          title="Settlement"
+          href="/settlement"
+        />
+
+        <DashboardCard
+          title="Settings"
+          href="/settings"
+        />
       </View>
 
-      {/* Activity Feed */}
       <Text>Recent Activity</Text>
 
       <FlatList
         data={activity}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ActivityItem item={item} />}
+        renderItem={({ item }) => (
+          <ActivityItem item={item} />
+        )}
       />
     </SafeAreaView>
   );
