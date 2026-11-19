@@ -7,8 +7,8 @@
  *      Raymond Newton (E5357171)
  *      Copilot Engineering Assistant
  *  Layer: Mobile / Customer / Payments
- *  Revision: v5.0.0
- *  Date: 02 Oct 2026
+ *  Revision: v5.0.1
+ *  Date: 19 Nov 2026
  *  Copyright (c) 2026 HoloTap Technologies Ltd.
  * -------------------------------------------------------------------------------------
  *  Module Purpose:
@@ -16,11 +16,20 @@
  *
  *  Module Responsibilities:
  *      - Receive completed payment metadata from the payment execution surface
- *      - Present payment success or failure clearly
+ *      - Present payment success, pending or failure states
  *      - Display payment, merchant, amount and currency information
- *      - Preserve the payment ID throughout the HERO journey
+ *      - Preserve payment and transaction references
+ *      - Display merchant confirmation status
+ *      - Display payment timestamp
  *      - Provide safe fallback values when metadata is unavailable
  *      - Keep authoritative payment state server-owned
+ *
+ *  v5.0.1 Enhancements:
+ *      - Added Payment Pending state
+ *      - Added Transaction Reference support
+ *      - Added Merchant Confirmation status
+ *      - Added Payment Timestamp
+ *      - Improved customer trust messaging
  * =====================================================================================
  */
 
@@ -45,6 +54,10 @@ type PaymentResultParams = {
   amount?: string;
   currency?: string;
   merchantId?: string;
+
+  transactionRef?: string;
+  merchantStatus?: string;
+  timestamp?: string;
 };
 
 /*
@@ -92,6 +105,9 @@ export default function PaymentResultScreen() {
     amount,
     currency,
     merchantId,
+    transactionRef,
+    merchantStatus,
+    timestamp,
   } = useLocalSearchParams<PaymentResultParams>();
 
   const normalizedStatus = status?.toLowerCase();
@@ -108,28 +124,31 @@ export default function PaymentResultScreen() {
     normalizedStatus === "failure" ||
     normalizedStatus === "declined";
 
+  const pending =
+    normalizedStatus === "pending" ||
+    normalizedStatus === "processing" ||
+    normalizedStatus === "awaiting_confirmation";
+
   const formattedAmount = formatCurrency(
     amount,
     currency
   );
 
   const resultTitle = successful
-    ? "Payment Successful"
+    ? "Payment Confirmed"
     : failed
       ? "Payment Failed"
-      : "Payment Result";
+      : pending
+        ? "Payment Pending"
+        : "Payment Result";
 
   const resultMessage = successful
-    ? "Your HoloTap payment has been completed."
+    ? "Your HoloTap payment has been confirmed."
     : failed
       ? "Your HoloTap payment could not be completed."
-      : "Your payment result is available below.";
-
-  /*
-   * ---------------------------------------------------------------------------
-   * Render
-   * ---------------------------------------------------------------------------
-   */
+      : pending
+        ? "Awaiting merchant confirmation."
+        : "Your payment result is available below.";
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -141,7 +160,9 @@ export default function PaymentResultScreen() {
               ? styles.statusSuccess
               : failed
                 ? styles.statusFailure
-                : styles.statusNeutral,
+                : pending
+                  ? styles.statusPending
+                  : styles.statusNeutral,
           ]}
         />
 
@@ -195,6 +216,21 @@ export default function PaymentResultScreen() {
 
           <View style={styles.row}>
             <Text style={styles.label}>
+              Transaction Reference
+            </Text>
+
+            <Text
+              style={styles.value}
+              numberOfLines={1}
+            >
+              {transactionRef ?? "Unavailable"}
+            </Text>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
               Merchant ID
             </Text>
 
@@ -203,6 +239,35 @@ export default function PaymentResultScreen() {
               numberOfLines={1}
             >
               {merchantId ?? "Unavailable"}
+            </Text>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              Merchant Status
+            </Text>
+
+            <Text style={styles.value}>
+              {merchantStatus ??
+                "Awaiting Confirmation"}
+            </Text>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.row}>
+            <Text style={styles.label}>
+              Payment Time
+            </Text>
+
+            <Text style={styles.value}>
+              {timestamp
+                ? new Date(
+                    timestamp
+                  ).toLocaleString()
+                : "Unavailable"}
             </Text>
           </View>
 
@@ -220,7 +285,7 @@ export default function PaymentResultScreen() {
         </View>
 
         <Text style={styles.footer}>
-          HoloTap Secure Payment
+          HoloTap Secure Payment • Trusted Payment Status
         </Text>
       </View>
     </SafeAreaView>
@@ -259,6 +324,10 @@ const styles = StyleSheet.create({
 
   statusFailure: {
     backgroundColor: "#dc2626",
+  },
+
+  statusPending: {
+    backgroundColor: "#f59e0b",
   },
 
   statusNeutral: {
