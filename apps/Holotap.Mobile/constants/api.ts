@@ -21,18 +21,63 @@
  * =============================================================================
  */
 
-import { create } from "apisauce";
-
 // Base URL from environment
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
-// Create API client
-export const api = create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+type ApiResponse<T = unknown> = {
+  ok: boolean;
+  data: T | null;
+  problem: string | null;
+  originalError: unknown;
+  status: number | null;
+};
+
+type QueryParams = Record<string, string | number | boolean | null | undefined>;
+
+async function request<T>(
+  method: string,
+  url: string,
+  data?: unknown,
+  params?: QueryParams,
+): Promise<ApiResponse<T>> {
+  const query = params
+    ? Object.entries(params)
+        .filter(([, value]) => value != null)
+        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+        .join("&")
+    : "";
+  const fullUrl = `${BASE_URL ?? ""}${url}${query ? `${url.includes("?") ? "&" : "?"}${query}` : ""}`;
+
+  try {
+    const response = await fetch(fullUrl, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      ...(data === undefined ? {} : { body: JSON.stringify(data) }),
+    });
+    const responseData = response.status === 204 ? null : await response.json().catch(() => null);
+
+    return {
+      ok: response.ok,
+      data: responseData as T | null,
+      problem: response.ok ? null : `HTTP_${response.status}`,
+      originalError: null,
+      status: response.status,
+    };
+  } catch (error) {
+    return { ok: false, data: null, problem: "NETWORK_ERROR", originalError: error, status: null };
+  }
+}
+
+// Fetch-based API client; avoids requiring an external API-client package.
+export const api = {
+  get: <T = unknown>(url: string, params?: QueryParams) => request<T>("GET", url, undefined, params),
+  delete: <T = unknown>(url: string, params?: QueryParams) => request<T>("DELETE", url, undefined, params),
+  head: <T = unknown>(url: string, params?: QueryParams) => request<T>("HEAD", url, undefined, params),
+  options: <T = unknown>(url: string, params?: QueryParams) => request<T>("OPTIONS", url, undefined, params),
+  post: <T = unknown>(url: string, data?: unknown) => request<T>("POST", url, data),
+  put: <T = unknown>(url: string, data?: unknown) => request<T>("PUT", url, data),
+  patch: <T = unknown>(url: string, data?: unknown) => request<T>("PATCH", url, data),
+};
 
 // Optional: unified error handler
 export function handleApiResponse(res: any) {

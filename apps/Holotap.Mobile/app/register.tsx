@@ -1,4 +1,5 @@
 /* ============================================================================
+
    HoloTap Mobile Platform
    File: app/register.tsx
 
@@ -29,12 +30,25 @@
    - Capture mobile number.
    - Acquire push token on native platforms.
    - Register consumer device.
+   - Initialise identity verification workflow.
+   - Route consumers to Identity.tsx after registration.
    - Display HoloTap branding.
    - Prevent duplicate submissions.
+
+   ----------------------------------------------------------------------------
+
+   Navigation Flow
+
+   register.tsx
+         ↓
+   Identity.tsx
+         ↓
+   scan.tsx
 
    ============================================================================ */
 
 import { useEffect, useState } from "react";
+import { router } from "expo-router";
 import {
   Alert,
   Image,
@@ -126,7 +140,15 @@ export default function RegisterScreen() {
 
       Alert.alert(
         "Registration Successful",
-        "Your device has been registered.",
+        "Continue to identity verification.",
+        [
+          {
+            text: "Continue",
+            onPress: () => {
+              router.push("/identity");
+            },
+          },
+        ],
       );
     } catch (error) {
       console.error(
